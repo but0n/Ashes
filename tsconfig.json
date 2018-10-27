@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+		"sourceMap": true,
+        "declaration": true,
+        "pretty": true,
+		"module": "es6",
+        "target": "es5",
+        "lib": ["es6", "dom"],
+        "outDir": "build"
+    },
+
+    "exclude": ["node_moudles", "build"]
+}
