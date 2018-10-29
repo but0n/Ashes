@@ -18,6 +18,6 @@
   "scripts": {
     "prebuild": "rm -rf build",
     "build": "rollup -c && madge ./build --circular",
-    "dev": "rollup -cw & http-server -o -s -c-1"
+    "dev": "http-server -o -s -c-1 | rollup -cw"
   }
 }
