@@ -2,11 +2,17 @@
 <html>
     <head>
         <meta charset=utf-8>
+        <link rel="stylesheet" type="text/css" href="static/css/main.css" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
         <title>Ashes</title>
     </head>
     <body>
+        <canvas id="screen"></canvas>
 
     </body>
     <script src="/build/ashes.main.js"></script>
+    <script>
+        console.log(Ashes);
+        let r = new Ashes.Render('#screen')
+    </script>
 </html>

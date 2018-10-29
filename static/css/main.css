@@ -1,0 +1,27 @@
+body {
+	width: 100%;
+	padding: 0;
+	font-family: Verdana, Geneva, Tahoma, sans-serif;
+    position: absolute;
+    margin: 0;
+	display: flex;
+	justify-content: center;
+}
+
+.gray {
+	filter: grayscale(100%);
+}
+
+
+#screen {
+    position: fixed;
+    background-color: #ededed;
+	top: 0;
+	left: 0;
+	z-index: -1;
+}
+
+.github-corner {
+	position: fixed;
+	right: 0;
+}
