@@ -22,4 +22,18 @@ export class Render {
         this.canvas.style.width = width + 'px';
         this.canvas.style.height = height + 'px';
     }
+
+    buildShader(type, code) {
+        let gl = this.gl;
+        let shader = gl.createShader(type);
+        gl.shaderSource(shader, code);
+        gl.compileShader(shader);
+        if(gl.getShaderParameter(shader, gl.COMPILE_STATUS) === true) {
+            return shader;
+        }
+
+        console.warn(gl.getShaderInfoLog(shader));
+        gl.deleteShader(shader);
+    }
+
 }

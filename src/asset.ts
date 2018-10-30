@@ -1,5 +1,5 @@
 export class Asset {
-    load(url, type: XMLHttpRequestResponseType = 'json') {
+    static load(url, type: XMLHttpRequestResponseType = 'json') {
         return new Promise((resolve, reject) => {
             let xhr = new XMLHttpRequest();
             xhr.open('GET', url);
@@ -15,6 +15,6 @@ export class Asset {
                 reject(xhr.statusText);
             }
             xhr.send();
-        })
+        });
     }
 }
