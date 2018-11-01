@@ -17,4 +17,14 @@ export class Asset {
             xhr.send();
         });
     }
+
+    static loadImage(url, type) {
+        return new Promise((resolve, reject) => {
+            let image = new Image();
+            image.src = url;
+            image.onload = () => {
+                resolve(image);
+            }
+        });
+    }
 }
