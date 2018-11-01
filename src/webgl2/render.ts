@@ -73,7 +73,7 @@ export class Render {
     }
 
     pickupActiveUniforms(shader: WebGLProgram) {
-        const amount = this.gl.getProgramParameter(shader, this.gl.ACTIVE_ATTRIBUTES);
+        const amount = this.gl.getProgramParameter(shader, this.gl.ACTIVE_UNIFORMS);
         let uniforms: Uniform[] = [];
         for(let i = 0; i < amount; i++) {
             const {name, type} = this.gl.getActiveUniform(shader, i);
