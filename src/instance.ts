@@ -17,8 +17,8 @@ export class Instance {
     }
 
     loadShaderProgram(name) {
-        let vertFile = name + 'vs.glsl';
-        let fragFile = name + 'fs.glsl';
+        let vertFile = name + '.vs.glsl';
+        let fragFile = name + '.fs.glsl';
         return new Promise((resolve, reject) => {
             Promise.all([
                 this.loadShader(vertFile, WebGLRenderingContext.VERTEX_SHADER),
