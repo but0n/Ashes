@@ -1,5 +1,4 @@
 import { Uniform, Attribute } from "../shader";
-import { MeshAttribute } from "../mesh";
 
 export class Render {
     public canvas: HTMLCanvasElement;
