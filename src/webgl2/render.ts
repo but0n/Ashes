@@ -19,14 +19,15 @@ export class Render {
 
     setScreenSize(width = window.innerWidth, height = window.innerHeight) {
         let {devicePixelRatio} = window;
+        console.log(devicePixelRatio);
         this.canvas.setAttribute('width', width * devicePixelRatio + '');
         this.canvas.setAttribute('width', height * devicePixelRatio + '');
         this.canvas.style.width = width + 'px';
         this.canvas.style.height = height + 'px';
-        this.gl.viewport(0, 0, width, height);
+        this.gl.viewport(0, 0, width * devicePixelRatio, height * devicePixelRatio);
     }
 
-    clear(r = 0, g = 0, b = 0, a = 0, mode = this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT) {
+    clear(r = 0, g = 0, b = 0, a = 1, mode = this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT) {
         this.gl.clearColor(r, g, b, a);
         this.gl.clear(mode);
     }

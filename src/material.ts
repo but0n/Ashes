@@ -23,4 +23,13 @@ export class Material {
             this.locationList[name] = location;
         }
     }
+    update(gl: WebGL2RenderingContext) {
+        for(let u of this.uniforms) {
+            if(gl[u.setter].length == 3) {
+                gl[u.setter](u.location, false, u.value);
+            } else {
+                gl[u.setter](u.location, u.value);
+            }
+        }
+    }
 }

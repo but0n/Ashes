@@ -18,7 +18,7 @@ export class Uniform {
         this.type = type;
         this.setter = Uniform.getUnifSetter(type);
     }
-
+    value;
     static getUnifSetter(type: GLenum) {
         switch (type) {
             case WebGLRenderingContext.FLOAT:

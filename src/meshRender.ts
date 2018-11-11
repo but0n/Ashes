@@ -4,32 +4,44 @@ import { Material } from "./material";
 export class MeshRender {
     gl: WebGL2RenderingContext;
     mesh: Mesh;
-    materials: Material[];
+    materials: Material[] = [];
     vao: WebGLVertexArrayObject;
-    constructor(context: WebGL2RenderingContext) {
+    constructor(context: WebGL2RenderingContext, mesh: Mesh, material: Material) {
         this.gl = context;
+        this.mesh = mesh;
         // this.vao = this.gl.createVertexArray();
+        this.attachMaterial(material);
     }
 
     attachMaterial(mat: Material) {
         this.materials.push(mat);
-        // this.updateVAO();
+        this.updateVAO();
     }
 
-    bindVAO(vao) {
+    bindVAO(vao = this.vao) {
         this.gl.bindVertexArray(vao);
     }
 
-    // updateVAO() {
-    //     this.vao = this.gl.createVertexArray();
-    //     this.bindVAO(this.vao);
-    //     this.bindVAO(null);
-    // }
+    updateVAO() {
+        if(this.vao) {
+            this.gl.deleteVertexArray(this.vao);
+        }
+        this.vao = this.gl.createVertexArray();
+        this.bindVAO(this.vao);
+        this.mesh.bindAccessorsVBO(this.gl, this.materials[0].locationList);
+        this.bindVAO(null);
+    }
+
+    update() {
+        this.materials[0].update(this.gl);
+    }
 
 
-    // render(mode = this.gl.TRIANGLES) {
-    //     this.gl.useProgram(this.materials[0].shader);
-    //     this.bindVAO(this.vao);
-    //     // this.gl.drawElements(mode, 1, )
-    // }
+    render() {
+        this.gl.useProgram(this.materials[0].shader);
+        this.update();
+        this.bindVAO(this.vao);
+        this.mesh.bindIndecesEBO(this.gl);
+        this.mesh.drawElement(this.gl);
+    }
 }

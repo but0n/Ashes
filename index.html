@@ -13,6 +13,8 @@
     <script src="/build/ashes.main.js"></script>
     <script>
         console.log(Ashes);
-        let game = new Ashes.Instance('#screen');
+        Ashes.Asset.loadGLTF('/static/gltf/box/Box.gltf').then((e) => {
+            console.log(e);
+        })
     </script>
 </html>

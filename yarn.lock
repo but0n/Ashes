@@ -469,6 +469,11 @@ get-own-enumerable-property-symbols@^3.0.0:
   resolved "https://registry.yarnpkg.com/get-own-enumerable-property-symbols/-/get-own-enumerable-property-symbols-3.0.0.tgz#b877b49a5c16aefac3655f2ed2ea5b684df8d203"
   integrity sha512-CIJYJC4GGF06TakLg8z4GQKvDsx9EMspVxOYih7LerEL/WosUnFIww45CGfxfeKHqlg3twgUrYRT1O3WQqjGCg==
 
+gl-matrix-ts@^2.3.3:
+  version "2.3.3"
+  resolved "https://registry.yarnpkg.com/gl-matrix-ts/-/gl-matrix-ts-2.3.3.tgz#a64bce90b50e801ab3fd8bbc25fcd6529eb23d64"
+  integrity sha1-pkvOkLUOgBqz/Yu8JfzWUp6yPWQ=
+
 glob-base@^0.3.0:
   version "0.3.0"
   resolved "https://registry.yarnpkg.com/glob-base/-/glob-base-0.3.0.tgz#dbb164f6221b1c0b1ccf82aea328b497df0ea3c4"

@@ -1,43 +1,45 @@
-import { accessSync } from "fs";
-
 export class Mesh {
-    // database
-    buffers: WebGLBuffer[];
     accessors: Accessor[];
     bufferViews: bufferView[];
 
-    // reference
-    attributes: {};
-    indeces: number;
+    indices: number;
     // Render mode
     mode: number;
 
 
-    constructor(buffers, accessors, bufferViews, indeces) {
-        this.buffers = buffers;
+    constructor(accessors: Accessor[], bufferViews: bufferView[], indices, mode) {
         this.accessors = accessors;
         this.bufferViews = bufferViews;
-        this.indeces = indeces;
+        this.indices = indices;
+        this.mode = mode;
     }
 
     bindAccessorsVBO(gl: WebGL2RenderingContext, locationList) {
         for(let acc of this.accessors) {
             // Ignore indeces
             let loc = locationList[acc.attribute];
-            if(acc.attribute && loc) {
+            if(acc.attribute && loc!=undefined) {
                 let bufferView = this.bufferViews[acc.bufferView];
-                gl.bindBuffer(bufferView.target, this.buffers[bufferView.buffer]);
+                bufferView.bindBuffer(gl);
                 gl.enableVertexAttribArray(loc);
-                let offset = bufferView.byteOffset + acc.byteOffset;
-                gl.vertexAttribPointer(loc, acc.size, acc.componentType, false, bufferView.byteStride, offset);
+                let offset = acc.byteOffset;
+                // let offset = bufferView.byteOffset + acc.byteOffset;
+                gl.vertexAttribPointer(loc, acc.size, acc.componentType, acc.normalized, bufferView.byteStride, offset);
             }
         }
     }
 
     bindIndecesEBO(gl: WebGL2RenderingContext) {
-        let acc = this.accessors[this.indeces];
+        let acc = this.accessors[this.indices];
         let bufferView = this.bufferViews[acc.bufferView];
-        gl.bindBuffer(bufferView.target, this.buffers[bufferView.buffer]);
+        bufferView.bindBuffer(gl);
+    }
+
+    drawElement(gl: WebGL2RenderingContext) {
+        let acc = this.accessors[this.indices];
+        let bufferView = this.bufferViews[acc.bufferView];
+        let offset = acc.byteOffset;
+        gl.drawElements(this.mode, acc.count, acc.componentType, offset);
     }
 
 }
@@ -57,15 +59,17 @@ export class Accessor {
     bufferView: number;
     byteOffset: number;
     componentType: number;
+    normalized: boolean;
     count: number;
     max: number[];
     min: number[];
     size: number;
-    constructor({bufferView, byteOffset = 0, componentType, count, max, min, type}, name) {
+    constructor({bufferView, byteOffset = 0, componentType, normalized = false, count, type, max, min}, name) {
         this.attribute = name;
         this.bufferView = bufferView;
         this.byteOffset = byteOffset;
         this.componentType = componentType;
+        this.normalized = normalized;
         this.count = count;
         this.max = max;
         this.min = min;
@@ -74,16 +78,32 @@ export class Accessor {
 }
 
 export class bufferView {
-    buffer: number;
+    dataView: DataView;
     byteLength: number;
     byteOffset: number;
     byteStride: number;
     target: number;
-    constructor({buffer, byteLength, byteOffset, target, byteStride = 0}) {
-        this.buffer = buffer;
-        this.byteLength = byteLength;
+    buffer: WebGLBuffer;
+    constructor(rawData: ArrayBuffer, {byteOffset = 0, byteLength, byteStride = 4, target = 34962}) {
+        // this.rawData = rawData;
         this.byteOffset = byteOffset;
-        this.target = target;
+        this.byteLength = byteLength;
         this.byteStride = byteStride;
+        this.dataView = new DataView(rawData, this.byteOffset, this.byteLength);
+        this.target = target;
+    }
+    updateBuffer(gl: WebGL2RenderingContext, usage = gl.STATIC_DRAW) {
+        if(this.buffer) {
+            gl.deleteBuffer(this.buffer);
+        }
+        this.buffer = gl.createBuffer();
+        gl.bindBuffer(this.target, this.buffer);
+        gl.bufferData(this.target, this.dataView, usage);
+    }
+    bindBuffer(gl: WebGL2RenderingContext) {
+        if(!this.buffer) {
+            this.updateBuffer(gl);
+        }
+        gl.bindBuffer(this.target, this.buffer);
     }
 }
