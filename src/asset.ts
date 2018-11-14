@@ -74,10 +74,9 @@ export class Asset {
                     console.log(M);
 
                     let game = new Instance('#screen');
-                    game.loadMaterial('/static/shader/test').then(mat => {
+                    Material.LoadMaterial('test').then(mat => {
                         console.log(mat);
                         let mr = new MeshRender(game.renderer.gl, mesh, mat as Material);
-                        mr.materials[0].uniforms[0].value = M;
                         console.log(mr);
                         game.renderer.setScreenSize();
                         let task = () => {

@@ -25,6 +25,8 @@ export class Mesh {
                 let offset = acc.byteOffset;
                 // let offset = bufferView.byteOffset + acc.byteOffset;
                 gl.vertexAttribPointer(loc, acc.size, acc.componentType, acc.normalized, bufferView.byteStride, offset);
+            } else {
+                console.warn(`Attribute '${acc.attribute}' not found!`);
             }
         }
     }

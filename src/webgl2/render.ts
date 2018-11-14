@@ -1,5 +1,3 @@
-import { Uniform, Attribute } from "../shader";
-
 export class Render {
     public canvas: HTMLCanvasElement;
     public gl: WebGL2RenderingContext;
@@ -32,8 +30,7 @@ export class Render {
         this.gl.clear(mode);
     }
 
-    buildShader(type, code) {
-        let gl = this.gl;
+    static compileShader(gl: WebGL2RenderingContext, type, code) {
         let shader = gl.createShader(type);
         gl.shaderSource(shader, code);
         gl.compileShader(shader);
@@ -45,8 +42,7 @@ export class Render {
         gl.deleteShader(shader);
     }
 
-    createProgram(vertexShader: WebGLShader, fragmentShader: WebGLShader) {
-        let gl = this.gl;
+    static createShaderProgram(gl: WebGL2RenderingContext, vertexShader: WebGLShader, fragmentShader: WebGLShader) {
         let program = gl.createProgram();
         gl.attachShader(program, vertexShader);
         gl.attachShader(program, fragmentShader);
@@ -61,44 +57,6 @@ export class Render {
         gl.deleteShader(vertexShader);
         gl.deleteShader(fragmentShader);
     }
-
-    pickupActiveAttributes(shader: WebGLProgram) {
-        const amount = this.gl.getProgramParameter(shader, this.gl.ACTIVE_ATTRIBUTES);
-        let attributes: Attribute[] = [];
-        for(let i = 0; i < amount; i++) {
-            const {name} = this.gl.getActiveAttrib(shader, i);
-            const location = this.gl.getAttribLocation(shader, name);
-            attributes.push(new Attribute(name, location));
-        }
-        return attributes;
-    }
-
-    pickupActiveUniforms(shader: WebGLProgram) {
-        const amount = this.gl.getProgramParameter(shader, this.gl.ACTIVE_UNIFORMS);
-        let uniforms: Uniform[] = [];
-        for(let i = 0; i < amount; i++) {
-            const {name, type} = this.gl.getActiveUniform(shader, i);
-            const location = this.gl.getUniformLocation(shader, name);
-            uniforms.push(new Uniform(name, location, type));
-        }
-        return uniforms;
-    }
-
-    createVAO() {
-        // let vao = this.gl.createVertexArray();
-        // this.gl.bindVertexArray(vao);
-        // this.gl.bindVertexArray(null);
-        // return vao;
-    }
-
-    // --------(index: number, data: Float32Array, size: number, type: number, normalized = false, stride = 0, offset = 0,  usage = this.gl.STATIC_DRAW) {
-    //     let buffer = this.gl.createBuffer();
-    //     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
-    //     this.gl.bufferData(this.gl.ARRAY_BUFFER, data, usage);
-    //     this.gl.vertexAttribPointer(index, size, type, normalized, stride, offset);
-    //     this.gl.enableVertexAttribArray(index);
-    //     return buffer;
-    // }
 
     createBuffer(data: number | Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array | Uint32Array | Uint8ClampedArray | Float32Array | Float64Array | DataView | ArrayBuffer, type: number, usage = this.gl.STATIC_DRAW) {
         let buffer = this.gl.createBuffer();

@@ -6,15 +6,21 @@ export class MeshRender {
     mesh: Mesh;
     materials: Material[] = [];
     vao: WebGLVertexArrayObject;
+    isDirty: boolean = true;
     constructor(context: WebGL2RenderingContext, mesh: Mesh, material: Material) {
         this.gl = context;
         this.mesh = mesh;
-        // this.vao = this.gl.createVertexArray();
         this.attachMaterial(material);
     }
 
+    useMaterial(index) {
+        this.gl.useProgram(this.materials[index].shader.program);
+    }
+
     attachMaterial(mat: Material) {
+        mat.update(this.gl); // the first time the material get context
         this.materials.push(mat);
+        this.useMaterial(0); // NOTE: Needs confirm
         this.updateVAO();
     }
 
@@ -33,12 +39,14 @@ export class MeshRender {
     }
 
     update() {
-        this.materials[0].update(this.gl);
+        if(this.materials[0].isDirty) {
+            this.materials[0].update(this.gl);
+        }
     }
 
 
     render() {
-        this.gl.useProgram(this.materials[0].shader);
+        this.useMaterial(0);
         this.update();
         this.bindVAO(this.vao);
         this.mesh.bindIndecesEBO(this.gl);
