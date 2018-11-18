@@ -15,6 +15,9 @@ export class Render {
         this.setScreenSize(); // initial - full screen
     }
 
+    width: number;
+    height: number;
+
     setScreenSize(width = window.innerWidth, height = window.innerHeight) {
         let {devicePixelRatio} = window;
         console.log(devicePixelRatio);
@@ -23,6 +26,8 @@ export class Render {
         this.canvas.style.width = width + 'px';
         this.canvas.style.height = height + 'px';
         this.gl.viewport(0, 0, width * devicePixelRatio, height * devicePixelRatio);
+        this.width = width;
+        this.height =height;
     }
 
     clear(r = 0, g = 0, b = 0, a = 1, mode = this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT) {

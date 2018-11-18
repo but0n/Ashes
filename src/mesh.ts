@@ -40,6 +40,7 @@ export class Mesh {
     drawElement(gl: WebGL2RenderingContext) {
         let acc = this.accessors[this.indices];
         let bufferView = this.bufferViews[acc.bufferView];
+        // let offset = bufferView.byteOffset;
         let offset = acc.byteOffset;
         gl.drawElements(this.mode, acc.count, acc.componentType, offset);
     }

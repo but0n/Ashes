@@ -51,7 +51,7 @@ export class Shader {
         for(let k in this.uniforms) {
             let uni: Uniform = this.uniforms[k];
             if(uni.value) {
-                if(gl[uni.setter].length == 3) {
+                if(gl[uni.setter].length == 3 || !gl[uni.setter].length) {
                     gl[uni.setter](uni.location, false, uni.value);
                 } else {
                     gl[uni.setter](uni.location, uni.value);

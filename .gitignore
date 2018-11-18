@@ -3,3 +3,5 @@ node_modules
 
 build
 .rpt2_cache
+.DS_Store
+*/.DS_Store
