@@ -22,7 +22,7 @@ export class Render {
         let {devicePixelRatio} = window;
         console.log(devicePixelRatio);
         this.canvas.setAttribute('width', width * devicePixelRatio + '');
-        this.canvas.setAttribute('width', height * devicePixelRatio + '');
+        this.canvas.setAttribute('height', height * devicePixelRatio + '');
         this.canvas.style.width = width + 'px';
         this.canvas.style.height = height + 'px';
         this.gl.viewport(0, 0, width * devicePixelRatio, height * devicePixelRatio);

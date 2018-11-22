@@ -68,7 +68,7 @@ export class Asset {
                         views.push(new bufferView(gltf.buffers[bv.buffer], bv));
                     }
                     console.log(views);
-                    let mesh = new Mesh(accessors, views, gltfMesh.indices, WebGL2RenderingContext.LINES);
+                    let mesh = new Mesh(accessors, views, gltfMesh.indices, WebGL2RenderingContext.TRIANGLES);
                     // let mesh = new Mesh(accessors, views, gltfMesh.indices, gltfMesh.mode);
                     console.log(mesh);
 

@@ -87,7 +87,7 @@ export class bufferView {
     byteStride: number;
     target: number;
     buffer: WebGLBuffer;
-    constructor(rawData: ArrayBuffer, {byteOffset = 0, byteLength, byteStride = 4, target = 34962}) {
+    constructor(rawData: ArrayBuffer, {byteOffset = 0, byteLength, byteStride = 0, target = 34962}) {
         // this.rawData = rawData;
         this.byteOffset = byteOffset;
         this.byteLength = byteLength;
@@ -95,7 +95,7 @@ export class bufferView {
         this.dataView = new DataView(rawData, this.byteOffset, this.byteLength);
         this.target = target;
     }
-    updateBuffer(gl: WebGL2RenderingContext, usage = gl.STATIC_DRAW) {
+    updateBuffer(gl: WebGL2RenderingContext, usage = WebGL2RenderingContext.STATIC_DRAW) {
         if(this.buffer) {
             gl.deleteBuffer(this.buffer);
         }
