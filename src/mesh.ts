@@ -7,7 +7,7 @@ export class Mesh {
     mode: number;
 
 
-    constructor(accessors: Accessor[], bufferViews: bufferView[], indices, mode) {
+    constructor(accessors: Accessor[], bufferViews: bufferView[], indices, mode = WebGL2RenderingContext.TRIANGLES) {
         this.accessors = accessors;
         this.bufferViews = bufferViews;
         this.indices = indices;

@@ -14,7 +14,8 @@ out vec2 uv;
 void main() {
   uv = TEXCOORD_0;
   vec4 pos = vec4(POSITION, 1);
-  normal = normalize(NORMAL);
-  // gl_Position = P * V * M * pos;
-  gl_Position = pos;
+  // normal = normalize(NORMAL);
+  normal = POSITION;
+  gl_Position = P * V * M * pos;
+  // gl_Position = pos;
 }

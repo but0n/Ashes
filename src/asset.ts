@@ -68,27 +68,26 @@ export class Asset {
                         views.push(new bufferView(gltf.buffers[bv.buffer], bv));
                     }
                     console.log(views);
-                    let mesh = new Mesh(accessors, views, gltfMesh.indices, WebGL2RenderingContext.TRIANGLES);
-                    // let mesh = new Mesh(accessors, views, gltfMesh.indices, gltfMesh.mode);
+                    let mesh = new Mesh(accessors, views, gltfMesh.indices, gltfMesh.mode);
                     console.log(mesh);
 
                     let P = glMatrix.mat4.create();
-                    // glMatrix.mat4.perspective(P, 45.0 * Math.PI / 180.0, game.renderer.width/game.renderer.height, 0.01, 10000.0);
+                    glMatrix.mat4.perspective(P, 45.0 * Math.PI / 180.0, game.renderer.width/game.renderer.height, 0.01, 100.0);
                     // glMatrix.mat4.perspective(P, 30, 1, 0, 100);
                     console.log(P);
 
                     let M = glMatrix.mat4.create();
                     // glMatrix.mat4.scale(M, M, glMatrix.vec3.fromValues(1, 1, 1.2));
-                    // glMatrix.mat4.translate(M, M, glMatrix.vec3.fromValues(0, 0, 1.0));
+                    glMatrix.mat4.translate(M, M, glMatrix.vec3.fromValues(-1, 0, 0));
                     let V = glMatrix.mat4.create();
-                    // glMatrix.mat4.lookAt(V, glMatrix.vec3.fromValues(0, 0, 1), glMatrix.vec3.fromValues(0, 0, 0), glMatrix.vec3.fromValues(0, 1.0, 0));
+                    glMatrix.mat4.lookAt(V, glMatrix.vec3.fromValues(0, 0, 5), glMatrix.vec3.fromValues(0, 0, 0), glMatrix.vec3.fromValues(0, 1, 0));
 
                     Material.LoadMaterial('test').then(mat => {
                         console.log(mat);
                         let mr = new MeshRender(game.renderer.gl, mesh, mat as Material);
-                        // mr.materials[0].setUniform('P', P);
-                        // mr.materials[0].setUniform('V', V);
-                        // mr.materials[0].setUniform('M', M);
+                        mr.materials[0].setUniform('P', P);
+                        mr.materials[0].setUniform('V', V);
+                        mr.materials[0].setUniform('M', M);
                         console.log(mr);
                         let task = () => {
                             game.renderer.clear();
