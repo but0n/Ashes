@@ -77,11 +77,11 @@ export class Asset {
                     console.log(P);
 
                     let M = glMatrix.mat4.create();
-                    // glMatrix.mat4.scale(M, M, glMatrix.vec3.fromValues(1, 1, 1.2));
-                    glMatrix.mat4.translate(M, M, glMatrix.vec3.fromValues(-1, 0, 0));
+                    glMatrix.mat4.rotateX(M, M, 45 * Math.PI / 180);
+                    glMatrix.mat4.rotateY(M, M, 45 * Math.PI / 180);
                     let V = glMatrix.mat4.create();
                     glMatrix.mat4.lookAt(V, glMatrix.vec3.fromValues(0, 0, 5), glMatrix.vec3.fromValues(0, 0, 0), glMatrix.vec3.fromValues(0, 1, 0));
-
+                    let yawSpeed = 1;
                     Material.LoadMaterial('test').then(mat => {
                         console.log(mat);
                         let mr = new MeshRender(game.renderer.gl, mesh, mat as Material);
@@ -90,6 +90,8 @@ export class Asset {
                         mr.materials[0].setUniform('M', M);
                         console.log(mr);
                         let task = () => {
+                            glMatrix.mat4.rotateY(M, M, yawSpeed * Math.PI / 180);
+                            mr.materials[0].setUniform('M', M);
                             game.renderer.clear();
                             mr.render();
                             requestAnimationFrame(task);

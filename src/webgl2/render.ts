@@ -12,6 +12,7 @@ export class Render {
             console.error('Get Context Failed');
             return;
         }
+        this.gl.enable(this.gl.DEPTH_TEST)
         this.setScreenSize(); // initial - full screen
     }
 

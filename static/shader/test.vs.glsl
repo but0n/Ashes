@@ -10,12 +10,12 @@ uniform mat4 P;
 
 out vec3 normal;
 out vec2 uv;
+out vec4 pos;
 
 void main() {
   uv = TEXCOORD_0;
-  vec4 pos = vec4(POSITION, 1);
-  // normal = normalize(NORMAL);
-  normal = POSITION;
-  gl_Position = P * V * M * pos;
-  // gl_Position = pos;
+  vec4 position = vec4(POSITION, 1);
+  pos = position;
+  normal = normalize(NORMAL);
+  gl_Position = P * V * M * position;
 }
