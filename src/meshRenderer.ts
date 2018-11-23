@@ -1,7 +1,7 @@
 import { Mesh } from "./mesh";
 import { Material } from "./material";
 
-export class MeshRender {
+export class MeshRenderer {
     gl: WebGL2RenderingContext;
     mesh: Mesh;
     materials: Material[] = [];

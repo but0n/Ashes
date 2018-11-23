@@ -1,7 +1,7 @@
 /// <reference path="../node_modules/gl-matrix-ts/dist/index.d.ts" />
 import { Mesh, Accessor, bufferView } from "./mesh";
 import { Instance } from "./instance";
-import { MeshRender } from "./meshRender";
+import { MeshRenderer } from "./meshRenderer";
 import { Material } from "./material";
 import * as glMatrix from "../node_modules/gl-matrix-ts/dist/index";
 
@@ -84,7 +84,7 @@ export class Asset {
                     let yawSpeed = 1;
                     Material.LoadMaterial('test').then(mat => {
                         console.log(mat);
-                        let mr = new MeshRender(game.renderer.gl, mesh, mat as Material);
+                        let mr = new MeshRenderer(game.renderer.gl, mesh, mat as Material);
                         mr.materials[0].setUniform('P', P);
                         mr.materials[0].setUniform('V', V);
                         mr.materials[0].setUniform('M', M);
