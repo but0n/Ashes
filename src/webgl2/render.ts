@@ -36,34 +36,6 @@ export class Render {
         this.gl.clear(mode);
     }
 
-    static compileShader(gl: WebGL2RenderingContext, type, code) {
-        let shader = gl.createShader(type);
-        gl.shaderSource(shader, code);
-        gl.compileShader(shader);
-        if(gl.getShaderParameter(shader, gl.COMPILE_STATUS) === true) {
-            return shader;
-        }
-
-        console.warn(gl.getShaderInfoLog(shader));
-        gl.deleteShader(shader);
-    }
-
-    static createShaderProgram(gl: WebGL2RenderingContext, vertexShader: WebGLShader, fragmentShader: WebGLShader) {
-        let program = gl.createProgram();
-        gl.attachShader(program, vertexShader);
-        gl.attachShader(program, fragmentShader);
-        gl.linkProgram(program);
-        if (gl.getProgramParameter(program, gl.LINK_STATUS)) {
-            return program;
-        }
-
-        console.warn(gl.getProgramInfoLog(program));
-        // Dispose
-        gl.deleteProgram(program);
-        gl.deleteShader(vertexShader);
-        gl.deleteShader(fragmentShader);
-    }
-
     createBuffer(data: number | Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array | Uint32Array | Uint8ClampedArray | Float32Array | Float64Array | DataView | ArrayBuffer, type: number, usage = this.gl.STATIC_DRAW) {
         let buffer = this.gl.createBuffer();
         this.gl.bindBuffer(type, buffer);

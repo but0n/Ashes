@@ -28,17 +28,17 @@ export class Shader {
         if(this.vertex) {   // Vertex shader
             this.ctx.deleteShader(this.vertex);
         }
-        this.vertex = Render.compileShader(this.ctx, this.ctx.VERTEX_SHADER, this.vertexSource);
+        this.vertex = Shader.compileShader(this.ctx, this.ctx.VERTEX_SHADER, this.vertexSource);
 
         if(this.fragment) { // Fragment shader
             this.ctx.deleteShader(this.fragment);
         }
-        this.fragment = Render.compileShader(this.ctx, this.ctx.FRAGMENT_SHADER, this.fragmentSource);
+        this.fragment = Shader.compileShader(this.ctx, this.ctx.FRAGMENT_SHADER, this.fragmentSource);
 
         if(this.program) {  // Shader Program
             this.ctx.deleteProgram(this.program);
         }
-        this.program = Render.createShaderProgram(this.ctx, this.vertex, this.fragment);
+        this.program = Shader.createShaderProgram(this.ctx, this.vertex, this.fragment);
 
 
         // Pickup details
@@ -71,15 +71,43 @@ export class Shader {
         return attributes;
     }
 
-    static pickupActiveUniforms(ctx: WebGL2RenderingContext, shader: WebGLProgram) {
-        const amount = ctx.getProgramParameter(shader, ctx.ACTIVE_UNIFORMS);
+    static pickupActiveUniforms(gl: WebGL2RenderingContext, shader: WebGLProgram) {
+        const amount = gl.getProgramParameter(shader, gl.ACTIVE_UNIFORMS);
         let uniforms = {};
         for(let i = 0; i < amount; i++) {
-            const {name, type} = ctx.getActiveUniform(shader, i);
-            const location = ctx.getUniformLocation(shader, name);
+            const {name, type} = gl.getActiveUniform(shader, i);
+            const location = gl.getUniformLocation(shader, name);
             uniforms[name] = new Uniform(location, type);
         }
         return uniforms;
+    }
+
+    static compileShader(gl: WebGL2RenderingContext, type, code) {
+        let shader = gl.createShader(type);
+        gl.shaderSource(shader, code);
+        gl.compileShader(shader);
+        if(gl.getShaderParameter(shader, gl.COMPILE_STATUS) === true) {
+            return shader;
+        }
+
+        console.warn(gl.getShaderInfoLog(shader));
+        gl.deleteShader(shader);
+    }
+
+    static createShaderProgram(gl: WebGL2RenderingContext, vertexShader: WebGLShader, fragmentShader: WebGLShader) {
+        let program = gl.createProgram();
+        gl.attachShader(program, vertexShader);
+        gl.attachShader(program, fragmentShader);
+        gl.linkProgram(program);
+        if (gl.getProgramParameter(program, gl.LINK_STATUS)) {
+            return program;
+        }
+
+        console.warn(gl.getProgramInfoLog(program));
+        // Dispose
+        gl.deleteProgram(program);
+        gl.deleteShader(vertexShader);
+        gl.deleteShader(fragmentShader);
     }
 }
 

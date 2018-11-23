@@ -2,12 +2,12 @@ export class Mesh {
     accessors: Accessor[];
     bufferViews: bufferView[];
 
-    indices: number;
+    indices: Accessor;
     // Render mode
     mode: number;
 
 
-    constructor(accessors: Accessor[], bufferViews: bufferView[], indices, mode = WebGL2RenderingContext.TRIANGLES) {
+    constructor(accessors: Accessor[], bufferViews: bufferView[], indices: Accessor, mode = WebGL2RenderingContext.TRIANGLES) {
         this.accessors = accessors;
         this.bufferViews = bufferViews;
         this.indices = indices;
@@ -23,7 +23,6 @@ export class Mesh {
                 bufferView.bindBuffer(gl);
                 gl.enableVertexAttribArray(loc);
                 let offset = acc.byteOffset;
-                // let offset = bufferView.byteOffset + acc.byteOffset;
                 gl.vertexAttribPointer(loc, acc.size, acc.componentType, acc.normalized, bufferView.byteStride, offset);
             } else {
                 console.warn(`Attribute '${acc.attribute}' not found!`);
@@ -32,15 +31,12 @@ export class Mesh {
     }
 
     bindIndecesEBO(gl: WebGL2RenderingContext) {
-        let acc = this.accessors[this.indices];
-        let bufferView = this.bufferViews[acc.bufferView];
+        let bufferView = this.bufferViews[this.indices.bufferView];
         bufferView.bindBuffer(gl);
     }
 
     drawElement(gl: WebGL2RenderingContext) {
-        let acc = this.accessors[this.indices];
-        let bufferView = this.bufferViews[acc.bufferView];
-        // let offset = bufferView.byteOffset;
+        let acc = this.indices;
         let offset = acc.byteOffset;
         gl.drawElements(this.mode, acc.count, acc.componentType, offset);
     }
@@ -67,7 +63,7 @@ export class Accessor {
     max: number[];
     min: number[];
     size: number;
-    constructor({bufferView, byteOffset = 0, componentType, normalized = false, count, type, max, min}, name) {
+    constructor({bufferView, byteOffset = 0, componentType, normalized = false, count, type, max, min}, name = '') {
         this.attribute = name;
         this.bufferView = bufferView;
         this.byteOffset = byteOffset;

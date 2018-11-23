@@ -46,8 +46,8 @@ export class MeshRenderer {
 
 
     render() {
-        this.useMaterial(0);
         this.update();
+        this.useMaterial(0);
         this.bindVAO(this.vao);
         this.mesh.bindIndecesEBO(this.gl);
         this.mesh.drawElement(this.gl);
