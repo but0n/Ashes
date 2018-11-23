@@ -7,8 +7,8 @@ export class MeshRenderer {
     materials: Material[] = [];
     vao: WebGLVertexArrayObject;
     isDirty: boolean = true;
-    constructor(context: WebGL2RenderingContext, mesh: Mesh, material: Material) {
-        this.gl = context;
+    constructor({gl}, mesh: Mesh, material: Material) {
+        this.gl = gl;
         this.mesh = mesh;
         this.attachMaterial(material);
     }

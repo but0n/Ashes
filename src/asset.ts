@@ -48,7 +48,7 @@ export class Asset {
                     bufferTask.push(this.loadBuffer(root+uri))
                 }
                 Promise.all(bufferTask).then(buffers => {
-                    let game = new Render('#screen');
+                    let screen = new Render('#screen');
 
                     console.log(buffers);
                     gltf.buffers = buffers;
@@ -74,7 +74,7 @@ export class Asset {
                     console.log(mesh);
 
                     let P = glMatrix.mat4.create();
-                    glMatrix.mat4.perspective(P, 45.0 * Math.PI / 180.0, game.width/game.height, 0.01, 100.0);
+                    glMatrix.mat4.perspective(P, 45.0 * Math.PI / 180.0, screen.width/screen.height, 0.01, 100.0);
                     // glMatrix.mat4.perspective(P, 30, 1, 0, 100);
                     console.log(P);
 
@@ -86,7 +86,7 @@ export class Asset {
                     let yawSpeed = 1;
                     Material.LoadMaterial('test').then(mat => {
                         console.log(mat);
-                        let mr = new MeshRenderer(game.gl, mesh, mat as Material);
+                        let mr = new MeshRenderer(screen, mesh, mat as Material);
                         mr.materials[0].setUniform('P', P);
                         mr.materials[0].setUniform('V', V);
                         mr.materials[0].setUniform('M', M);
@@ -94,7 +94,7 @@ export class Asset {
                         let task = () => {
                             glMatrix.mat4.rotateY(M, M, yawSpeed * Math.PI / 180);
                             mr.materials[0].setUniform('M', M);
-                            game.clear();
+                            screen.clear();
                             mr.render();
                             requestAnimationFrame(task);
                         }

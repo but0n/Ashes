@@ -50,7 +50,8 @@ export class Shader {
         let gl = this.ctx;
         for(let k in this.uniforms) {
             let uni: Uniform = this.uniforms[k];
-            if(uni.value) {
+            if(uni.value && uni.isDirty) {
+                uni.isDirty = false;
                 if(gl[uni.setter].length == 3 || !gl[uni.setter].length) {
                     gl[uni.setter](uni.location, false, uni.value);
                 } else {
@@ -121,6 +122,7 @@ export class Uniform {
         this.setter = Uniform.getUnifSetter(type);
     }
     value;
+    isDirty: boolean = false;
     static getUnifSetter(type: GLenum) {
         switch (type) {
             case WebGLRenderingContext.FLOAT:

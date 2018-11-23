@@ -15,6 +15,7 @@ export class Material {
 
     setUniform(key: string, value) {
         this.shader.uniforms[key].value = value;
+        this.shader.uniforms[key].isDirty = true;
         this.isDirty = true;
     }
 
