@@ -36,19 +36,4 @@ export class Render {
         this.gl.clear(mode);
     }
 
-    createBuffer(data: number | Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array | Uint32Array | Uint8ClampedArray | Float32Array | Float64Array | DataView | ArrayBuffer, type: number, usage = this.gl.STATIC_DRAW) {
-        let buffer = this.gl.createBuffer();
-        this.gl.bindBuffer(type, buffer);
-        this.gl.bufferData(type, data, usage);
-        return buffer;
-    }
-
-    createVBO(data, usage) {
-        return this.createBuffer(data, this.gl.ARRAY_BUFFER, usage);
-    }
-
-    createEBO(data, usage) {
-        return this.createBuffer(data, this.gl.ELEMENT_ARRAY_BUFFER, usage);
-    }
-
 }
