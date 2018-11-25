@@ -56,21 +56,28 @@ export class Asset {
                     let accessors: Accessor[] = [];
                     let gltfMesh = gltf.meshes[0].primitives[0];
                     console.log(gltfMesh);
-                    let {attributes} = gltfMesh;
-                    // accessors.push(new Accessor(gltf.accessors[0], ''))
-                    for(let att in attributes) {
-                        accessors.push(new Accessor(gltf.accessors[attributes[att]], att));
-                    }
-                    console.log(accessors);
 
-                    let ebo = new Accessor(gltf.accessors[gltfMesh.indices]);
-
+                    //  Buffers
                     let views: bufferView[] = [];
                     for(let bv of gltf.bufferViews) {
                         views.push(new bufferView(gltf.buffers[bv.buffer], bv));
                     }
+
+                    //  Vertexes
+                    let {attributes} = gltfMesh;
+                    for(let att in attributes) {
+                        let acc = new Accessor(gltf.accessors[attributes[att]], att);
+                        acc.bufferView = views[gltf.accessors[attributes[att]].bufferView];
+                        accessors.push(acc);
+                    }
+                    console.log(accessors);
+
+                    // Triangles
+                    let ebo = new Accessor(gltf.accessors[gltfMesh.indices]);
+                    ebo.bufferView = views[gltf.accessors[gltfMesh.indices].bufferView];
+
                     console.log(views);
-                    let mesh = new Mesh(accessors, views, ebo, gltfMesh.mode);
+                    let mesh = new Mesh(accessors, ebo, gltfMesh.mode);
                     console.log(mesh);
 
                     let P = glMatrix.mat4.create();

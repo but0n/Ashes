@@ -1,29 +1,25 @@
 export class Mesh {
-    accessors: Accessor[];
-    bufferViews: bufferView[];
-
-    indices: Accessor;
+    attributes: Accessor[]; // AKA Vertexes
+    indices: Accessor;      // AKA Triangles
     // Render mode
     mode: number;
 
 
-    constructor(accessors: Accessor[], bufferViews: bufferView[], indices: Accessor, mode = WebGL2RenderingContext.TRIANGLES) {
-        this.accessors = accessors;
-        this.bufferViews = bufferViews;
+    constructor(attributes: Accessor[], indices: Accessor, mode = WebGL2RenderingContext.TRIANGLES) {
+        this.attributes = attributes;
         this.indices = indices;
         this.mode = mode;
     }
 
     bindAccessorsVBO(gl: WebGL2RenderingContext, locationList) {
-        for(let acc of this.accessors) {
+        for(let acc of this.attributes) {
             // Ignore indeces
             let loc = locationList[acc.attribute];
             if(acc.attribute && loc!=undefined) {
-                let bufferView = this.bufferViews[acc.bufferView];
-                bufferView.bindBuffer(gl);
+                acc.bufferView.bindBuffer(gl);
                 gl.enableVertexAttribArray(loc);
                 let offset = acc.byteOffset;
-                gl.vertexAttribPointer(loc, acc.size, acc.componentType, acc.normalized, bufferView.byteStride, offset);
+                gl.vertexAttribPointer(loc, acc.size, acc.componentType, acc.normalized, acc.bufferView.byteStride, offset);
             } else {
                 console.warn(`Attribute '${acc.attribute}' not found!`);
             }
@@ -31,14 +27,12 @@ export class Mesh {
     }
 
     bindIndecesEBO(gl: WebGL2RenderingContext) {
-        let bufferView = this.bufferViews[this.indices.bufferView];
-        bufferView.bindBuffer(gl);
+        this.indices.bufferView.bindBuffer(gl);
     }
 
     drawElement(gl: WebGL2RenderingContext) {
         let acc = this.indices;
-        let offset = acc.byteOffset;
-        gl.drawElements(this.mode, acc.count, acc.componentType, offset);
+        gl.drawElements(this.mode, acc.count, acc.componentType, acc.byteOffset);
     }
 
 }
@@ -55,7 +49,7 @@ export class Accessor {
         "MAT4": 16,
     };
     attribute: string;
-    bufferView: number;
+    bufferView: bufferView;
     byteOffset: number;
     componentType: number;
     normalized: boolean;
