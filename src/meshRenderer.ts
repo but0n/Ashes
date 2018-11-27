@@ -52,4 +52,8 @@ export class MeshRenderer {
         this.mesh.bindIndecesEBO(this.gl);
         this.mesh.drawElement(this.gl);
     }
+    // According those discussion below, having actors draw themselves is not a good design
+    // https://gamedev.stackexchange.com/questions/50531/entity-component-based-engine-rendering-separation-from-logic
+    // https://gamedev.stackexchange.com/questions/14133/should-actors-in-a-game-be-responsible-for-drawing-themselves/14138#14138
+
 }
