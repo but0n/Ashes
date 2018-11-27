@@ -1,7 +1,13 @@
+import { Transform } from "../transform";
+
+interface gameObject extends HTMLElement {
+    components: {};
+}
 export class Entity {
     static createEntity() {
-        let gameObject: any = document.createElement('ash-entity');
+        let gameObject = document.createElement('ash-entity') as gameObject;
         gameObject.components = {};
+        this.addComponent(gameObject, new Transform());
         return gameObject;
     }
 
@@ -9,9 +15,9 @@ export class Entity {
         return document.querySelectorAll(selector);
     }
 
-    static addComponent(entity, component: Object) {
+    static addComponent(entity: gameObject, component: Object) {
         let componentName = component.constructor.name;
         entity.components[componentName] = component;
-        entity.dataset[componentName] = '';
+        entity.setAttribute(componentName, '');
     }
 }

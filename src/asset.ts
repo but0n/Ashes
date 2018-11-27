@@ -1,9 +1,9 @@
-/// <reference path="../node_modules/gl-matrix-ts/dist/index.d.ts" />
 import { Mesh, Accessor, bufferView } from "./mesh";
 import { MeshRenderer } from "./meshRenderer";
 import { Material } from "./material";
 import * as glMatrix from "../node_modules/gl-matrix-ts/dist/index";
 import { Render } from "./webgl2/render";
+import { Entity } from "./ECS/entity";
 
 export class Asset {
     static load(url, type: XMLHttpRequestResponseType = 'json') {
@@ -101,6 +101,9 @@ export class Asset {
                         mr.materials[0].setUniform('M', M);
                         mr.materials[0].setUniform('nM', nM);
                         console.log(mr);
+                        let obj = Entity.createEntity();
+                        Entity.addComponent(obj, mr);
+                        console.log(obj);
                         let task = () => {
                             glMatrix.mat4.rotateY(M, M, yawSpeed * Math.PI / 180);
                             glMatrix.mat4.invert(nM, M);
