@@ -52,7 +52,7 @@ export class Shader {
             let uni: Uniform = this.uniforms[k];
             if(uni.value && uni.isDirty) {
                 uni.isDirty = false;
-                if(gl[uni.setter].length == 3 || !gl[uni.setter].length) {
+                if(uni.argLength == 3 || !uni.argLength) {
                     gl[uni.setter](uni.location, false, uni.value);
                 } else {
                     gl[uni.setter](uni.location, uni.value);
@@ -78,7 +78,9 @@ export class Shader {
         for(let i = 0; i < amount; i++) {
             const {name, type} = gl.getActiveUniform(shader, i);
             const location = gl.getUniformLocation(shader, name);
-            uniforms[name] = new Uniform(location, type);
+            const setter = Uniform.getUnifSetter(type);
+            const length = gl[setter].length;
+            uniforms[name] = new Uniform(location, type, setter, length);
         }
         return uniforms;
     }
@@ -116,10 +118,12 @@ export class Uniform {
     location: WebGLUniformLocation;
     type: GLenum;
     setter: string;
-    constructor(location: WebGLUniformLocation, type: GLenum) {
+    argLength: number;
+    constructor(location: WebGLUniformLocation, type: GLenum, setter:string, argLength: number) {
         this.location = location;
         this.type = type;
-        this.setter = Uniform.getUnifSetter(type);
+        this.setter = setter;
+        this.argLength = argLength;
     }
     value;
     isDirty: boolean = false;

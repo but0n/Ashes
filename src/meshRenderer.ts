@@ -34,23 +34,23 @@ export class MeshRenderer {
         }
         this.vao = this.gl.createVertexArray();
         this.bindVAO(this.vao);
-        this.mesh.bindAccessorsVBO(this.gl, this.materials[0].locationList);
+        Mesh.bindAccessorsVBO(this.mesh, this.gl, this.materials[0].locationList);
         this.bindVAO(null);
     }
 
-    update() {
-        if(this.materials[0].isDirty) {
-            this.materials[0].update(this.gl);
+    static updateMaterial(target: MeshRenderer) {
+        if(target.materials[0].isDirty) {
+            target.materials[0].update(target.gl);
         }
     }
 
 
-    render() {
-        this.update();
-        this.useMaterial(0);
-        this.bindVAO(this.vao);
-        this.mesh.bindIndecesEBO(this.gl);
-        this.mesh.drawElement(this.gl);
+    static render(target: MeshRenderer) {
+        this.updateMaterial(target);    // Update uniforms of material
+        target.useMaterial(0);  // Select material
+        target.bindVAO(target.vao); // Bind VAO
+        Mesh.bindIndecesEBO(target.mesh, target.gl);
+        Mesh.drawElement(target.mesh, target.gl);
     }
     // According those discussion below, having actors draw themselves is not a good design
     // https://gamedev.stackexchange.com/questions/50531/entity-component-based-engine-rendering-separation-from-logic

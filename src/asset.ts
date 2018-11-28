@@ -111,7 +111,7 @@ export class Asset {
                             mr.materials[0].setUniform('M', M);
                             mr.materials[0].setUniform('nM', nM);
                             screen.clear();
-                            mr.render();
+                            MeshRenderer.render(mr);
                             requestAnimationFrame(task);
                         }
                         requestAnimationFrame(task)

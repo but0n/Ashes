@@ -11,8 +11,8 @@ export class Mesh {
         this.mode = mode;
     }
 
-    bindAccessorsVBO(gl: WebGL2RenderingContext, locationList) {
-        for(let acc of this.attributes) {
+    static bindAccessorsVBO(target: Mesh, gl: WebGL2RenderingContext, locationList) {
+        for(let acc of target.attributes) {
             // Ignore indeces
             let loc = locationList[acc.attribute];
             if(acc.attribute && loc!=undefined) {
@@ -26,13 +26,13 @@ export class Mesh {
         }
     }
 
-    bindIndecesEBO(gl: WebGL2RenderingContext) {
-        this.indices.bufferView.bindBuffer(gl);
+    static bindIndecesEBO(target: Mesh, gl: WebGL2RenderingContext) {
+        target.indices.bufferView.bindBuffer(gl);
     }
 
-    drawElement(gl: WebGL2RenderingContext) {
-        let acc = this.indices;
-        gl.drawElements(this.mode, acc.count, acc.componentType, acc.byteOffset);
+    static drawElement(target: Mesh, gl: WebGL2RenderingContext) {
+        let acc = target.indices;
+        gl.drawElements(target.mode, acc.count, acc.componentType, acc.byteOffset);
     }
 
 }
