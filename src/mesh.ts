@@ -16,7 +16,7 @@ export class Mesh {
             // Ignore indeces
             let loc = locationList[acc.attribute];
             if(acc.attribute && loc!=undefined) {
-                acc.bufferView.bindBuffer(gl);
+                bufferView.bindBuffer(acc.bufferView, gl);
                 gl.enableVertexAttribArray(loc);
                 let offset = acc.byteOffset;
                 gl.vertexAttribPointer(loc, acc.size, acc.componentType, acc.normalized, acc.bufferView.byteStride, offset);
@@ -27,7 +27,7 @@ export class Mesh {
     }
 
     static bindIndecesEBO(target: Mesh, gl: WebGL2RenderingContext) {
-        target.indices.bufferView.bindBuffer(gl);
+        bufferView.bindBuffer(target.indices.bufferView, gl);
     }
 
     static drawElement(target: Mesh, gl: WebGL2RenderingContext) {
@@ -85,18 +85,18 @@ export class bufferView {
         this.dataView = new DataView(rawData, this.byteOffset, this.byteLength);
         this.target = target;
     }
-    updateBuffer(gl: WebGL2RenderingContext, usage = WebGL2RenderingContext.STATIC_DRAW) {
-        if(this.buffer) {
-            gl.deleteBuffer(this.buffer);
+    static updateBuffer(bView: bufferView, gl: WebGL2RenderingContext, usage = WebGL2RenderingContext.STATIC_DRAW) {
+        if(bView.buffer) {
+            gl.deleteBuffer(bView.buffer);
         }
-        this.buffer = gl.createBuffer();
-        gl.bindBuffer(this.target, this.buffer);
-        gl.bufferData(this.target, this.dataView, usage);
+        bView.buffer = gl.createBuffer();
+        gl.bindBuffer(bView.target, bView.buffer);
+        gl.bufferData(bView.target, bView.dataView, usage);
     }
-    bindBuffer(gl: WebGL2RenderingContext) {
-        if(!this.buffer) {
-            this.updateBuffer(gl);
+    static bindBuffer(bView: bufferView, gl: WebGL2RenderingContext) {
+        if(!bView.buffer) {
+            this.updateBuffer(bView, gl);
         }
-        gl.bindBuffer(this.target, this.buffer);
+        gl.bindBuffer(bView.target, bView.buffer);
     }
 }

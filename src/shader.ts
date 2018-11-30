@@ -12,44 +12,44 @@ export class Shader {
     ctx: WebGL2RenderingContext;
     program: WebGLProgram;
 
-    isDirty: boolean = true;
+    isDirty: boolean = true;    // Shader sources status
 
     constructor(vertCode, fragCode) {
         this.vertexSource = vertCode;
         this.fragmentSource = fragCode;
     }
 
-    update(ctx) {
-        this.isDirty = false;
+    static buildProgram(shader: Shader, ctx) {
+        shader.isDirty = false;
         // if(!this.isDirty) return;
         // If current program needs recompile
-        this.ctx = ctx;
+        shader.ctx = ctx;
         // if WebGL shader is already exist, then dispose them
-        if(this.vertex) {   // Vertex shader
-            this.ctx.deleteShader(this.vertex);
+        if(shader.vertex) {   // Vertex shader
+            shader.ctx.deleteShader(shader.vertex);
         }
-        this.vertex = Shader.compileShader(this.ctx, this.ctx.VERTEX_SHADER, this.vertexSource);
+        shader.vertex = Shader.compileShader(shader.ctx, shader.ctx.VERTEX_SHADER, shader.vertexSource);
 
-        if(this.fragment) { // Fragment shader
-            this.ctx.deleteShader(this.fragment);
+        if(shader.fragment) { // Fragment shader
+            shader.ctx.deleteShader(shader.fragment);
         }
-        this.fragment = Shader.compileShader(this.ctx, this.ctx.FRAGMENT_SHADER, this.fragmentSource);
+        shader.fragment = Shader.compileShader(shader.ctx, shader.ctx.FRAGMENT_SHADER, shader.fragmentSource);
 
-        if(this.program) {  // Shader Program
-            this.ctx.deleteProgram(this.program);
+        if(shader.program) {  // Shader Program
+            shader.ctx.deleteProgram(shader.program);
         }
-        this.program = Shader.createShaderProgram(this.ctx, this.vertex, this.fragment);
+        shader.program = Shader.createShaderProgram(shader.ctx, shader.vertex, shader.fragment);
 
 
         // Pickup details
-        this.attributes = Shader.pickupActiveAttributes(this.ctx, this.program);
-        this.uniforms = Shader.pickupActiveUniforms(this.ctx, this.program);
+        shader.attributes = Shader.pickupActiveAttributes(shader.ctx, shader.program);
+        shader.uniforms = Shader.pickupActiveUniforms(shader.ctx, shader.program);
     }
 
-    updateData() {
-        let gl = this.ctx;
-        for(let k in this.uniforms) {
-            let uni: Uniform = this.uniforms[k];
+    static updateUniform(shader: Shader) {
+        let gl = shader.ctx;
+        for(let k in shader.uniforms) {
+            let uni: Uniform = shader.uniforms[k];
             if(uni.value && uni.isDirty) {
                 uni.isDirty = false;
                 if(uni.argLength == 3 || !uni.argLength) {

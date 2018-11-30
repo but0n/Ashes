@@ -10,45 +10,45 @@ export class MeshRenderer {
     constructor({gl}, mesh: Mesh, material: Material) {
         this.gl = gl;
         this.mesh = mesh;
-        this.attachMaterial(material);
+        MeshRenderer.attachMaterial(this, material);
     }
 
-    useMaterial(index) {
-        this.gl.useProgram(this.materials[index].shader.program);
+    static useMaterial(mr: MeshRenderer, index) {
+        mr.gl.useProgram(mr.materials[index].shader.program);
     }
 
-    attachMaterial(mat: Material) {
-        mat.update(this.gl); // the first time the material get context
-        this.materials.push(mat);
-        this.useMaterial(0); // NOTE: Needs confirm
-        this.updateVAO();
+    static attachMaterial(mr: MeshRenderer, mat: Material) {
+        mr.materials.push(mat);
+        Material.updateUniform(mat, mr.gl); // the first time this material get context
+        this.useMaterial(mr, 0);
+        this.updateVAO(mr);
     }
 
-    bindVAO(vao = this.vao) {
-        this.gl.bindVertexArray(vao);
+    static bindVAO(mr: MeshRenderer, vao) {
+        mr.gl.bindVertexArray(vao);
     }
 
-    updateVAO() {
-        if(this.vao) {
-            this.gl.deleteVertexArray(this.vao);
+    static updateVAO(mr: MeshRenderer) {
+        if(mr.vao) {
+            mr.gl.deleteVertexArray(mr.vao);
         }
-        this.vao = this.gl.createVertexArray();
-        this.bindVAO(this.vao);
-        Mesh.bindAccessorsVBO(this.mesh, this.gl, this.materials[0].locationList);
-        this.bindVAO(null);
+        mr.vao = mr.gl.createVertexArray();
+        this.bindVAO(mr, mr.vao);
+        Mesh.bindAccessorsVBO(mr.mesh, mr.gl, mr.materials[0].shader.attributes);
+        this.bindVAO(mr, null);
     }
 
     static updateMaterial(target: MeshRenderer) {
         if(target.materials[0].isDirty) {
-            target.materials[0].update(target.gl);
+            Material.updateUniform(target.materials[0], target.gl);
         }
     }
 
 
     static render(target: MeshRenderer) {
         this.updateMaterial(target);    // Update uniforms of material
-        target.useMaterial(0);  // Select material
-        target.bindVAO(target.vao); // Bind VAO
+        this.useMaterial(target, 0);  // Select material
+        this.bindVAO(target, target.vao); // Bind VAO
         Mesh.bindIndecesEBO(target.mesh, target.gl);
         Mesh.drawElement(target.mesh, target.gl);
     }

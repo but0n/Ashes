@@ -9,50 +9,33 @@ export class Material {
         this.shader = shader;
     }
 
-    get locationList() {
-        return this.shader.attributes;
+    static setUniform(mat: Material, key: string, value) {
+        mat.shader.uniforms[key].value = value;
+        mat.shader.uniforms[key].isDirty = true;
+        mat.isDirty = true;
     }
 
-    setUniform(key: string, value) {
-        this.shader.uniforms[key].value = value;
-        this.shader.uniforms[key].isDirty = true;
-        this.isDirty = true;
-    }
-
-    update(ctx: WebGL2RenderingContext) {
-        this.isDirty = false;
-        if(this.shader.isDirty) {
-            this.shader.update(ctx);
+    static updateUniform(mat: Material, ctx: WebGL2RenderingContext) {
+        mat.isDirty = false;
+        if(mat.shader.isDirty) {
+            Shader.buildProgram(mat.shader, ctx);
         }
-        this.shader.updateData();
+        Shader.updateUniform(mat.shader);
     }
 
     static SHADER_PATH = 'static/shader/';
-    static LoadShaderProgram(url) {
+    static async LoadShaderProgram(url) {
         url = this.SHADER_PATH + url;
-        let vertFile = url + '.vs.glsl';
-        let fragFile = url + '.fs.glsl';
-        return new Promise((resolve, reject) => {
-            Promise.all([
-                Asset.load(vertFile, 'text'),
-                Asset.load(fragFile, 'text')
-            ]).then(([vert, frag]) => {
-                console.log(vert);
-                console.log(frag);
-                let program = new Shader(vert, frag);
-                resolve(program);
-            });
-        });
+        let vertPath = url + '.vs.glsl';
+        let fragPath = url + '.fs.glsl';
+        let [vert, frag] = await Promise.all([vertPath, fragPath].map(path => Asset.load(path, 'text')));
+        console.log(vert);
+        console.log(frag);
+        return new Shader(vert, frag);
     }
 
-    static LoadMaterial(matName) {
-        return new Promise((resolve, reject) => {
-            this.LoadShaderProgram(matName).then((shader: Shader) => {
-                let mat = new Material(shader);
-                console.log(mat);
-                resolve(mat);
-            });
-        })
-
+    static async LoadMaterial(matName) {
+        let shader = await this.LoadShaderProgram(matName);
+        return new Material(shader);
     }
 }

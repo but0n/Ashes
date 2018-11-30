@@ -80,6 +80,8 @@ export class Asset {
         // Load material
         let mat = await Material.LoadMaterial('test');
         let mr = new MeshRenderer(screen, mesh, mat as Material);
+        let data = JSON.parse(JSON.stringify(mr));
+        console.warn(data);
 
 
         // render
@@ -100,10 +102,10 @@ export class Asset {
         console.log(mat);
 
 
-        mr.materials[0].setUniform('P', P);
-        mr.materials[0].setUniform('V', V);
-        mr.materials[0].setUniform('M', M);
-        mr.materials[0].setUniform('nM', nM);
+        Material.setUniform(mr.materials[0], 'P', P);
+        Material.setUniform(mr.materials[0], 'V', V);
+        Material.setUniform(mr.materials[0], 'M', M);
+        Material.setUniform(mr.materials[0], 'nM', nM);
         console.log(mr);
         let obj = Entity.createEntity();
         Entity.addComponent(obj, mr);
@@ -112,8 +114,8 @@ export class Asset {
             glMatrix.mat4.rotateY(M, M, yawSpeed * Math.PI / 180);
             glMatrix.mat4.invert(nM, M);
             glMatrix.mat4.transpose(nM, nM);
-            mr.materials[0].setUniform('M', M);
-            mr.materials[0].setUniform('nM', nM);
+            Material.setUniform(mr.materials[0], 'M', M);
+            Material.setUniform(mr.materials[0], 'nM', nM);
             screen.clear();
             MeshRenderer.render(mr);
             requestAnimationFrame(task);
