@@ -4,6 +4,7 @@ import { Material } from "./material";
 import * as glMatrix from "../node_modules/gl-matrix-ts/dist/index";
 import { Render } from "./webgl2/render";
 import { gltfScene } from "./gltfScene";
+import { EntityMgr, Entity } from "./ECS/entityMgr";
 
 export class Asset {
     static load(url, type: XMLHttpRequestResponseType = 'json') {
@@ -54,33 +55,34 @@ export class Asset {
 
 
         //  BufferViews
-        gltf.bufferViews = gltf.bufferViews.map((bv) => new bufferView(gltf.buffers[bv.buffer], bv));
+        // gltf.bufferViews = gltf.bufferViews.map((bv) => new bufferView(gltf.buffers[bv.buffer], bv));
         // console.warn(gltf.bufferViews);
 
         // Mesh =====================================
-        let accessors: Accessor[] = [];
-        let gltfMesh = gltf.meshes[0].primitives[0];
-        //  Vertexes
-        let { attributes } = gltfMesh;
-        for (let att in attributes) {
-            let acc = new Accessor(gltf.accessors[attributes[att]], att);
-            acc.bufferView = gltf.bufferViews[gltf.accessors[attributes[att]].bufferView];
-            accessors.push(acc);
-        }
-        // console.log(accessors);
+        // let accessors: Accessor[] = [];
+        // let gltfMesh = gltf.meshes[0].primitives[0];
+        // //  Vertexes
+        // let { attributes } = gltfMesh;
+        // for (let att in attributes) {
+        //     let acc = new Accessor(gltf.accessors[attributes[att]], att);
+        //     acc.bufferView = gltf.bufferViews[gltf.accessors[attributes[att]].bufferView];
+        //     accessors.push(acc);
+        // }
+        // // console.log(accessors);
 
-        // Triangles
-        let ebo = new Accessor(gltf.accessors[gltfMesh.indices]);
-        ebo.bufferView = gltf.bufferViews[gltf.accessors[gltfMesh.indices].bufferView];
+        // // Triangles
+        // let ebo = new Accessor(gltf.accessors[gltfMesh.indices]);
+        // ebo.bufferView = gltf.bufferViews[gltf.accessors[gltfMesh.indices].bufferView];
 
-        let mesh = new Mesh(accessors, ebo, gltfMesh.mode);
-        // console.log(mesh);
+        // let mesh = new Mesh(accessors, ebo, gltfMesh.mode);
+        // // console.log(mesh);
 
 
         // Load material
         let mat = await Material.LoadMaterial('test');
-        let mr = new MeshRenderer(screen, mesh, mat as Material);
-        let data = JSON.parse(JSON.stringify(mr));
+        gltf.defaultMat = mat;
+        // let mr = new MeshRenderer(screen, mesh, mat as Material);
+        // let data = JSON.parse(JSON.stringify(mr));
         // console.warn(data);
 
 
@@ -99,26 +101,29 @@ export class Asset {
         let nM = glMatrix.mat4.create();
         let yawSpeed = 1;
 
+        let scene = new gltfScene(gltf, screen);
 
+        let ent = EntityMgr.find('ash-entity[meshrenderer]')[0] as Entity;
+        let mr = (ent.components as any).MeshRenderer;
+        console.log(mr);
         Material.setUniform(mr.materials[0], 'P', P);
         Material.setUniform(mr.materials[0], 'V', V);
         Material.setUniform(mr.materials[0], 'M', M);
         Material.setUniform(mr.materials[0], 'nM', nM);
+        MeshRenderer.render(mr);
 
-        let task = () => {
-            glMatrix.mat4.rotateY(M, M, yawSpeed * Math.PI / 180);
-            glMatrix.mat4.invert(nM, M);
-            glMatrix.mat4.transpose(nM, nM);
-            Material.setUniform(mr.materials[0], 'M', M);
-            Material.setUniform(mr.materials[0], 'nM', nM);
-            screen.clear();
-            MeshRenderer.render(mr);
-            requestAnimationFrame(task);
-        }
-        requestAnimationFrame(task)
+        // let task = () => {
+        //     glMatrix.mat4.rotateY(M, M, yawSpeed * Math.PI / 180);
+        //     glMatrix.mat4.invert(nM, M);
+        //     glMatrix.mat4.transpose(nM, nM);
+        //     Material.setUniform(mr.materials[0], 'M', M);
+        //     Material.setUniform(mr.materials[0], 'nM', nM);
+        //     screen.clear();
+        //     MeshRenderer.render(mr);
+        //     requestAnimationFrame(task);
+        // }
+        // requestAnimationFrame(task)
         // mr.render();
-
-        let scene = new gltfScene(gltf);
 
         return gltf;
 
