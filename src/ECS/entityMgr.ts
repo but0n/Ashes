@@ -1,7 +1,7 @@
 import { Transform } from "../transform";
 
 export interface Entity extends HTMLElement {
-    components: {};
+    components: any;
 }
 export class EntityMgr {
     static create() {
@@ -12,7 +12,8 @@ export class EntityMgr {
     }
 
     static find(selector:string) {
-        return document.querySelectorAll(selector);
+        let nodes = Array.from(document.querySelectorAll(selector)); // convert NodeList to Array
+        return nodes as Entity[];
     }
 
     static addComponent(entity: Entity, component: Object) {

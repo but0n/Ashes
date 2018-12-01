@@ -1,4 +1,3 @@
-import { Mesh, Accessor, bufferView } from "./mesh";
 import { MeshRenderer } from "./meshRenderer";
 import { Material } from "./material";
 import * as glMatrix from "../node_modules/gl-matrix-ts/dist/index";
@@ -101,28 +100,29 @@ export class Asset {
         let nM = glMatrix.mat4.create();
         let yawSpeed = 1;
 
-        let scene = new gltfScene(gltf, screen);
+        let {scene} = new gltfScene(gltf, screen);
+        screen.canvas.appendChild(scene);
 
-        let ent = EntityMgr.find('ash-entity[meshrenderer]')[0] as Entity;
-        let mr = (ent.components as any).MeshRenderer;
+        let ent = EntityMgr.find('ash-entity[meshrenderer]')[0];
+        console.log(EntityMgr.find('ash-entity[meshrenderer]'))
+        let mr = ent.components.MeshRenderer;
         console.log(mr);
         Material.setUniform(mr.materials[0], 'P', P);
         Material.setUniform(mr.materials[0], 'V', V);
         Material.setUniform(mr.materials[0], 'M', M);
         Material.setUniform(mr.materials[0], 'nM', nM);
-        MeshRenderer.render(mr);
 
-        // let task = () => {
-        //     glMatrix.mat4.rotateY(M, M, yawSpeed * Math.PI / 180);
-        //     glMatrix.mat4.invert(nM, M);
-        //     glMatrix.mat4.transpose(nM, nM);
-        //     Material.setUniform(mr.materials[0], 'M', M);
-        //     Material.setUniform(mr.materials[0], 'nM', nM);
-        //     screen.clear();
-        //     MeshRenderer.render(mr);
-        //     requestAnimationFrame(task);
-        // }
-        // requestAnimationFrame(task)
+        let task = () => {
+            glMatrix.mat4.rotateY(M, M, yawSpeed * Math.PI / 180);
+            glMatrix.mat4.invert(nM, M);
+            glMatrix.mat4.transpose(nM, nM);
+            Material.setUniform(mr.materials[0], 'M', M);
+            Material.setUniform(mr.materials[0], 'nM', nM);
+            screen.clear();
+            MeshRenderer.render(mr);
+            requestAnimationFrame(task);
+        }
+        requestAnimationFrame(task)
         // mr.render();
 
         return gltf;

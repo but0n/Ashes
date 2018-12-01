@@ -6,6 +6,7 @@ import { Render } from "./webgl2/render";
 export class gltfScene {
     gltf;
     screen: Render;
+    scene = EntityMgr.create();
     constructor(gltf, screen: Render) {
         this.screen = screen;
         this.gltf = gltf;
@@ -42,7 +43,7 @@ export class gltfScene {
         for(let r of roots) {
             let root = this.parseNode(r, nodes);
             console.log(root);
-            this.screen.canvas.appendChild(root);
+            this.scene.appendChild(root);
         }
         console.log(gltf);
     }
