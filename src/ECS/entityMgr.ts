@@ -1,21 +1,21 @@
 import { Transform } from "../transform";
 
-interface gameObject extends HTMLElement {
+export interface Entity extends HTMLElement {
     components: {};
 }
-export class Entity {
-    static createEntity() {
-        let gameObject = document.createElement('ash-entity') as gameObject;
+export class EntityMgr {
+    static create() {
+        let gameObject = document.createElement('ash-entity') as Entity;
         gameObject.components = {};
         this.addComponent(gameObject, new Transform());
         return gameObject;
     }
 
-    static findEntity(selector:string) {
+    static find(selector:string) {
         return document.querySelectorAll(selector);
     }
 
-    static addComponent(entity: gameObject, component: Object) {
+    static addComponent(entity: Entity, component: Object) {
         let componentName = component.constructor.name;
         entity.components[componentName] = component;
         entity.setAttribute(componentName, '');

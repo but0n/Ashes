@@ -3,7 +3,7 @@ import { MeshRenderer } from "./meshRenderer";
 import { Material } from "./material";
 import * as glMatrix from "../node_modules/gl-matrix-ts/dist/index";
 import { Render } from "./webgl2/render";
-import { Entity } from "./ECS/entity";
+import { gltfScene } from "./gltfScene";
 
 export class Asset {
     static load(url, type: XMLHttpRequestResponseType = 'json') {
@@ -47,7 +47,7 @@ export class Asset {
 
         // Download buffers
         gltf.buffers = await Promise.all(gltf.buffers.map(({ uri }) => this.loadBuffer(root + uri)));
-        console.log(gltf.buffers);
+        // console.log(gltf.buffers);
         // Download Images
         // gltf.buffers = await Promise.all(gltf.buffers.map(({ uri }) => this.loadBuffer(root + uri)));
         // console.log(gltf.buffers);
@@ -55,7 +55,7 @@ export class Asset {
 
         //  BufferViews
         gltf.bufferViews = gltf.bufferViews.map((bv) => new bufferView(gltf.buffers[bv.buffer], bv));
-        console.warn(gltf.bufferViews);
+        // console.warn(gltf.bufferViews);
 
         // Mesh =====================================
         let accessors: Accessor[] = [];
@@ -67,21 +67,21 @@ export class Asset {
             acc.bufferView = gltf.bufferViews[gltf.accessors[attributes[att]].bufferView];
             accessors.push(acc);
         }
-        console.log(accessors);
+        // console.log(accessors);
 
         // Triangles
         let ebo = new Accessor(gltf.accessors[gltfMesh.indices]);
         ebo.bufferView = gltf.bufferViews[gltf.accessors[gltfMesh.indices].bufferView];
 
         let mesh = new Mesh(accessors, ebo, gltfMesh.mode);
-        console.log(mesh);
+        // console.log(mesh);
 
 
         // Load material
         let mat = await Material.LoadMaterial('test');
         let mr = new MeshRenderer(screen, mesh, mat as Material);
         let data = JSON.parse(JSON.stringify(mr));
-        console.warn(data);
+        // console.warn(data);
 
 
         // render
@@ -89,7 +89,6 @@ export class Asset {
         let P = glMatrix.mat4.create();
         glMatrix.mat4.perspective(P, 45.0 * Math.PI / 180.0, screen.width / screen.height, 0.01, 100.0);
         // glMatrix.mat4.perspective(P, 30, 1, 0, 100);
-        console.log(P);
 
         let M = glMatrix.mat4.create();
         glMatrix.mat4.rotateX(M, M, 45 * Math.PI / 180);
@@ -99,17 +98,13 @@ export class Asset {
 
         let nM = glMatrix.mat4.create();
         let yawSpeed = 1;
-        console.log(mat);
 
 
         Material.setUniform(mr.materials[0], 'P', P);
         Material.setUniform(mr.materials[0], 'V', V);
         Material.setUniform(mr.materials[0], 'M', M);
         Material.setUniform(mr.materials[0], 'nM', nM);
-        console.log(mr);
-        let obj = Entity.createEntity();
-        Entity.addComponent(obj, mr);
-        console.log(obj);
+
         let task = () => {
             glMatrix.mat4.rotateY(M, M, yawSpeed * Math.PI / 180);
             glMatrix.mat4.invert(nM, M);
@@ -122,6 +117,9 @@ export class Asset {
         }
         requestAnimationFrame(task)
         // mr.render();
+
+        let scene = new gltfScene(gltf);
+
         return gltf;
 
     }
