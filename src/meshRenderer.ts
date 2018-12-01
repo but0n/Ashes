@@ -1,7 +1,9 @@
 import { Mesh } from "./mesh";
 import { Material } from "./material";
+import { Entity } from "./ECS/entityMgr";
 
 export class MeshRenderer {
+    entity: Entity;
     gl: WebGL2RenderingContext;
     mesh: Mesh;
     materials: Material[] = [];

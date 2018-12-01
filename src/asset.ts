@@ -1,9 +1,10 @@
 import { MeshRenderer } from "./meshRenderer";
 import { Material } from "./material";
-import * as glMatrix from "../node_modules/gl-matrix-ts/dist/index";
+import { vec3, mat4, quat } from "../node_modules/gl-matrix/lib/gl-matrix";
 import { Render } from "./webgl2/render";
 import { gltfScene } from "./gltfScene";
 import { EntityMgr, Entity } from "./ECS/entityMgr";
+import { Transform } from "./transform";
 
 export class Asset {
     static load(url, type: XMLHttpRequestResponseType = 'json') {
@@ -47,83 +48,61 @@ export class Asset {
 
         // Download buffers
         gltf.buffers = await Promise.all(gltf.buffers.map(({ uri }) => this.loadBuffer(root + uri)));
-        // console.log(gltf.buffers);
-        // Download Images
-        // gltf.buffers = await Promise.all(gltf.buffers.map(({ uri }) => this.loadBuffer(root + uri)));
-        // console.log(gltf.buffers);
-
-
-        //  BufferViews
-        // gltf.bufferViews = gltf.bufferViews.map((bv) => new bufferView(gltf.buffers[bv.buffer], bv));
-        // console.warn(gltf.bufferViews);
-
-        // Mesh =====================================
-        // let accessors: Accessor[] = [];
-        // let gltfMesh = gltf.meshes[0].primitives[0];
-        // //  Vertexes
-        // let { attributes } = gltfMesh;
-        // for (let att in attributes) {
-        //     let acc = new Accessor(gltf.accessors[attributes[att]], att);
-        //     acc.bufferView = gltf.bufferViews[gltf.accessors[attributes[att]].bufferView];
-        //     accessors.push(acc);
-        // }
-        // // console.log(accessors);
-
-        // // Triangles
-        // let ebo = new Accessor(gltf.accessors[gltfMesh.indices]);
-        // ebo.bufferView = gltf.bufferViews[gltf.accessors[gltfMesh.indices].bufferView];
-
-        // let mesh = new Mesh(accessors, ebo, gltfMesh.mode);
-        // // console.log(mesh);
 
 
         // Load material
         let mat = await Material.LoadMaterial('test');
         gltf.defaultMat = mat;
-        // let mr = new MeshRenderer(screen, mesh, mat as Material);
-        // let data = JSON.parse(JSON.stringify(mr));
-        // console.warn(data);
 
 
-        // render
 
-        let P = glMatrix.mat4.create();
-        glMatrix.mat4.perspective(P, 45.0 * Math.PI / 180.0, screen.width / screen.height, 0.01, 100.0);
-        // glMatrix.mat4.perspective(P, 30, 1, 0, 100);
+        let P = mat4.create();
+        mat4.perspective(P, 45.0 * Math.PI / 180.0, screen.width / screen.height, 0.01, 100.0);
 
-        let M = glMatrix.mat4.create();
-        glMatrix.mat4.rotateX(M, M, 45 * Math.PI / 180);
-        glMatrix.mat4.rotateY(M, M, 45 * Math.PI / 180);
-        let V = glMatrix.mat4.create();
-        glMatrix.mat4.lookAt(V, glMatrix.vec3.fromValues(0, 0, 20), glMatrix.vec3.fromValues(0, 0, 0), glMatrix.vec3.fromValues(0, 1, 0));
+        let V = mat4.create();
+        mat4.lookAt(V, vec3.fromValues(0, 8, 10), vec3.fromValues(0, 3, 0), vec3.fromValues(0, 1, 0));
 
-        let nM = glMatrix.mat4.create();
-        let yawSpeed = 1;
+        // let nM = glMatrix.mat4.create();
+        let yawAngle = 1;
 
         let {scene} = new gltfScene(gltf, screen);
+        console.log(scene);
         screen.canvas.appendChild(scene);
 
-        let ent = EntityMgr.find('ash-entity[meshrenderer]')[0];
-        console.log(EntityMgr.find('ash-entity[meshrenderer]'))
-        let mr = ent.components.MeshRenderer;
-        console.log(mr);
-        Material.setUniform(mr.materials[0], 'P', P);
-        Material.setUniform(mr.materials[0], 'V', V);
-        Material.setUniform(mr.materials[0], 'M', M);
-        Material.setUniform(mr.materials[0], 'nM', nM);
+        let meshRendererComponents: MeshRenderer[] = EntityMgr.find('ash-entity[meshrenderer]').map(({components}) => components.MeshRenderer);
+        for(let mr of meshRendererComponents) {
+            // Camera stuff
+            Material.setUniform(mr.materials[0], 'P', P);
+            Material.setUniform(mr.materials[0], 'V', V);
+        }
+
+
+        let cubeParent = meshRendererComponents[0].entity.parentElement as Entity;
+        let parentTrans: Transform = cubeParent.components.Transform;
+        quat.fromEuler(parentTrans.quaternion, 0, 0, 0);
+
+        let transComponents: Transform[] = EntityMgr.find('ash-entity[transform]').map(({components}) => components.Transform);
 
         let task = () => {
-            glMatrix.mat4.rotateY(M, M, yawSpeed * Math.PI / 180);
-            glMatrix.mat4.invert(nM, M);
-            glMatrix.mat4.transpose(nM, nM);
-            Material.setUniform(mr.materials[0], 'M', M);
-            Material.setUniform(mr.materials[0], 'nM', nM);
             screen.clear();
-            MeshRenderer.render(mr);
+
+            for(let trans of transComponents) {
+                // if(trans.isDirty)
+                Transform.updateMatrix(trans);
+            }
+
+
+            for(let mr of meshRendererComponents) {
+                let trans: Transform = mr.entity.components.Transform;
+                quat.fromEuler(trans.quaternion, 0, yawAngle, 0);
+                yawAngle += 0.5;
+                Material.setUniform(mr.materials[0], 'M', trans.worldMatrix);
+                Material.setUniform(mr.materials[0], 'nM', trans.worldNormalMatrix);
+                MeshRenderer.render(mr);
+            }
             requestAnimationFrame(task);
         }
-        requestAnimationFrame(task)
-        // mr.render();
+        requestAnimationFrame(task);
 
         return gltf;
 

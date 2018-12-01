@@ -1,6 +1,8 @@
-import { vec3, mat4, vec4 } from "../node_modules/gl-matrix-ts/dist/index";
+import { vec3, mat4, vec4 } from "../node_modules/gl-matrix/lib/gl-matrix";
+import { Entity } from "./ECS/entityMgr";
 
 export class Transform {
+    entity: Entity;
     translate: Float32Array;
     rotate: Float32Array;
     scale: Float32Array;
@@ -12,7 +14,7 @@ export class Transform {
     constructor() {
         this.translate = vec3.fromValues(0, 0, 0);
         this.rotate = vec3.fromValues(0, 0, 0);
-        this.scale = vec3.fromValues(0, 0, 0);
+        this.scale = vec3.fromValues(1, 1, 1);
         this.quaternion = vec4.fromValues(0, 0, 0, 1);
         // RTS
         this.localMatrix = mat4.create();
@@ -22,11 +24,20 @@ export class Transform {
         mat4.identity(this.worldMatrix);
         mat4.identity(this.worldNormalMatrix);
     }
-    static updateMatrix(trans: Transform, world: Float32Array = trans.worldMatrix) {
+    static updateMatrix(trans: Transform) {
         trans.isDirty = false;
         // Calculate local matrix
         mat4.fromRotationTranslationScale(trans.localMatrix, trans.quaternion, trans.translate, trans.scale);
-        // Calculate world matrix
-        mat4.mul(trans.worldMatrix, trans.localMatrix, world);
+        mat4.invert(trans.worldNormalMatrix, trans.worldMatrix);
+        mat4.transpose(trans.worldNormalMatrix, trans.worldNormalMatrix);
+// Calculate world matrix
+        let parent = trans.entity.parentElement as Entity;
+        if(parent != null && parent.components) {
+            let world: Transform = parent.components.Transform;
+            if(world.isDirty) {
+                this.updateMatrix(world);
+            }
+            mat4.mul(trans.worldMatrix, trans.localMatrix, world.localMatrix);
+        }
     }
 }

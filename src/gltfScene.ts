@@ -42,10 +42,8 @@ export class gltfScene {
         let roots = scenes[scene].nodes;
         for(let r of roots) {
             let root = this.parseNode(r, nodes);
-            console.log(root);
             this.scene.appendChild(root);
         }
-        console.log(gltf);
     }
 
     parseNode(nodeIndex, nodeList) {

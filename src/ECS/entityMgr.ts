@@ -16,9 +16,10 @@ export class EntityMgr {
         return nodes as Entity[];
     }
 
-    static addComponent(entity: Entity, component: Object) {
+    static addComponent(entity: Entity, component: any) {
         let componentName = component.constructor.name;
         entity.components[componentName] = component;
         entity.setAttribute(componentName, '');
+        component.entity = entity;
     }
 }

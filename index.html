@@ -13,7 +13,10 @@
     <script src="/build/ashes.main.js"></script>
     <script>
         console.log(Ashes);
-        Ashes.Asset.loadGLTF('/static/gltf/BoxTextured/BoxTextured.gltf').then((e) => {
+        let gltf = '/static/gltf/BoxTextured/BoxTextured.gltf';
+        gltf = '/static/gltf/Suzanne/Suzanne.gltf';
+        gltf = '/static/gltf/toon_shader_tutorial_files/scene.gltf';
+        Ashes.Asset.loadGLTF(gltf).then((e) => {
             console.log(e);
         })
     </script>
