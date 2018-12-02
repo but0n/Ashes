@@ -19,8 +19,8 @@ export class EntityMgr {
         return nodes as Entity[];
     }
 
-    static getComponents(componentName: string) {
-        return this.find(`${this.entityTag}[${componentName.toLowerCase()}]`).map(({components}) => components[componentName]);
+    static getComponents<T>(componentName: string) {
+        return this.find(`${this.entityTag}[${componentName.toLowerCase()}]`).map(({components}) => components[componentName]) as T[];
     }
 
     static addComponent(entity: Entity, component: any) {
