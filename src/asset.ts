@@ -5,6 +5,7 @@ import { Render } from "./webgl2/render";
 import { gltfScene } from "./gltfScene";
 import { EntityMgr, Entity } from "./ECS/entityMgr";
 import { Transform } from "./transform";
+import { Shader } from "./shader";
 
 export class Asset {
     static load(url, type: XMLHttpRequestResponseType = 'json') {
@@ -51,7 +52,7 @@ export class Asset {
 
 
         // Load material
-        let mat = await Material.LoadMaterial('test');
+        let mat = await this.LoadMaterial('test');
         gltf.defaultMat = mat;
 
 
@@ -110,5 +111,20 @@ export class Asset {
 
     static async loadBuffer(bufferPath) {
         return await this.load(bufferPath, 'arraybuffer');
+    }
+
+    static async LoadShaderProgram(url) {
+        url = Material.SHADER_PATH + url;
+        let vertPath = url + '.vs.glsl';
+        let fragPath = url + '.fs.glsl';
+        let [vert, frag] = await Promise.all([vertPath, fragPath].map(path => Asset.load(path, 'text')));
+        console.log(vert);
+        console.log(frag);
+        return new Shader(vert, frag);
+    }
+
+    static async LoadMaterial(matName) {
+        let shader = await this.LoadShaderProgram(matName);
+        return new Material(shader);
     }
 }

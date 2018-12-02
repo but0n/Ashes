@@ -1,5 +1,4 @@
 import { Shader } from "./shader";
-import { Asset } from "./asset";
 
 export class Material {
     ctx: WebGL2RenderingContext;
@@ -24,18 +23,5 @@ export class Material {
     }
 
     static SHADER_PATH = 'static/shader/';
-    static async LoadShaderProgram(url) {
-        url = this.SHADER_PATH + url;
-        let vertPath = url + '.vs.glsl';
-        let fragPath = url + '.fs.glsl';
-        let [vert, frag] = await Promise.all([vertPath, fragPath].map(path => Asset.load(path, 'text')));
-        console.log(vert);
-        console.log(frag);
-        return new Shader(vert, frag);
-    }
 
-    static async LoadMaterial(matName) {
-        let shader = await this.LoadShaderProgram(matName);
-        return new Material(shader);
-    }
 }
