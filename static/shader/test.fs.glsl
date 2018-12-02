@@ -6,13 +6,17 @@ in vec2 uv;
 in vec4 pos;
 in vec3 color;
 
+uniform sampler2D emissiveTexture;
+uniform sampler2D baseColorTexture;
 
 out vec4 outColor;
 
 void main() {
+    vec4 em = texture(emissiveTexture, uv);
+    vec4 base = texture(baseColorTexture, uv);
     vec3 lightDir = normalize(vec3(-10, -10, 10) - pos.xyz);
     float LoN = dot(normal, lightDir);
-    // outColor = vec4(uv, 1, 1);
-    outColor = vec4(vec3(1) * max(LoN, 0.0) + vec3(0.3), 1);
+    // outColor = vec4(uv, 0, 1);
+    outColor = base * vec4(vec3(max(LoN, 0.5)), 1) + em * vec4(0.4, 0.4, 0.4, 0.2);
     // outColor = vec4(normal, 1);
 }

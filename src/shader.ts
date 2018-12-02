@@ -125,7 +125,7 @@ export class Uniform {
         this.setter = setter;
         this.argLength = argLength;
     }
-    value;
+    value=0;
     isDirty: boolean = false;
     static getUnifSetter(type: GLenum) {
         switch (type) {

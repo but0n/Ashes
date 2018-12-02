@@ -2,6 +2,8 @@ import { EntityMgr, Entity } from "./ECS/entityMgr";
 import { Accessor, bufferView, Mesh } from "./mesh";
 import { MeshRenderer } from "./meshRenderer";
 import { Render } from "./webgl2/render";
+import { Texture } from "./texture";
+import { Material } from "./material";
 
 export class gltfScene {
     gltf;
@@ -12,7 +14,29 @@ export class gltfScene {
         this.gltf = gltf;
         let {scene, scenes, nodes} = gltf;
         //  BufferViews
-        gltf.bufferViews = gltf.bufferViews.map((bv) => new bufferView(gltf.buffers[bv.buffer], bv));
+        gltf.bufferViews = gltf.bufferViews.map(bv => new bufferView(gltf.buffers[bv.buffer], bv));
+
+        // Textures
+        gltf.textures = gltf.textures.map(({source, sampler}) => new Texture(gltf.images[source], gltf.samplers[sampler]));
+
+        // Materials
+        console.log(gltf.materials[0]);
+        gltf.materials = gltf.materials.map(config => {
+            let mat = new Material(gltf.commonShader, config.name);
+            console.log(config);
+            for(let key in config) {
+                let {index, texCoord, baseColorTexture} = config[key];
+                if(index != null && texCoord != null) {
+                    let texture = gltf.textures[index];
+                    Material.setTexture(mat, key, texture);
+                } else if(baseColorTexture != null) {
+                    let {index, texCoord} = baseColorTexture;
+                    let texture = gltf.textures[index];
+                    Material.setTexture(mat, 'baseColorTexture', texture);
+                }
+            }
+            return mat;
+        });
 
         // Set up all Vertexes
         gltf.accessors = gltf.accessors.map(acc => {
@@ -36,7 +60,13 @@ export class gltfScene {
             // Triangles
             let ebo = gltf.accessors[meshData.indices];
 
-            return new Mesh(accessors, ebo, meshData.mode);
+            let mf = new Mesh(accessors, ebo, meshData.mode);
+            let mat = gltf.materials[meshData.material];
+            let mr = new MeshRenderer(this.screen, mf, mat);
+            if(mat.name == 'outline') {
+                mr.isVisible = false;
+            }
+            return mr;
         });
 
         let roots = scenes[scene].nodes;
@@ -51,9 +81,7 @@ export class gltfScene {
         let {mesh, name} = node;
         let entity = EntityMgr.create(name);
         if(mesh != null) {
-            let mf = this.gltf.meshes[mesh];
-            EntityMgr.addComponent(entity, mf);
-            let mr = new MeshRenderer(this.screen, mf, this.gltf.defaultMat)
+            let mr = this.gltf.meshes[mesh];
             EntityMgr.addComponent(entity, mr);
         }
         if(node.children) {

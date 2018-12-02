@@ -27,7 +27,7 @@ export class Asset {
         });
     }
 
-    static loadImage(url, type) {
+    static loadImage(url) {
         return new Promise((resolve, reject) => {
             let image = new Image();
             image.src = url;
@@ -50,10 +50,11 @@ export class Asset {
         // Download buffers
         gltf.buffers = await Promise.all(gltf.buffers.map(({ uri }) => this.loadBuffer(root + uri)));
 
+        // then download images
+        gltf.images = await Promise.all(gltf.images.map(({ uri }) => this.loadImage(root + uri)));
 
-        // Load material
-        let mat = await this.LoadMaterial('test');
-        gltf.defaultMat = mat;
+        // Load shader
+        gltf.commonShader = await this.LoadShaderProgram('test');
 
 
 
@@ -100,6 +101,7 @@ export class Asset {
 
             for(let mr of meshRendererComponents) {
                 MeshRenderer.render(mr);
+                // break
             }
             requestAnimationFrame(task);
         }
