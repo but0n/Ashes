@@ -6,7 +6,7 @@ import { Render } from "./webgl2/render";
 export class gltfScene {
     gltf;
     screen: Render;
-    scene = EntityMgr.create();
+    scene = EntityMgr.create('scene');
     constructor(gltf, screen: Render) {
         this.screen = screen;
         this.gltf = gltf;
@@ -48,8 +48,8 @@ export class gltfScene {
 
     parseNode(nodeIndex, nodeList) {
         let node = nodeList[nodeIndex];
-        let entity = EntityMgr.create();
-        let {mesh} = node;
+        let {mesh, name} = node;
+        let entity = EntityMgr.create(name);
         if(mesh != null) {
             let mf = this.gltf.meshes[mesh];
             EntityMgr.addComponent(entity, mf);

@@ -1,6 +1,7 @@
 import { Mesh } from "./mesh";
 import { Material } from "./material";
 import { Entity } from "./ECS/entityMgr";
+import { Transform } from "./transform";
 
 export class MeshRenderer {
     entity: Entity;
@@ -48,6 +49,9 @@ export class MeshRenderer {
 
 
     static render(target: MeshRenderer) {
+        let trans: Transform = target.entity.components.Transform;
+        Material.setUniform(target.materials[0], 'M', trans.worldMatrix);
+        Material.setUniform(target.materials[0], 'nM', trans.worldNormalMatrix);
         this.updateMaterial(target);    // Update uniforms of material
         this.useMaterial(target, 0);  // Select material
         this.bindVAO(target, target.vao); // Bind VAO

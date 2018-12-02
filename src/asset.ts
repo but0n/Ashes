@@ -69,7 +69,8 @@ export class Asset {
         console.log(scene);
         screen.canvas.appendChild(scene);
 
-        let meshRendererComponents: MeshRenderer[] = EntityMgr.find('ash-entity[meshrenderer]').map(({components}) => components.MeshRenderer);
+        let meshRendererComponents: MeshRenderer[] = EntityMgr.getComponents(MeshRenderer.name);
+        console.log(meshRendererComponents);
         for(let mr of meshRendererComponents) {
             // Camera stuff
             Material.setUniform(mr.materials[0], 'P', P);
@@ -81,10 +82,14 @@ export class Asset {
         let parentTrans: Transform = cubeParent.components.Transform;
         quat.fromEuler(parentTrans.quaternion, 0, 0, 0);
 
-        let transComponents: Transform[] = EntityMgr.find('ash-entity[transform]').map(({components}) => components.Transform);
+        let transComponents: Transform[] = EntityMgr.getComponents(Transform.name);
 
         let task = () => {
             screen.clear();
+
+            yawAngle += 1;
+            let trans: Transform = scene.components.Transform;
+            quat.fromEuler(trans.quaternion, 0, yawAngle, 0);
 
             for(let trans of transComponents) {
                 // if(trans.isDirty)
@@ -93,11 +98,6 @@ export class Asset {
 
 
             for(let mr of meshRendererComponents) {
-                let trans: Transform = mr.entity.components.Transform;
-                quat.fromEuler(trans.quaternion, 0, yawAngle, 0);
-                yawAngle += 0.5;
-                Material.setUniform(mr.materials[0], 'M', trans.worldMatrix);
-                Material.setUniform(mr.materials[0], 'nM', trans.worldNormalMatrix);
                 MeshRenderer.render(mr);
             }
             requestAnimationFrame(task);

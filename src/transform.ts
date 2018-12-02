@@ -34,10 +34,12 @@ export class Transform {
         let parent = trans.entity.parentElement as Entity;
         if(parent != null && parent.components) {
             let world: Transform = parent.components.Transform;
-            if(world.isDirty) {
-                this.updateMatrix(world);
-            }
-            mat4.mul(trans.worldMatrix, trans.localMatrix, world.localMatrix);
+            // if(world.isDirty) {
+            //     this.updateMatrix(world);
+            // }
+            mat4.mul(trans.worldMatrix, trans.localMatrix, world.worldMatrix);
+        } else {    // if current node is the root of world
+            mat4.copy(trans.worldMatrix, trans.localMatrix);
         }
     }
 }
