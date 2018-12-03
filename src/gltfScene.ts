@@ -87,7 +87,7 @@ export class gltfScene {
             Transform.decomposeMatrix(trans, mat4.fromValues(...matrix));
         } else {
             if(rotation != null) {
-                vec4.set(trans.quaternion, ...rotation);
+                // vec4.set(trans.quaternion, ...rotation);
             } else if (scale != null) {
                 vec3.set(trans.scale, ...scale);
             } else if (translation != null) {
