@@ -24,10 +24,39 @@ export class Transform {
         mat4.identity(this.worldMatrix);
         mat4.identity(this.worldNormalMatrix);
     }
-    static decomposeMatrix(trans: Transform, matrix = trans.localMatrix) {
-        mat4.getRotation(trans.quaternion, matrix);
-        mat4.getScaling(trans.scale, matrix);
-        mat4.getTranslation(trans.translate, matrix);
+    static decomposeMatrix(trans: Transform, mat = trans.localMatrix) {
+        // https://math.stackexchange.com/questions/237369/given-this-transformation-matrix-how-do-i-decompose-it-into-translation-rotati
+        // Get scaling
+        vec3.set(trans.translate, mat[0], mat[1], mat[2]);  // temp
+        let sx = vec3.len(trans.translate);
+        vec3.set(trans.translate, mat[4], mat[5], mat[6]);  // temp
+        let sy = vec3.len(trans.translate);
+        vec3.set(trans.translate, mat[8], mat[9], mat[10]);  // temp
+        let sz = vec3.len(trans.translate);
+        vec3.set(trans.scale, sx, sy, sz);
+
+        if(mat4.determinant(mat) < 0) {
+            sx = -sx;
+        }
+
+        // Get translation
+        vec3.set(trans.translate, mat[12], mat[13], mat[14]);
+        mat[12] = mat[13] = mat[14] = 0;
+
+        // Get rotation
+        mat[0] /= sx;
+        mat[1] /= sx;
+        mat[2] /= sx;
+
+        mat[4] /= sy;
+        mat[5] /= sy;
+        mat[6] /= sy;
+
+        mat[8] /= sz;
+        mat[9] /= sz;
+        mat[10] /= sz;
+
+        mat4.getRotation(trans.quaternion, mat);
     }
     static updateMatrix(trans: Transform) {
         trans.isDirty = false;

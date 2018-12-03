@@ -84,7 +84,7 @@ export class gltfScene {
         let entity = EntityMgr.create(name);
         let trans = entity.components.Transform as Transform;
         if(matrix != null) {
-            // mat4.set(trans.localMatrix, ...matrix);
+            mat4.set(trans.localMatrix, ...matrix);
             Transform.decomposeMatrix(trans);
         } else {
             if(rotation != null) {
