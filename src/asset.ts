@@ -59,10 +59,10 @@ export class Asset {
 
 
         let P = mat4.create();
-        mat4.perspective(P, 45.0 * Math.PI / 180.0, screen.width / screen.height, 0.01, 100.0);
+        mat4.perspective(P, 45.0 * Math.PI / 180.0, screen.width / screen.height, 0.01, 1000.0);
 
         let V = mat4.create();
-        mat4.lookAt(V, vec3.fromValues(0, 8, 20), vec3.fromValues(0, 0, -3), vec3.fromValues(0, 1, 0));
+        mat4.lookAt(V, vec3.fromValues(0, 0, 200), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));
 
         // let nM = glMatrix.mat4.create();
         let yawAngle = 1;

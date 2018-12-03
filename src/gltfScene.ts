@@ -84,16 +84,18 @@ export class gltfScene {
         let entity = EntityMgr.create(name);
         let trans = entity.components.Transform as Transform;
         if(matrix != null) {
-            Transform.decomposeMatrix(trans, mat4.fromValues(...matrix));
+            // mat4.set(trans.localMatrix, ...matrix);
+            Transform.decomposeMatrix(trans);
         } else {
             if(rotation != null) {
-                // vec4.set(trans.quaternion, ...rotation);
+                vec4.set(trans.quaternion, ...rotation);
             } else if (scale != null) {
                 vec3.set(trans.scale, ...scale);
             } else if (translation != null) {
                 vec3.set(trans.translate, ...translation);
             }
         }
+        Transform.updateMatrix(trans);
         if(mesh != null) {
             let mr = this.gltf.meshes[mesh];
             EntityMgr.addComponent(entity, mr);

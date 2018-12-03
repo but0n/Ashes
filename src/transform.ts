@@ -24,7 +24,7 @@ export class Transform {
         mat4.identity(this.worldMatrix);
         mat4.identity(this.worldNormalMatrix);
     }
-    static decomposeMatrix(trans: Transform, matrix) {
+    static decomposeMatrix(trans: Transform, matrix = trans.localMatrix) {
         mat4.getRotation(trans.quaternion, matrix);
         mat4.getScaling(trans.scale, matrix);
         mat4.getTranslation(trans.translate, matrix);
@@ -42,7 +42,7 @@ export class Transform {
             // if(world.isDirty) {
             //     this.updateMatrix(world);
             // }
-            mat4.mul(trans.worldMatrix, trans.localMatrix, world.worldMatrix);
+            mat4.mul(trans.worldMatrix, world.worldMatrix, trans.localMatrix);
         } else {    // if current node is the root of world
             mat4.copy(trans.worldMatrix, trans.localMatrix);
         }
