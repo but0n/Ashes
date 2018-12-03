@@ -25,3 +25,22 @@ body {
 	position: fixed;
 	right: 0;
 }
+
+ash-entity {
+	display: block;
+	min-height: 5px;
+	border-style: solid;
+	border-color: rgb(14, 159, 255, 0.4);
+	border-width: 1px 0 0 3px;
+	margin-left: 20px;
+	padding-left: 5px;
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	color: rgb(134, 134, 134);
+	text-shadow: 0 0 1px rgb(166, 212, 255);
+	font-size: 12px;
+}
+ash-entity[meshrenderer] {
+	border-color: rgb(255, 171, 14, 0.8);
+}

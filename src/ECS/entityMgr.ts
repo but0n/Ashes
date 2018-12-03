@@ -7,8 +7,10 @@ export class EntityMgr {
     static entityTag = 'ash-entity';
     static create(name: string = null) {
         let gameObject = document.createElement(this.entityTag) as Entity;
-        if(name)
+        if(name) {
             gameObject.dataset.name = name;
+            gameObject.textContent = name;
+        }
         gameObject.components = {};
         this.addComponent(gameObject, new Transform());
         return gameObject;
