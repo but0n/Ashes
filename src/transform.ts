@@ -24,6 +24,11 @@ export class Transform {
         mat4.identity(this.worldMatrix);
         mat4.identity(this.worldNormalMatrix);
     }
+    static decomposeMatrix(trans: Transform, matrix) {
+        mat4.getRotation(trans.quaternion, matrix);
+        mat4.getScaling(trans.scale, matrix);
+        mat4.getTranslation(trans.translate, matrix);
+    }
     static updateMatrix(trans: Transform) {
         trans.isDirty = false;
         // Calculate local matrix

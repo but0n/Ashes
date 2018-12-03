@@ -4,6 +4,8 @@ import { MeshRenderer } from "./meshRenderer";
 import { Render } from "./webgl2/render";
 import { Texture } from "./texture";
 import { Material } from "./material";
+import { vec3, vec4, mat4 } from "../node_modules/gl-matrix/lib/gl-matrix";
+import { Transform } from "./transform";
 
 export class gltfScene {
     gltf;
@@ -78,8 +80,20 @@ export class gltfScene {
 
     parseNode(nodeIndex, nodeList) {
         let node = nodeList[nodeIndex];
-        let {mesh, name} = node;
+        let {mesh, name, matrix, rotation, scale, translation} = node;
         let entity = EntityMgr.create(name);
+        let trans = entity.components.Transform as Transform;
+        if(matrix != null) {
+            Transform.decomposeMatrix(trans, mat4.fromValues(...matrix));
+        } else {
+            if(rotation != null) {
+                vec4.set(trans.quaternion, ...rotation);
+            } else if (scale != null) {
+                vec3.set(trans.scale, ...scale);
+            } else if (translation != null) {
+                vec3.set(trans.translate, ...translation);
+            }
+        }
         if(mesh != null) {
             let mr = this.gltf.meshes[mesh];
             EntityMgr.addComponent(entity, mr);
