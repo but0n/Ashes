@@ -5,7 +5,7 @@ body {
     position: absolute;
     margin: 0;
 	display: flex;
-	justify-content: center;
+	/* justify-content: center; */
 }
 
 .gray {
@@ -25,24 +25,26 @@ body {
 	position: fixed;
 	right: 0;
 }
-
+body ash-entity {
+	max-width: 300px;
+}
 ash-entity {
 	display: block;
-	min-height: 5px;
+	min-height: 10px;
 	border-style: solid;
-	border-color: rgb(14, 159, 255, 0.4);
+	border-color: rgba(64, 195, 255, 0.5);
 	border-width: 1px 0 0 3px;
 	margin-left: 5px;
 	padding-left: 5px;
 	display: flex;
 	flex: 1 1 auto;
 	flex-direction: column;
-	color: rgb(134, 134, 134);
-	text-shadow: 0 0 1px rgb(166, 212, 255);
+	color: rgb(0, 0, 0);
+	text-shadow: 0 0 1px rgb(221, 238, 255);
 	font-size: 12px;
 	cursor: pointer;
 	user-select: none;
 }
 ash-entity[meshrenderer] {
-	border-color: rgb(255, 171, 14, 0.8);
+	border-color: rgb(255, 171, 14, 0.5);
 }

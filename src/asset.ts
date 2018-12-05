@@ -74,7 +74,7 @@ export class Asset {
         let sceneTrans: Transform = scene.components.Transform;
         // sceneTrans.translate[1] = -235;
         // sceneTrans.translate[2] = -250;
-        sceneTrans.scale[0] = sceneTrans.scale[1] = sceneTrans.scale[2] = 0.005;
+        sceneTrans.scale[0] = sceneTrans.scale[1] = sceneTrans.scale[2] = 0.01;
 
         // filter mesh & material which meshRenderer required
         let renderTargets = EntityMgr.find('ash-entity[mesh][material]');
@@ -88,7 +88,6 @@ export class Asset {
             EntityMgr.addComponent(entity, mr);
         }
         let meshRendererComponents: MeshRenderer[] = EntityMgr.getComponents(MeshRenderer.name);
-        console.log(meshRendererComponents);
         for(let mr of meshRendererComponents) {
             // Camera stuff
             Material.setUniform(mr.materials[0], 'P', P);
