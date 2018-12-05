@@ -1,6 +1,9 @@
+import { Camera } from "../camera";
+
 export class Render {
     public canvas: HTMLCanvasElement;
     public gl: WebGL2RenderingContext;
+    camera: Camera;
     constructor(selector) {
         this.canvas = document.querySelector(selector);
         if(!this.canvas) {

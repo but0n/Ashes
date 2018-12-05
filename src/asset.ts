@@ -6,6 +6,7 @@ import { gltfScene } from "./gltfScene";
 import { EntityMgr, Entity } from "./ECS/entityMgr";
 import { Transform } from "./transform";
 import { Shader } from "./shader";
+import { Camera } from "./camera";
 
 export class Asset {
     static load(url, type: XMLHttpRequestResponseType = 'json') {
@@ -55,21 +56,24 @@ export class Asset {
 
         // Load shader
         gltf.commonShader = await this.LoadShaderProgram('test');
+        let {scene} = new gltfScene(gltf, screen);
 
 
+        let mainCamera = EntityMgr.create('camera');
+        let cameraTrans = mainCamera.components.Transform as Transform;
+        let camera = EntityMgr.addComponent(mainCamera, new Camera(screen.width / screen.height)) as Camera;
+        vec3.set(cameraTrans.translate, 0, 5, 10);
+        // let P = mat4.create();
+        // mat4.perspective(P, 45.0 * Math.PI / 180.0, screen.width / screen.height, 1, 10000);
 
-        let P = mat4.create();
-        mat4.perspective(P, 45.0 * Math.PI / 180.0, screen.width / screen.height, 1, 10000);
+        // let V = mat4.create();
+        // mat4.lookAt(V, vec3.fromValues(0, 5, 10), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));
 
-        let V = mat4.create();
-        mat4.lookAt(V, vec3.fromValues(0, 5, 10), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));
-
-        // let nM = glMatrix.mat4.create();
         let yawAngle = 1;
 
-        let {scene} = new gltfScene(gltf, screen);
+        scene.appendChild(mainCamera);
+
         console.log(scene);
-        // screen.canvas.appendChild(scene);
         document.querySelector('body').appendChild(scene)
         let sceneTrans: Transform = scene.components.Transform;
         // sceneTrans.translate[1] = -235;
@@ -88,16 +92,20 @@ export class Asset {
             EntityMgr.addComponent(entity, mr);
         }
         let meshRendererComponents: MeshRenderer[] = EntityMgr.getComponents(MeshRenderer.name);
-        for(let mr of meshRendererComponents) {
-            // Camera stuff
-            Material.setUniform(mr.materials[0], 'P', P);
-            Material.setUniform(mr.materials[0], 'V', V);
-        }
 
         let transComponents: Transform[] = EntityMgr.getComponents(Transform.name);
 
         let task = () => {
             screen.clear();
+
+            if(camera.isDirty) {
+                Camera.updateViewMatrix(camera);
+                for(let mr of meshRendererComponents) {
+                    Material.setUniform(mr.materials[0], 'P', camera.projection);
+                    Material.setUniform(mr.materials[0], 'V', camera.view);
+                }
+                camera.isDirty = false;
+            }
 
             yawAngle += 0.1;
             let trans: Transform = scene.components.Transform;

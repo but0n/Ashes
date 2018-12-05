@@ -41,5 +41,6 @@ export class EntityMgr {
         entity.components[componentName] = component;
         entity.setAttribute(componentName, '');
         component.entity = entity;
+        return component;
     }
 }
