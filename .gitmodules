@@ -1,0 +1,3 @@
+[submodule "static/gltfsamples"]
+	path = static/gltfsamples
+	url = https://github.com/but0n/gltfsamples
