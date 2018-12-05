@@ -3,7 +3,6 @@ import { Texture } from "./texture";
 
 export class Material {
     name: string;
-    ctx: WebGL2RenderingContext;
     shader: Shader;
     isDirty: boolean = true;
     textures: Texture[] = [];
@@ -23,14 +22,23 @@ export class Material {
     }
 
     static updateUniform(mat: Material, ctx: WebGL2RenderingContext) {
-        mat.isDirty = false;
         if(mat.shader.isDirty) {
             Shader.buildProgram(mat.shader, ctx);
         }
+
+        this.bindAllTextures(mat, ctx);
+
         Shader.updateUniform(mat.shader);
-        for(let tex of mat.textures) {
+        mat.isDirty = false;
+    }
+
+    static bindAllTextures(mat: Material, ctx: WebGL2RenderingContext) {
+        for (let tex of mat.textures) {
             Texture.bindTexture(ctx, tex);
-            Material.setUniform(mat, tex.uniform, tex.channel);
+            if(tex.isDirty) {
+                Material.setUniform(mat, tex.uniform, tex.channel);
+                tex.isDirty = false;
+            }
         }
     }
 
@@ -39,6 +47,7 @@ export class Material {
         tex.channel = channel;
         mat.textures.push(tex);
         mat.isDirty = true;
+        tex.isDirty = true;
     }
 
     static SHADER_PATH = 'static/shader/';

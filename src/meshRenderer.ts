@@ -11,7 +11,6 @@ export class MeshRenderer {
     materials: Material[] = [];
     vao: WebGLVertexArrayObject;
     isDirty: boolean = true;
-    isVisible: boolean = true;
     constructor({gl}: Render, mesh: Mesh, material: Material) {
         this.gl = gl;
         this.mesh = mesh;
@@ -51,7 +50,7 @@ export class MeshRenderer {
 
 
     static render(target: MeshRenderer) {
-        if(!target.isVisible)
+        if(!target.entity.components.Transform.isVisible)
             return;
         this.useMaterial(target, 0);  // Select material
         let trans: Transform = target.entity.components.Transform;

@@ -71,8 +71,10 @@ export class Asset {
         console.log(scene);
         // screen.canvas.appendChild(scene);
         document.querySelector('body').appendChild(scene)
-        scene.components.Transform.translate[1] = -235;
-        scene.components.Transform.translate[2] = -250;
+        let sceneTrans: Transform = scene.components.Transform;
+        // sceneTrans.translate[1] = -235;
+        // sceneTrans.translate[2] = -250;
+        sceneTrans.scale[0] = sceneTrans.scale[1] = sceneTrans.scale[2] = 0.005;
 
         // filter mesh & material which meshRenderer required
         let renderTargets = EntityMgr.find('ash-entity[mesh][material]');
@@ -81,7 +83,7 @@ export class Asset {
             let material = entity.components.Material;
             let mr = new MeshRenderer(screen, mesh, material);
             if(material.name == 'outline') {
-                mr.isVisible = false;
+                entity.components.Transform.isVisible = false;
             }
             EntityMgr.addComponent(entity, mr);
         }
@@ -93,20 +95,15 @@ export class Asset {
             Material.setUniform(mr.materials[0], 'V', V);
         }
 
-
-        let cubeParent = meshRendererComponents[0].entity.parentElement as Entity;
-        let parentTrans: Transform = cubeParent.components.Transform;
-        quat.fromEuler(parentTrans.quaternion, 0, 0, 0);
-
         let transComponents: Transform[] = EntityMgr.getComponents(Transform.name);
 
         let task = () => {
             screen.clear();
 
-            // yawAngle += 1;
+            yawAngle += 0.1;
             let trans: Transform = scene.components.Transform;
-            // quat.fromEuler(trans.quaternion, 0, yawAngle, 0);
-            quat.fromEuler(trans.quaternion, 0, 45, 0);
+            quat.fromEuler(trans.quaternion, 0, yawAngle, 0);
+            // quat.fromEuler(trans.quaternion, 0, 45, 0);
 
             for(let trans of transComponents) {
                 // if(trans.isDirty)

@@ -4,6 +4,7 @@ export class Texture {
     sampler: Sampler;
     texture: WebGLTexture = null;
     channel: number = null;
+    isDirty: boolean = true;
     constructor(rawImage: HTMLImageElement, sampler) {
         this.image = rawImage;
         this.sampler = new Sampler(sampler);

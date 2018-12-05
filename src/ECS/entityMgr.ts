@@ -17,6 +17,11 @@ export class EntityMgr {
         gameObject.addEventListener('pointerdown', e => {
             console.log('\t|-' + gameObject.dataset.name);
             console.log(gameObject.components);
+            let trans = gameObject.components.Transform;
+            // toggle visible
+            if(trans != null) {
+                trans.isVisible = !trans.isVisible;
+            }
             e.stopPropagation();
         })
         return gameObject;

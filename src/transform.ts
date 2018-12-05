@@ -10,6 +10,7 @@ export class Transform {
     localMatrix: Float32Array;
     worldMatrix: Float32Array;
     worldNormalMatrix: Float32Array;
+    isVisible: boolean = true;
     isDirty: boolean = false;
     constructor() {
         this.translate = vec3.fromValues(0, 0, 0);
