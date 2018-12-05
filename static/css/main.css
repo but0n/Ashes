@@ -40,6 +40,7 @@ ash-entity {
 	color: rgb(134, 134, 134);
 	text-shadow: 0 0 1px rgb(166, 212, 255);
 	font-size: 12px;
+	cursor: pointer;
 }
 ash-entity[meshrenderer] {
 	border-color: rgb(255, 171, 14, 0.8);

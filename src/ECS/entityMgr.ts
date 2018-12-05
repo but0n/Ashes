@@ -13,6 +13,12 @@ export class EntityMgr {
         }
         gameObject.components = {};
         this.addComponent(gameObject, new Transform());
+        // Debug envent
+        gameObject.addEventListener('pointerdown', e => {
+            console.log('\t|-' + gameObject.dataset.name);
+            console.log(gameObject.components);
+            e.stopPropagation();
+        })
         return gameObject;
     }
 
