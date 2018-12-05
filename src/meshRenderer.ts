@@ -2,6 +2,7 @@ import { Mesh } from "./mesh";
 import { Material } from "./material";
 import { Entity } from "./ECS/entityMgr";
 import { Transform } from "./transform";
+import { Render } from "./webgl2/render";
 
 export class MeshRenderer {
     entity: Entity;
@@ -11,7 +12,7 @@ export class MeshRenderer {
     vao: WebGLVertexArrayObject;
     isDirty: boolean = true;
     isVisible: boolean = true;
-    constructor({gl}, mesh: Mesh, material: Material) {
+    constructor({gl}: Render, mesh: Mesh, material: Material) {
         this.gl = gl;
         this.mesh = mesh;
         MeshRenderer.attachMaterial(this, material);

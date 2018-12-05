@@ -1,6 +1,5 @@
-import { EntityMgr, Entity } from "./ECS/entityMgr";
+import { EntityMgr } from "./ECS/entityMgr";
 import { Accessor, bufferView, Mesh } from "./mesh";
-import { MeshRenderer } from "./meshRenderer";
 import { Render } from "./webgl2/render";
 import { Texture } from "./texture";
 import { Material } from "./material";
@@ -9,10 +8,8 @@ import { Transform } from "./transform";
 
 export class gltfScene {
     gltf;
-    screen: Render;
     scene = EntityMgr.create('scene');
     constructor(gltf, screen: Render) {
-        this.screen = screen;
         this.gltf = gltf;
         let {scene, scenes, nodes} = gltf;
         //  BufferViews
@@ -64,11 +61,7 @@ export class gltfScene {
 
             let mf = new Mesh(accessors, ebo, meshData.mode);
             let mat = gltf.materials[meshData.material];
-            let mr = new MeshRenderer(this.screen, mf, mat);
-            if(mat.name == 'outline') {
-                mr.isVisible = false;
-            }
-            return mr;
+            return [mf, mat];
         });
 
         let roots = scenes[scene].nodes;
@@ -97,8 +90,9 @@ export class gltfScene {
         }
         Transform.updateMatrix(trans);
         if(mesh != null) {
-            let mr = this.gltf.meshes[mesh];
-            EntityMgr.addComponent(entity, mr);
+            let [mf, mat] = this.gltf.meshes[mesh];
+            EntityMgr.addComponent(entity, mf);
+            EntityMgr.addComponent(entity, mat);
         }
         if(node.children) {
             for(let child of node.children) {

@@ -74,6 +74,17 @@ export class Asset {
         scene.components.Transform.translate[1] = -235;
         scene.components.Transform.translate[2] = -250;
 
+        // filter mesh & material which meshRenderer required
+        let renderTargets = EntityMgr.find('ash-entity[mesh][material]');
+        for(let entity of renderTargets) {
+            let mesh = entity.components.Mesh;
+            let material = entity.components.Material;
+            let mr = new MeshRenderer(screen, mesh, material);
+            if(material.name == 'outline') {
+                mr.isVisible = false;
+            }
+            EntityMgr.addComponent(entity, mr);
+        }
         let meshRendererComponents: MeshRenderer[] = EntityMgr.getComponents(MeshRenderer.name);
         console.log(meshRendererComponents);
         for(let mr of meshRendererComponents) {
