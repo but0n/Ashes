@@ -1,4 +1,4 @@
-import { MeshRenderer } from "./meshRenderer";
+import { MeshRenderer, MeshRendererSystem } from "./meshRenderer";
 import { Material } from "./material";
 import { vec3, mat4, quat } from "../node_modules/gl-matrix/lib/gl-matrix";
 import { Render } from "./webgl2/render";
@@ -7,6 +7,7 @@ import { EntityMgr, Entity } from "./ECS/entityMgr";
 import { Transform } from "./transform";
 import { Shader } from "./shader";
 import { Camera } from "./camera";
+import { System } from "./ECS/component";
 
 export class Asset {
     static load(url, type: XMLHttpRequestResponseType = 'json') {
@@ -91,7 +92,7 @@ export class Asset {
             }
             EntityMgr.addComponent(entity, mr);
         }
-        let meshRendererComponents: MeshRenderer[] = EntityMgr.getComponents(MeshRenderer.name);
+        let meshRenderers: MeshRenderer[] = EntityMgr.getComponents(MeshRenderer.name);
 
         let transComponents: Transform[] = EntityMgr.getComponents(Transform.name);
 
@@ -100,7 +101,7 @@ export class Asset {
 
             if(camera.isDirty) {
                 Camera.updateViewMatrix(camera);
-                for(let mr of meshRendererComponents) {
+                for(let mr of meshRenderers) {
                     Material.setUniform(mr.materials[0], 'P', camera.projection);
                     Material.setUniform(mr.materials[0], 'V', camera.view);
                 }
@@ -118,14 +119,15 @@ export class Asset {
             }
 
 
-            for(let mr of meshRendererComponents) {
-                MeshRenderer.render(mr);
-                // break
-            }
+            // for(let mr of meshRendererComponents) {
+            //     MeshRenderer.render(mr);
+            //     // break
+            // }
             requestAnimationFrame(task);
         }
         requestAnimationFrame(task);
-
+        System.registSystem(new MeshRendererSystem());
+        System.start();
         return gltf;
 
     }

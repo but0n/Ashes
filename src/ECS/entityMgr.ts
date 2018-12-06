@@ -36,6 +36,10 @@ export class EntityMgr {
         return this.find(`${this.entityTag}[${componentName.toLowerCase()}]`).map(({components}) => components[componentName]) as T[];
     }
 
+    static getEntites(deps: string[]) {
+        return this.find(`${this.entityTag}[${deps.join('][')}]`);
+    }
+
     static addComponent(entity: Entity, component: any) {
         let componentName = component.constructor.name;
         entity.components[componentName] = component;

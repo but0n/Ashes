@@ -1,8 +1,9 @@
 import { Mesh } from "./mesh";
 import { Material } from "./material";
-import { Entity } from "./ECS/entityMgr";
+import { Entity, EntityMgr } from "./ECS/entityMgr";
 import { Transform } from "./transform";
 import { Render } from "./webgl2/render";
+import { ComponentSystem } from "./ECS/component";
 
 export class MeshRenderer {
     entity: Entity;
@@ -14,7 +15,21 @@ export class MeshRenderer {
     constructor({gl}: Render, mesh: Mesh, material: Material) {
         this.gl = gl;
         this.mesh = mesh;
-        MeshRenderer.attachMaterial(this, material);
+        MeshRendererSystem.attachMaterial(this, material);
+    }
+
+
+}
+
+export class MeshRendererSystem extends ComponentSystem {
+    depends = [
+        MeshRenderer.name
+    ];
+    onUpdate() {
+        let ent = EntityMgr.getEntites(this.depends);
+        for(let {components} of ent) {
+            MeshRendererSystem.render(components.MeshRenderer);
+        }
     }
 
     static useMaterial(mr: MeshRenderer, index) {
