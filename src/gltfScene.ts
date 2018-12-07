@@ -4,7 +4,7 @@ import { Render } from "./webgl2/render";
 import { Texture } from "./texture";
 import { Material } from "./material";
 import { vec3, vec4, mat4 } from "../node_modules/gl-matrix/lib/gl-matrix";
-import { Transform } from "./transform";
+import { TransformSystem, Transform } from "./transform";
 
 export class gltfScene {
     gltf;
@@ -78,7 +78,7 @@ export class gltfScene {
         let trans = entity.components.Transform as Transform;
         if(matrix != null) {
             mat4.set(trans.localMatrix, ...matrix);
-            Transform.decomposeMatrix(trans);
+            TransformSystem.decomposeMatrix(trans);
         } else {
             if(rotation != null) {
                 vec4.set(trans.quaternion, ...rotation);
@@ -88,7 +88,7 @@ export class gltfScene {
                 vec3.set(trans.translate, ...translation);
             }
         }
-        Transform.updateMatrix(trans);
+        TransformSystem.updateMatrix(trans);
         if(mesh != null) {
             let [mf, mat] = this.gltf.meshes[mesh];
             EntityMgr.addComponent(entity, mf);

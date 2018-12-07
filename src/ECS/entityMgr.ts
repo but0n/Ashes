@@ -1,18 +1,20 @@
-import { Transform } from "../transform";
-
 export interface Entity extends HTMLElement {
     components: any;
 }
 export class EntityMgr {
     static entityTag = 'ash-entity';
+    static getDefaultComponent;
+    static hasNewMember: boolean = false;
     static create(name: string = null) {
+        this.hasNewMember = true;
         let gameObject = document.createElement(this.entityTag) as Entity;
         if(name) {
             gameObject.dataset.name = name;
             gameObject.textContent = name;
         }
         gameObject.components = {};
-        this.addComponent(gameObject, new Transform());
+        if(this.getDefaultComponent)
+            this.addComponent(gameObject, this.getDefaultComponent());
         // Debug envent
         gameObject.addEventListener('pointerdown', e => {
             console.log('\t|-' + gameObject.dataset.name);

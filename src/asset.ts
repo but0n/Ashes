@@ -7,7 +7,7 @@ import { EntityMgr, Entity } from "./ECS/entityMgr";
 import { Transform } from "./transform";
 import { Shader } from "./shader";
 import { Camera } from "./camera";
-import { System } from "./ECS/component";
+import { System } from "./ECS/system";
 
 export class Asset {
     static load(url, type: XMLHttpRequestResponseType = 'json') {
@@ -97,7 +97,7 @@ export class Asset {
         let transComponents: Transform[] = EntityMgr.getComponents(Transform.name);
 
         let task = () => {
-            screen.clear();
+            // screen.clear();
 
             if(camera.isDirty) {
                 Camera.updateViewMatrix(camera);
@@ -113,10 +113,10 @@ export class Asset {
             quat.fromEuler(trans.quaternion, 0, yawAngle, 0);
             // quat.fromEuler(trans.quaternion, 0, 45, 0);
 
-            for(let trans of transComponents) {
-                // if(trans.isDirty)
-                Transform.updateMatrix(trans);
-            }
+            // for(let trans of transComponents) {
+            //     // if(trans.isDirty)
+            //     Transform.updateMatrix(trans);
+            // }
 
 
             // for(let mr of meshRendererComponents) {
@@ -126,8 +126,7 @@ export class Asset {
             requestAnimationFrame(task);
         }
         requestAnimationFrame(task);
-        System.registSystem(new MeshRendererSystem());
-        System.start();
+
         return gltf;
 
     }

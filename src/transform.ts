@@ -1,5 +1,7 @@
 import { vec3, mat4, vec4 } from "../node_modules/gl-matrix/lib/gl-matrix";
-import { Entity } from "./ECS/entityMgr";
+import { Entity, EntityMgr } from "./ECS/entityMgr";
+import { ComponentSystem } from "./ECS/component";
+import { System } from "./ECS/system";
 
 export class Transform {
     entity: Entity;
@@ -24,6 +26,17 @@ export class Transform {
         mat4.identity(this.localMatrix);
         mat4.identity(this.worldMatrix);
         mat4.identity(this.worldNormalMatrix);
+    }
+} EntityMgr.getDefaultComponent = () => new Transform();
+
+export class TransformSystem extends ComponentSystem {
+    group = [];
+    depends = [Transform.name];
+    onUpdate() {
+        for(let {components} of this.group) {
+            // if(trans.isDirty)
+            TransformSystem.updateMatrix(components.Transform);
+        }
     }
     static decomposeMatrix(trans: Transform, mat = trans.localMatrix) {
         // https://math.stackexchange.com/questions/237369/given-this-transformation-matrix-how-do-i-decompose-it-into-translation-rotati
@@ -77,4 +90,5 @@ export class Transform {
             mat4.copy(trans.worldMatrix, trans.localMatrix);
         }
     }
-}
+} System.registSystem(new TransformSystem());
+// (!) Circular dependency: src/ECS/system.ts -> src/ECS/entityMgr.ts -> src/transform.ts -> src/ECS/system.ts

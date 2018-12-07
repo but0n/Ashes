@@ -1,9 +1,10 @@
 import { Mesh } from "./mesh";
 import { Material } from "./material";
-import { Entity, EntityMgr } from "./ECS/entityMgr";
+import { Entity } from "./ECS/entityMgr";
 import { Transform } from "./transform";
 import { Render } from "./webgl2/render";
 import { ComponentSystem } from "./ECS/component";
+import { System } from "./ECS/system";
 
 export class MeshRenderer {
     entity: Entity;
@@ -22,12 +23,12 @@ export class MeshRenderer {
 }
 
 export class MeshRendererSystem extends ComponentSystem {
+    group = [];
     depends = [
         MeshRenderer.name
     ];
     onUpdate() {
-        let ent = EntityMgr.getEntites(this.depends);
-        for(let {components} of ent) {
+        for(let {components} of this.group) {
             MeshRendererSystem.render(components.MeshRenderer);
         }
     }
@@ -80,4 +81,4 @@ export class MeshRendererSystem extends ComponentSystem {
     // https://gamedev.stackexchange.com/questions/50531/entity-component-based-engine-rendering-separation-from-logic
     // https://gamedev.stackexchange.com/questions/14133/should-actors-in-a-game-be-responsible-for-drawing-themselves/14138#14138
 
-}
+} System.registSystem(new MeshRendererSystem());
