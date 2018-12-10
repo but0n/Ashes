@@ -29,8 +29,8 @@ export class EntityMgr {
         return gameObject;
     }
 
-    static find(selector:string) {
-        let nodes = Array.from(document.querySelectorAll(selector)); // convert NodeList to Array
+    static find(selector:string, root = document) {
+        let nodes = Array.from(root.querySelectorAll(selector)); // convert NodeList to Array
         return nodes as Entity[];
     }
 
@@ -38,8 +38,8 @@ export class EntityMgr {
         return this.find(`${this.entityTag}[${componentName.toLowerCase()}]`).map(({components}) => components[componentName]) as T[];
     }
 
-    static getEntites(deps: string[]) {
-        return this.find(`${this.entityTag}[${deps.join('][')}]`);
+    static getEntites(deps: string[], root = document) {
+        return this.find(`${this.entityTag}[${deps.join('][')}]`, root);
     }
 
     static addComponent(entity: Entity, component: any) {
