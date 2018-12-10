@@ -21,6 +21,6 @@
   "scripts": {
     "prebuild": "rm -rf build",
     "build": "rollup -c && madge ./build --circular",
-    "dev": "concurrently -n \"HTTP,WATCH\" -c \"bgCyan.bold,bgRed.bold\" \"http-server -o -c-1\" \"rollup -cw\""
+    "dev": "concurrently -n \"HTTP,WATCH\" -c \"bgCyan.bold,bgRed.bold\" \"http-server -s -o -c-1\" \"rollup -cw\""
   }
 }

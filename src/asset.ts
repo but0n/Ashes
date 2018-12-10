@@ -7,7 +7,7 @@ import { EntityMgr, Entity } from "./ECS/entityMgr";
 import { Transform } from "./transform";
 import { Shader } from "./shader";
 import { Camera } from "./camera";
-import { System } from "./ECS/system";
+import { QuadMesh } from "../mesh/quadMesh";
 
 export class Asset {
     static load(url, type: XMLHttpRequestResponseType = 'json') {
@@ -79,7 +79,7 @@ export class Asset {
         let sceneTrans: Transform = scene.components.Transform;
         // sceneTrans.translate[1] = -235;
         // sceneTrans.translate[2] = -250;
-        sceneTrans.scale[0] = sceneTrans.scale[1] = sceneTrans.scale[2] = 0.01;
+        // sceneTrans.scale[0] = sceneTrans.scale[1] = sceneTrans.scale[2] = 0.01;
 
         // filter mesh & material which meshRenderer required
         let renderTargets = EntityMgr.find('ash-entity[mesh][material]');
@@ -95,6 +95,14 @@ export class Asset {
         let meshRenderers: MeshRenderer[] = EntityMgr.getComponents(MeshRenderer.name);
 
         let transComponents: Transform[] = EntityMgr.getComponents(Transform.name);
+
+        let quad = EntityMgr.create('test-quad');
+        let qmesh = new QuadMesh();
+        let quadMR = new MeshRenderer(screen, qmesh, new Material(gltf.commonShader, 'test'));
+        EntityMgr.addComponent(quad, quadMR);
+        console.log(quadMR);
+
+        scene.appendChild(quad);
 
         let task = () => {
             // screen.clear();
