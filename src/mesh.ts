@@ -57,7 +57,7 @@ export class Accessor {
     max: number[];
     min: number[];
     size: number;
-    constructor({bufferView, byteOffset = 0, componentType, normalized = false, count, type, max, min}, name = '') {
+    constructor({bufferView, byteOffset = 0, componentType, normalized = false, count, type, max = [], min = []}, name = '') {
         this.attribute = name;
         this.bufferView = bufferView;
         this.byteOffset = byteOffset;
@@ -76,7 +76,7 @@ export class bufferView {
     byteOffset: number;
     byteStride: number;
     target: number;
-    buffer: WebGLBuffer;
+    buffer: WebGLBuffer = null;
     constructor(rawData: ArrayBuffer, {byteOffset = 0, byteLength, byteStride = 0, target = 34962}) {
         // this.rawData = rawData;
         this.byteOffset = byteOffset;

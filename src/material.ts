@@ -33,6 +33,9 @@ export class Material {
     }
 
     static bindAllTextures(mat: Material, ctx: WebGL2RenderingContext) {
+        if(mat.textures.length == 0) {
+            // FIXME:
+        }
         for (let tex of mat.textures) {
             Texture.bindTexture(ctx, tex);
             if(tex.isDirty) {
