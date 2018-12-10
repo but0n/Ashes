@@ -1,6 +1,10 @@
 import { EntityMgr, Entity } from "./ECS/entityMgr";
 import { vec3, mat4, vec4 } from "../node_modules/gl-matrix/lib/gl-matrix";
 import { Transform } from "./transform";
+import { ComponentSystem } from "./ECS/component";
+import { MeshRenderer } from "./meshRenderer";
+import { Material } from "./material";
+import { System } from "./ECS/system";
 
 export class Camera {
     entity: Entity;
@@ -33,3 +37,25 @@ export class Camera {
         mat4.lookAt(cam.view, trans.translate, cam.lookAt, cam.up);
     }
 }
+
+export class CameraSystem extends ComponentSystem {
+    group = [];
+    depends = [
+        Camera.name
+    ];
+    onUpdate() {
+        for(let {components} of this.group) {
+            let camera = components.Camera as Camera;
+            if(camera.isDirty) {
+                Camera.updateViewMatrix(camera);
+                // TODO: multiple scenes with multiple cameras
+                let meshRenderers = EntityMgr.getComponents<MeshRenderer>(MeshRenderer.name);
+                for(let mr of meshRenderers) {
+                    Material.setUniform(mr.materials[0], 'P', camera.projection);
+                    Material.setUniform(mr.materials[0], 'V', camera.view);
+                }
+                camera.isDirty = false;
+            }
+        }
+    }
+} System.registSystem(new CameraSystem());

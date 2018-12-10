@@ -1,13 +1,10 @@
-import { MeshRenderer, MeshRendererSystem } from "./meshRenderer";
+import { MeshRenderer } from "./meshRenderer";
 import { Material } from "./material";
-import { vec3, mat4, quat } from "../node_modules/gl-matrix/lib/gl-matrix";
 import { Render } from "./webgl2/render";
 import { gltfScene } from "./gltfScene";
-import { EntityMgr, Entity } from "./ECS/entityMgr";
-import { Transform } from "./transform";
+import { EntityMgr } from "./ECS/entityMgr";
 import { Shader } from "./shader";
-import { Camera } from "./camera";
-import { QuadMesh } from "../mesh/quadMesh";
+import { Mesh } from "./mesh";
 
 export class Asset {
     static load(url, type: XMLHttpRequestResponseType = 'json') {
@@ -39,8 +36,7 @@ export class Asset {
         });
     }
 
-    static async loadGLTF(path: string) {
-        let screen = new Render('#screen');
+    static async loadGLTF(path: string, screen: Render) {
 
         // parse current path
         let root: any = path.split('/');
@@ -57,32 +53,13 @@ export class Asset {
 
         // Load shader
         gltf.commonShader = await this.LoadShaderProgram('test');
-        let {scene} = new gltfScene(gltf, screen);
 
+        // Parse scene
+        let {scene} = new gltfScene(gltf);
 
-        let mainCamera = EntityMgr.create('camera');
-        let cameraTrans = mainCamera.components.Transform as Transform;
-        let camera = EntityMgr.addComponent(mainCamera, new Camera(screen.width / screen.height)) as Camera;
-        vec3.set(cameraTrans.translate, 0, 5, 10);
-        // let P = mat4.create();
-        // mat4.perspective(P, 45.0 * Math.PI / 180.0, screen.width / screen.height, 1, 10000);
-
-        // let V = mat4.create();
-        // mat4.lookAt(V, vec3.fromValues(0, 5, 10), vec3.fromValues(0, 0, 0), vec3.fromValues(0, 1, 0));
-
-        let yawAngle = 1;
-
-        scene.appendChild(mainCamera);
-
-        console.log(scene);
-        document.querySelector('body').appendChild(scene)
-        let sceneTrans: Transform = scene.components.Transform;
-        // sceneTrans.translate[1] = -235;
-        // sceneTrans.translate[2] = -250;
-        // sceneTrans.scale[0] = sceneTrans.scale[1] = sceneTrans.scale[2] = 0.01;
-
+        // Create meshRenders
         // filter mesh & material which meshRenderer required
-        let renderTargets = EntityMgr.find('ash-entity[mesh][material]');
+        let renderTargets = EntityMgr.getEntites([Mesh.name, Material.name], scene);
         for(let entity of renderTargets) {
             let mesh = entity.components.Mesh;
             let material = entity.components.Material;
@@ -92,51 +69,7 @@ export class Asset {
             }
             EntityMgr.addComponent(entity, mr);
         }
-        let meshRenderers: MeshRenderer[] = EntityMgr.getComponents(MeshRenderer.name);
-
-        let transComponents: Transform[] = EntityMgr.getComponents(Transform.name);
-
-        let quad = EntityMgr.create('test-quad');
-        let qmesh = new QuadMesh();
-        let quadMR = new MeshRenderer(screen, qmesh, new Material(gltf.commonShader, 'test'));
-        EntityMgr.addComponent(quad, quadMR);
-        console.log(quadMR);
-
-        scene.appendChild(quad);
-
-        let task = () => {
-            // screen.clear();
-
-            if(camera.isDirty) {
-                Camera.updateViewMatrix(camera);
-                for(let mr of meshRenderers) {
-                    Material.setUniform(mr.materials[0], 'P', camera.projection);
-                    Material.setUniform(mr.materials[0], 'V', camera.view);
-                }
-                camera.isDirty = false;
-            }
-
-            yawAngle += 0.1;
-            let trans: Transform = scene.components.Transform;
-            quat.fromEuler(trans.quaternion, 0, yawAngle, 0);
-            // quat.fromEuler(trans.quaternion, 0, 45, 0);
-
-            // for(let trans of transComponents) {
-            //     // if(trans.isDirty)
-            //     Transform.updateMatrix(trans);
-            // }
-
-
-            // for(let mr of meshRendererComponents) {
-            //     MeshRenderer.render(mr);
-            //     // break
-            // }
-            requestAnimationFrame(task);
-        }
-        requestAnimationFrame(task);
-
-        return gltf;
-
+        return scene;
     }
 
     static async loadBuffer(bufferPath) {

@@ -1,6 +1,5 @@
 import { EntityMgr } from "./ECS/entityMgr";
 import { Accessor, bufferView, Mesh } from "./mesh";
-import { Render } from "./webgl2/render";
 import { Texture } from "./texture";
 import { Material } from "./material";
 import { vec3, vec4, mat4 } from "../node_modules/gl-matrix/lib/gl-matrix";
@@ -9,7 +8,7 @@ import { TransformSystem, Transform } from "./transform";
 export class gltfScene {
     gltf;
     scene = EntityMgr.create('scene');
-    constructor(gltf, screen: Render) {
+    constructor(gltf) {
         this.gltf = gltf;
         let {scene, scenes, nodes} = gltf;
         //  BufferViews
