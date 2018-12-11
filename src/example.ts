@@ -7,6 +7,7 @@ import { Render } from "./webgl2/render";
 import { QuadMesh } from "../mesh/quadMesh";
 import { MeshRenderer } from "./meshRenderer";
 import { Material } from "./material";
+import { OrbitControl } from "./component/orbitControl";
 
 export class Example {
 
@@ -28,12 +29,14 @@ export class Example {
         EntityMgr.addComponent(quad, quadMR);
         console.log(quadMR);
 
+
         let mainCamera = EntityMgr.create('camera');
         let cameraTrans = mainCamera.components.Transform as Transform;
         EntityMgr.addComponent(mainCamera, new Camera(screen.width / screen.height));
         vec3.set(cameraTrans.translate, 0, 5, 10);
 
         scene.appendChild(mainCamera);
+        let control = EntityMgr.addComponent(mainCamera, new OrbitControl(screen));
 
         scene.appendChild(quad);
 

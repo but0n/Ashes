@@ -15,7 +15,7 @@ export class System {
             sys.onUpdate();
         }
         EntityMgr.hasNewMember = false;
-        this.deltaTime = Date.now() - this.lastTime;
+        this.deltaTime = (Date.now() - this.lastTime)/1000;
         this.lastTime = Date.now();
         if(!this.isStoped)
             requestAnimationFrame(this.loop.bind(this));
