@@ -90,9 +90,9 @@ export class OrbitControlSystem extends ComponentSystem {
         }
         ctr.pitch = Math.min(180, Math.max(0.01, ctr.pitch))
         // https://github.com/t01y/WebGL_Learning/blob/PBR/scripts/canvas.js#L752
-        ctr.trans.translate[0] = ctr.distance * Math.sin(ctr.pitch/180*Math.PI) * Math.cos(ctr.yaw/180*Math.PI);
-        ctr.trans.translate[1] = ctr.distance * Math.cos(ctr.pitch/180*Math.PI);
-        ctr.trans.translate[2] = ctr.distance * Math.sin(ctr.pitch/180*Math.PI) * Math.sin(ctr.yaw/180*Math.PI);
+        ctr.trans.translate[0] = ctr.camera.lookAt[0] + ctr.distance * Math.sin(ctr.pitch/180*Math.PI) * Math.cos(ctr.yaw/180*Math.PI);
+        ctr.trans.translate[1] = ctr.camera.lookAt[1] + ctr.distance * Math.cos(ctr.pitch/180*Math.PI);
+        ctr.trans.translate[2] = ctr.camera.lookAt[2] + ctr.distance * Math.sin(ctr.pitch/180*Math.PI) * Math.sin(ctr.yaw/180*Math.PI);
         ctr.camera.isDirty = true;
     }
 } System.registSystem(new OrbitControlSystem());
