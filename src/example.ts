@@ -16,7 +16,7 @@ export class Example {
         // gltf = '/static/gltfsamples/Suzanne/Suzanne.gltf';
         // gltf = '/static/gltfsamples/toon_shader_tutorial_files/scene.gltf';
         // gltf = '/static/gltfsamples/nierautomata__2b/scene.gltf';
-        // gltf = '/static/gltfsamples/sketchfab_3d_editor_challenge_littlest_tokyo/scene.gltf';
+        gltf = '/static/gltfsamples/sketchfab_3d_editor_challenge_littlest_tokyo/scene.gltf';
 
         let commonMat = await Asset.LoadMaterial('test');
         let screen = new Render('#screen');

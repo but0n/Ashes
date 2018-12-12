@@ -18,17 +18,18 @@ body {
     background-color: #ededed;
 	top: 0;
 	left: 0;
-	z-index: -1;
 }
 
 .github-corner {
 	position: fixed;
 	right: 0;
 }
-body ash-entity {
-	max-width: 300px;
+body > ash-entity {
+	overflow: scroll;
+	z-index: 1;
 }
 ash-entity {
+	max-width: 200px;
 	display: block;
 	min-height: 10px;
 	border-style: solid;
