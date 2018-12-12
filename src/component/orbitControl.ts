@@ -14,6 +14,7 @@ export class OrbitControl {
     speed: number;
     distance: number;
 
+    // Damping stuff
     vyaw = 0;
     vpitch = 0;
     vscale = 0;
@@ -44,10 +45,8 @@ export class OrbitControl {
         this.vpitch += this.deltaY;
         this.vyaw += this.deltaX;
         // OrbitControlSystem.updatePosition(this);
-        // console.log(this.pitch, this.yaw, trans.translate);
     }
     scrollHandler = ({deltaY}) => {
-        console.log(deltaY);
         // vec3.scaleAndAdd(this.trans.translate, this.trans.translate, this.direction, deltaY);
         this.vscale += deltaY * this.speed * 0.05;
         // OrbitControlSystem.updatePosition(this);
