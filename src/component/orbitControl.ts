@@ -74,12 +74,6 @@ export class OrbitControlSystem extends ComponentSystem {
         for(let {components} of this.group) {
             OrbitControlSystem.updatePosition(components.OrbitControl);
         }
-        // if (Math.abs(vy) > threshold && Math.abs(vx) > threshold) {
-        //     vx *= damping;
-        //     vy *= damping;
-        //     this.rotateScene(mod, normal);
-        // }
-
     }
 
     static updatePosition(ctr: OrbitControl) {
