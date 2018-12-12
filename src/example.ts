@@ -17,6 +17,7 @@ export class Example {
         // gltf = '/static/gltfsamples/toon_shader_tutorial_files/scene.gltf';
         // gltf = '/static/gltfsamples/nierautomata__2b/scene.gltf';
         // gltf = '/static/gltfsamples/sketchfab_3d_editor_challenge_littlest_tokyo/scene.gltf';
+        // gltf = '/static/hylian_shield/scene.gltf';
 
         let commonMat = await Asset.LoadMaterial('test');
         let screen = new Render('#screen');
@@ -28,11 +29,12 @@ export class Example {
         let quadMR = new MeshRenderer(screen, qmesh, commonMat);
         EntityMgr.addComponent(quad, quadMR);
         console.log(quadMR);
+        quad.components.Transform.translate[0] = 2;
 
 
         let mainCamera = EntityMgr.create('camera');
         let cameraTrans = mainCamera.components.Transform as Transform;
-        EntityMgr.addComponent(mainCamera, new Camera(screen.width / screen.height));
+        let cam: Camera = EntityMgr.addComponent(mainCamera, new Camera(screen.width / screen.height));
         vec3.set(cameraTrans.translate, 0, 0, 10);
 
         scene.appendChild(mainCamera);
