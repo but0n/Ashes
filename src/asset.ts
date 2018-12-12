@@ -7,24 +7,24 @@ import { Shader } from "./shader";
 import { Mesh } from "./mesh";
 
 export class Asset {
-    static load(url, type: XMLHttpRequestResponseType = 'json') {
-        return new Promise((resolve, reject) => {
-            let xhr = new XMLHttpRequest();
-            xhr.open('GET', url);
-            xhr.responseType = type;
-            xhr.onload = function () {
-                if (this.status >= 200 && this.status < 300) {
-                    resolve(xhr.response);
-                } else {
-                    reject(xhr.statusText);
-                }
-            }
-            xhr.onerror = function () {
-                reject(xhr.statusText);
-            }
-            xhr.send();
-        });
-    }
+    // static load(url, type: XMLHttpRequestResponseType = 'json') {
+    //     return new Promise((resolve, reject) => {
+    //         let xhr = new XMLHttpRequest();
+    //         xhr.open('GET', url);
+    //         xhr.responseType = type;
+    //         xhr.onload = function () {
+    //             if (this.status >= 200 && this.status < 300) {
+    //                 resolve(xhr.response);
+    //             } else {
+    //                 reject(xhr.statusText);
+    //             }
+    //         }
+    //         xhr.onerror = function () {
+    //             reject(xhr.statusText);
+    //         }
+    //         xhr.send();
+    //     });
+    // }
 
     static loadImage(url) {
         return new Promise((resolve, reject) => {
@@ -43,7 +43,7 @@ export class Asset {
         root.pop();
         root = root.join('/') + '/';
         // Load gltf
-        let gltf: any = await this.load(path);
+        let gltf: any = await (await fetch(path)).json();
 
         // Download buffers
         gltf.buffers = await Promise.all(gltf.buffers.map(({ uri }) => this.loadBuffer(root + uri)));
@@ -73,14 +73,15 @@ export class Asset {
     }
 
     static async loadBuffer(bufferPath) {
-        return await this.load(bufferPath, 'arraybuffer');
+        return await (await fetch(bufferPath)).arrayBuffer();
+        // return await fetch(bufferPath).then(e => e.arrayBuffer());
     }
 
     static async LoadShaderProgram(url) {
         url = Material.SHADER_PATH + url;
         let vertPath = url + '.vs.glsl';
         let fragPath = url + '.fs.glsl';
-        let [vert, frag] = await Promise.all([vertPath, fragPath].map(path => Asset.load(path, 'text')));
+        let [vert, frag] = await Promise.all([vertPath, fragPath].map(path => fetch(path).then(e=>e.text())));
         console.log(vert);
         console.log(frag);
         return new Shader(vert, frag);
