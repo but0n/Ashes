@@ -1,8 +1,10 @@
 import { Render } from "../webgl2/render";
 import { Entity, EntityMgr } from "../ECS/entityMgr";
-import { Camera } from "../camera";
+import { Camera, CameraSystem } from "../camera";
 import { Transform } from "../transform";
 import { vec3, mat4, vec4 } from "../../node_modules/gl-matrix/lib/gl-matrix";
+import { ComponentSystem } from "../ECS/component";
+import { System } from "../ECS/system";
 
 export class OrbitControl {
     deltaX: number;
@@ -12,12 +14,21 @@ export class OrbitControl {
     speed: number;
     distance: number;
 
+    vyaw = 0;
+    vpitch = 0;
+    vscale = 0;
+    threshold = 0.001;
+    damping: number;
+
+
     camera: Camera;
     trans: Transform;
-    constructor(screen: Render, target: Entity, pitch = 90, yaw = 90, speed = 1) {
+    constructor(screen: Render, target: Entity, pitch = 90, yaw = 90, speed = 0.2, damping = 0.9) {
         this.pitch = pitch;
         this.yaw = yaw;
         this.speed = speed;
+        this.damping = damping;
+
         this.camera = target.components.Camera;
         this.trans = target.components.Transform;
         this.distance = vec3.distance(this.trans.translate, this.camera.lookAt);
@@ -30,26 +41,19 @@ export class OrbitControl {
         let {movementX, movementY} = e;
         this.deltaX = movementX * this.speed;
         this.deltaY = -movementY * this.speed;
-        this.pitch += this.deltaY;
-        this.yaw += this.deltaX;
-        this.pitch = Math.min(180, Math.max(0.01, this.pitch))
-        OrbitControl.updatePosition(this);
+        this.vpitch += this.deltaY;
+        this.vyaw += this.deltaX;
+        // OrbitControlSystem.updatePosition(this);
         // console.log(this.pitch, this.yaw, trans.translate);
     }
     scrollHandler = ({deltaY}) => {
         console.log(deltaY);
         // vec3.scaleAndAdd(this.trans.translate, this.trans.translate, this.direction, deltaY);
-        this.distance += deltaY * 0.1;
-        OrbitControl.updatePosition(this);
+        this.vscale += deltaY * this.speed * 0.05;
+        // OrbitControlSystem.updatePosition(this);
     }
 
-    static updatePosition(controler: OrbitControl) {
-        // https://github.com/t01y/WebGL_Learning/blob/PBR/scripts/canvas.js#L752
-        controler.trans.translate[0] = controler.distance * Math.sin(controler.pitch/180*Math.PI) * Math.cos(controler.yaw/180*Math.PI);
-        controler.trans.translate[1] = controler.distance * Math.cos(controler.pitch/180*Math.PI);
-        controler.trans.translate[2] = controler.distance * Math.sin(controler.pitch/180*Math.PI) * Math.sin(controler.yaw/180*Math.PI);
-        controler.camera.isDirty = true;
-    }
+
     static bindEvents(screen: HTMLElement, controler: OrbitControl) {
         screen.addEventListener('mousedown', () => {
             screen.addEventListener('mousemove', controler.moveHandler)
@@ -60,3 +64,42 @@ export class OrbitControl {
         screen.addEventListener('wheel', controler.scrollHandler);
     }
 }
+
+export class OrbitControlSystem extends ComponentSystem {
+    group = [];
+    depends = [
+        OrbitControl.name
+    ];
+    onUpdate() {
+        for(let {components} of this.group) {
+            OrbitControlSystem.updatePosition(components.OrbitControl);
+        }
+        // if (Math.abs(vy) > threshold && Math.abs(vx) > threshold) {
+        //     vx *= damping;
+        //     vy *= damping;
+        //     this.rotateScene(mod, normal);
+        // }
+
+    }
+
+    static updatePosition(ctr: OrbitControl) {
+        if(Math.abs(ctr.vyaw) > ctr.threshold) {
+            ctr.yaw += ctr.vyaw;
+            ctr.vyaw *= ctr.damping;
+        }
+        if(Math.abs(ctr.vpitch) > ctr.threshold) {
+            ctr.pitch += ctr.vpitch;
+            ctr.vpitch *= ctr.damping;
+        }
+        if(Math.abs(ctr.vscale) > ctr.threshold) {
+            ctr.distance += ctr.vscale;
+            ctr.vscale *= ctr.damping;
+        }
+        ctr.pitch = Math.min(180, Math.max(0.01, ctr.pitch))
+        // https://github.com/t01y/WebGL_Learning/blob/PBR/scripts/canvas.js#L752
+        ctr.trans.translate[0] = ctr.distance * Math.sin(ctr.pitch/180*Math.PI) * Math.cos(ctr.yaw/180*Math.PI);
+        ctr.trans.translate[1] = ctr.distance * Math.cos(ctr.pitch/180*Math.PI);
+        ctr.trans.translate[2] = ctr.distance * Math.sin(ctr.pitch/180*Math.PI) * Math.sin(ctr.yaw/180*Math.PI);
+        ctr.camera.isDirty = true;
+    }
+} System.registSystem(new OrbitControlSystem());
