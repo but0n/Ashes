@@ -36,7 +36,7 @@ export class Example {
         vec3.set(cameraTrans.translate, 0, 0, 10);
 
         scene.appendChild(mainCamera);
-        let control = EntityMgr.addComponent(mainCamera, new OrbitControl(screen));
+        let control = new OrbitControl(screen, mainCamera);
 
         scene.appendChild(quad);
 
