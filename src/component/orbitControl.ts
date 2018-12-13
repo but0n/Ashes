@@ -51,7 +51,7 @@ export class OrbitControl {
             let doy = vec3.dot(this.direction, this.Y);
             let doz = vec3.dot(this.direction, this.Z);
             let dx = (1-Math.abs(dox)) * (Math.sign(doz)+0.01) * -movementX;
-            let dy = (1-Math.abs(doy)) * (Math.sign(doy)+0.01) * movementY;
+            let dy = (1-Math.abs(doy)) * movementY;
             // let dz = (1-Math.abs(doz)) * (Math.sign(doz)+0.01) * (-dx + dy);
             this.camera.lookAt[0] += dx * speed;
             this.camera.lookAt[1] += dy * speed;
