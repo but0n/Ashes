@@ -18,6 +18,10 @@ export class OrbitControl {
     private Y = vec3.fromValues(0, 1, 0);
     private Z = vec3.fromValues(0, 0, 1);
 
+    vx = 0;
+    vy = 0;
+    vz = 0;
+
     // Damping stuff
     vyaw = 0;
     vpitch = 0;
@@ -46,20 +50,22 @@ export class OrbitControl {
     moveHandler = (e) => {
         let {movementX, movementY, buttons} = e;
         if(buttons == 2) {  // Drag
-            let speed = 0.1;
+            let speed = 0.01;
             let dox = vec3.dot(this.direction, this.X);
             let doy = vec3.dot(this.direction, this.Y);
             let doz = vec3.dot(this.direction, this.Z);
             let dx = (1-Math.abs(dox)) * (Math.sign(doz)+0.01) * -movementX;
             let dy = (1-Math.abs(doy)) * movementY;
             // let dz = (1-Math.abs(doz)) * (Math.sign(doz)+0.01) * (-dx + dy);
-            this.camera.lookAt[0] += dx * speed;
-            this.camera.lookAt[1] += dy * speed;
+            // this.camera.lookAt[0] += dx * speed;
+            // this.camera.lookAt[1] += dy * speed;
             // this.camera.lookAt[2] += dz;
-            this.trans.translate[0] += dx * speed;
-            this.trans.translate[1] += dy * speed;
+            // this.trans.translate[0] += dx * speed;
+            // this.trans.translate[1] += dy * speed;
             // this.trans.translate[2] += dz;
             // console.log(dx, dy, dz);
+            this.vx += dx * speed;
+            this.vy += dy * speed;
 
         } else {    // Rotate
             this.deltaX = movementX * this.speed;
@@ -113,6 +119,19 @@ export class OrbitControlSystem extends ComponentSystem {
             ctr.distance = Math.max(ctr.distance, 1.0);
             ctr.vscale *= ctr.damping;
         }
+
+        if(Math.abs(ctr.vx) > ctr.threshold) {
+            ctr.camera.lookAt[0] += ctr.vx * ctr.speed;
+            ctr.trans.translate[0] += ctr.vx * ctr.speed;
+            ctr.vx *= ctr.damping;
+        }
+        if(Math.abs(ctr.vy) > ctr.threshold) {
+            ctr.camera.lookAt[1] += ctr.vy * ctr.speed;
+            ctr.trans.translate[1] += ctr.vy * ctr.speed;
+            ctr.vy *= ctr.damping;
+        }
+
+
         ctr.pitch = Math.min(180, Math.max(0.01, ctr.pitch))
         // https://github.com/t01y/WebGL_Learning/blob/PBR/scripts/canvas.js#L752
         ctr.trans.translate[0] = ctr.camera.lookAt[0] + ctr.distance * Math.sin(ctr.pitch/180*Math.PI) * Math.cos(ctr.yaw/180*Math.PI);
