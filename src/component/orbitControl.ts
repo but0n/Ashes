@@ -86,6 +86,7 @@ export class OrbitControlSystem extends ComponentSystem {
         }
         if(Math.abs(ctr.vscale) > ctr.threshold) {
             ctr.distance += ctr.vscale;
+            ctr.distance = Math.max(ctr.distance, 1.0);
             ctr.vscale *= ctr.damping;
         }
         ctr.pitch = Math.min(180, Math.max(0.01, ctr.pitch))
