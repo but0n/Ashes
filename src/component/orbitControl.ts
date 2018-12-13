@@ -13,6 +13,10 @@ export class OrbitControl {
     yaw: number;
     speed: number;
     distance: number;
+    direction: Float32Array[] = vec3.create();
+    private X = vec3.fromValues(1, 0, 0);
+    private Y = vec3.fromValues(0, 1, 0);
+    private Z = vec3.fromValues(0, 0, 1);
 
     // Damping stuff
     vyaw = 0;
@@ -37,13 +41,32 @@ export class OrbitControl {
         EntityMgr.addComponent(target, this);
 
         OrbitControl.bindEvents(screen.canvas, this);
+        OrbitControlSystem.updatePosition(this);
     }
     moveHandler = (e) => {
-        let {movementX, movementY} = e;
-        this.deltaX = movementX * this.speed;
-        this.deltaY = -movementY * this.speed;
-        this.vpitch += this.deltaY;
-        this.vyaw += this.deltaX;
+        let {movementX, movementY, buttons} = e;
+        if(buttons == 2) {  // Drag
+            let speed = 0.1;
+            let dox = vec3.dot(this.direction, this.X);
+            let doy = vec3.dot(this.direction, this.Y);
+            let doz = vec3.dot(this.direction, this.Z);
+            let dx = (1-Math.abs(dox)) * (Math.sign(doz)+0.01) * -movementX;
+            let dy = (1-Math.abs(doy)) * (Math.sign(doy)+0.01) * movementY;
+            // let dz = (1-Math.abs(doz)) * (Math.sign(doz)+0.01) * (-dx + dy);
+            this.camera.lookAt[0] += dx * speed;
+            this.camera.lookAt[1] += dy * speed;
+            // this.camera.lookAt[2] += dz;
+            this.trans.translate[0] += dx * speed;
+            this.trans.translate[1] += dy * speed;
+            // this.trans.translate[2] += dz;
+            // console.log(dx, dy, dz);
+
+        } else {    // Rotate
+            this.deltaX = movementX * this.speed;
+            this.deltaY = -movementY * this.speed;
+            this.vpitch += this.deltaY;
+            this.vyaw += this.deltaX;
+        }
         // OrbitControlSystem.updatePosition(this);
     }
     scrollHandler = ({deltaY}) => {
@@ -54,6 +77,7 @@ export class OrbitControl {
 
 
     static bindEvents(screen: HTMLElement, controler: OrbitControl) {
+        screen.oncontextmenu = () => false;
         screen.addEventListener('mousedown', () => {
             screen.addEventListener('mousemove', controler.moveHandler)
         })
@@ -94,6 +118,10 @@ export class OrbitControlSystem extends ComponentSystem {
         ctr.trans.translate[0] = ctr.camera.lookAt[0] + ctr.distance * Math.sin(ctr.pitch/180*Math.PI) * Math.cos(ctr.yaw/180*Math.PI);
         ctr.trans.translate[1] = ctr.camera.lookAt[1] + ctr.distance * Math.cos(ctr.pitch/180*Math.PI);
         ctr.trans.translate[2] = ctr.camera.lookAt[2] + ctr.distance * Math.sin(ctr.pitch/180*Math.PI) * Math.sin(ctr.yaw/180*Math.PI);
+        // NOTE: direction from focus to camera position, not the direction of view
+        vec3.sub(ctr.direction, ctr.trans.translate, ctr.camera.lookAt);
+        vec3.normalize(ctr.direction, ctr.direction);
+
         ctr.camera.isDirty = true;
     }
 } System.registSystem(new OrbitControlSystem());
