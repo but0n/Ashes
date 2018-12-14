@@ -35,8 +35,7 @@ float G_UE4(float NoV, float NoH, float VoH, float NoL, float a) {
 
 // Distribution AKA normal distribution function (NDF)
 // Trowbridge-Reitz
-float D_GGX(float a, float NoH)
-{
+float D_GGX(float a, float NoH) {
     a = a * a;
     float f = (NoH * a - NoH) * NoH + 1.0;  // NoH * NoH * (a - 1.0) + 1.0;
     return a / (PI * f * f);
