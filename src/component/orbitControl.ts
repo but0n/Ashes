@@ -13,7 +13,8 @@ export class OrbitControl {
     yaw: number;
     speed: number;
     distance: number;
-    direction: Float32Array[] = vec3.create();
+    movement: Float32Array = vec3.create();
+    unprojectMatrix: Float32Array = mat4.create();
     private X = vec3.fromValues(1, 0, 0);
     private Y = vec3.fromValues(0, 1, 0);
     private Z = vec3.fromValues(0, 0, 1);
@@ -50,22 +51,20 @@ export class OrbitControl {
     moveHandler = (e) => {
         let {movementX, movementY, buttons} = e;
         if(buttons == 2) {  // Drag
-            let speed = 0.01;
-            let dox = vec3.dot(this.direction, this.X);
-            let doy = vec3.dot(this.direction, this.Y);
-            let doz = vec3.dot(this.direction, this.Z);
-            let dx = (1-Math.abs(dox)) * (Math.sign(doz)+0.01) * -movementX;
-            let dy = (1-Math.abs(doy)) * movementY;
-            // let dz = (1-Math.abs(doz)) * (Math.sign(doz)+0.01) * (-dx + dy);
-            // this.camera.lookAt[0] += dx * speed;
-            // this.camera.lookAt[1] += dy * speed;
-            // this.camera.lookAt[2] += dz;
-            // this.trans.translate[0] += dx * speed;
-            // this.trans.translate[1] += dy * speed;
-            // this.trans.translate[2] += dz;
-            // console.log(dx, dy, dz);
-            this.vx += dx * speed;
-            this.vy += dy * speed;
+            // // this.vx += dx * speed;
+            // // this.vy += dy * speed;
+
+
+            // this.movement[0] = (movementX / window.innerWidth) * 2 - 1;
+            // this.movement[1] = -(movementY / window.innerHeight) * 2 + 1;
+            // this.movement[2] = 0.5;
+            // mat4.invert(this.unprojectMatrix, this.camera.projection);
+            // mat4.mul(this.unprojectMatrix, this.unprojectMatrix, this.camera.view);
+
+            // vec3.transformMat4(this.movement, this.movement, this.unprojectMatrix);
+
+            // vec3.add(this.camera.lookAt, this.camera.lookAt, this.movement);
+
 
         } else {    // Rotate
             this.deltaX = movementX * this.speed;
@@ -120,16 +119,6 @@ export class OrbitControlSystem extends ComponentSystem {
             ctr.vscale *= ctr.damping;
         }
 
-        if(Math.abs(ctr.vx) > ctr.threshold) {
-            ctr.camera.lookAt[0] += ctr.vx * ctr.speed;
-            ctr.trans.translate[0] += ctr.vx * ctr.speed;
-            ctr.vx *= ctr.damping;
-        }
-        if(Math.abs(ctr.vy) > ctr.threshold) {
-            ctr.camera.lookAt[1] += ctr.vy * ctr.speed;
-            ctr.trans.translate[1] += ctr.vy * ctr.speed;
-            ctr.vy *= ctr.damping;
-        }
 
 
         ctr.pitch = Math.min(180, Math.max(0.01, ctr.pitch))
@@ -137,9 +126,6 @@ export class OrbitControlSystem extends ComponentSystem {
         ctr.trans.translate[0] = ctr.camera.lookAt[0] + ctr.distance * Math.sin(ctr.pitch/180*Math.PI) * Math.cos(ctr.yaw/180*Math.PI);
         ctr.trans.translate[1] = ctr.camera.lookAt[1] + ctr.distance * Math.cos(ctr.pitch/180*Math.PI);
         ctr.trans.translate[2] = ctr.camera.lookAt[2] + ctr.distance * Math.sin(ctr.pitch/180*Math.PI) * Math.sin(ctr.yaw/180*Math.PI);
-        // NOTE: direction from focus to camera position, not the direction of view
-        vec3.sub(ctr.direction, ctr.trans.translate, ctr.camera.lookAt);
-        vec3.normalize(ctr.direction, ctr.direction);
 
         ctr.camera.isDirty = true;
     }
