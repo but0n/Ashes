@@ -13,7 +13,7 @@ export class Material {
 
     static setUniform(mat: Material, key: string, value) {
         if(mat.shader.uniforms[key] == null) {
-            console.warn(`${key} doesn't found!`);
+            // console.warn(`${key} doesn't found!`);
             return;
         }
         mat.shader.uniforms[key].value = value;
