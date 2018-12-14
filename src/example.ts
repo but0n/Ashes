@@ -24,14 +24,6 @@ export class Example {
 
         let scene = await Asset.loadGLTF(gltf, screen);
 
-        let quad = EntityMgr.create('test-quad');
-        let qmesh = new QuadMesh();
-        let quadMR = new MeshRenderer(screen, qmesh, commonMat);
-        EntityMgr.addComponent(quad, quadMR);
-        console.log(quadMR);
-        quad.components.Transform.translate[0] = 2;
-
-
         let mainCamera = EntityMgr.create('camera');
         let cameraTrans = mainCamera.components.Transform as Transform;
         let cam: Camera = EntityMgr.addComponent(mainCamera, new Camera(screen.width / screen.height));
@@ -39,6 +31,16 @@ export class Example {
 
         scene.appendChild(mainCamera);
         let control = new OrbitControl(screen, mainCamera);
+
+        // BRDF test
+        let brdfLUT = await Asset.LoadMaterial('brdf');
+
+        let quad = EntityMgr.create('test-quad');
+        let qmesh = new QuadMesh();
+        let quadMR = new MeshRenderer(screen, qmesh, brdfLUT);
+        EntityMgr.addComponent(quad, quadMR);
+        console.log(quadMR);
+        quad.components.Transform.translate[0] = 2;
 
         scene.appendChild(quad);
 
