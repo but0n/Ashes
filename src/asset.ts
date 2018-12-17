@@ -36,7 +36,7 @@ export class Asset {
         });
     }
 
-    static async loadGLTF(path: string, screen: Render) {
+    static async loadGLTF(path: string, screen: Render, shader = 'stylize') {
 
         // parse current path
         let root: any = path.split('/');
@@ -52,7 +52,7 @@ export class Asset {
         gltf.images = await Promise.all(gltf.images.map(({ uri }) => this.loadImage(root + uri)));
 
         // Load shader
-        gltf.commonShader = await this.LoadShaderProgram('test');
+        gltf.commonShader = await this.LoadShaderProgram(shader);
 
         // Parse scene
         let {scene} = new gltfScene(gltf);
