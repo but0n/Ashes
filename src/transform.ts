@@ -5,6 +5,7 @@ import { System } from "./ECS/system";
 
 export class Transform {
     entity: Entity;
+    worldPos: Float32Array;
     translate: Float32Array;
     rotate: Float32Array;
     scale: Float32Array;
@@ -15,6 +16,7 @@ export class Transform {
     isVisible: boolean = true;
     isDirty: boolean = false;
     constructor() {
+        this.worldPos = vec3.fromValues(0, 0, 0);
         this.translate = vec3.fromValues(0, 0, 0);
         this.rotate = vec3.fromValues(0, 0, 0);
         this.scale = vec3.fromValues(1, 1, 1);
@@ -85,7 +87,10 @@ export class TransformSystem extends ComponentSystem {
             // if(world.isDirty) {
             //     this.updateMatrix(world);
             // }
+            // Update world matrix
             mat4.mul(trans.worldMatrix, world.worldMatrix, trans.localMatrix);
+            // Update world position
+            vec3.transformMat4(trans.worldPos, trans.translate, trans.worldMatrix);
         } else {    // if current node is the root of world
             mat4.copy(trans.worldMatrix, trans.localMatrix);
         }
