@@ -14,23 +14,29 @@ export class gltfScene {
         //  BufferViews
         gltf.bufferViews = gltf.bufferViews.map(bv => new bufferView(gltf.buffers[bv.buffer], bv));
 
-        // Textures
-        gltf.textures = gltf.textures.map(({source, sampler}) => new Texture(gltf.images[source], gltf.samplers[sampler]));
-
         // Materials
         console.log(gltf.materials[0]);
         gltf.materials = gltf.materials.map(config => {
             let mat = new Material(gltf.commonShader, config.name);
             console.log(config);
             for(let key in config) {
-                let {index, texCoord, baseColorTexture} = config[key];
-                if(index != null && texCoord != null) {
-                    let texture = gltf.textures[index];
+                let {index, texCoord} = config[key];
+                if(index != null && texCoord != null) { // common texture
+                    let {source, sampler} = gltf.textures[index];
+                    let texture = new Texture(gltf.images[source], gltf.samplers[sampler]);
                     Material.setTexture(mat, key, texture);
-                } else if(baseColorTexture != null) {
-                    let {index, texCoord} = baseColorTexture;
-                    let texture = gltf.textures[index];
-                    Material.setTexture(mat, 'baseColorTexture', texture);
+                }
+                if(key == 'pbrMetallicRoughness') {
+                    let pbrOptions = config[key];
+                    for(let opt in pbrOptions) {
+                        let {index, texCoord} = pbrOptions[opt];
+                        if(index != null && texCoord != null) { // common texture
+                            let {source, sampler} = gltf.textures[index];
+                            let texture = new Texture(gltf.images[source], gltf.samplers[sampler]);
+
+                            Material.setTexture(mat, opt, texture);
+                        }
+                    }
                 }
             }
             return mat;
