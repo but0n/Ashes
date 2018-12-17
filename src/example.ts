@@ -19,7 +19,6 @@ export class Example {
         // gltf = '/static/gltfsamples/sketchfab_3d_editor_challenge_littlest_tokyo/scene.gltf';
         // gltf = '/static/hylian_shield/scene.gltf';
 
-        let commonMat = await Asset.LoadMaterial('test');
         let screen = new Render('#screen');
 
         let scene = await Asset.loadGLTF(gltf, screen);

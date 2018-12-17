@@ -134,7 +134,7 @@ export class Uniform {
             case WebGLRenderingContext.FLOAT_VEC2:
                 return 'uniform2f';
             case WebGLRenderingContext.FLOAT_VEC3:
-                return 'uniform3f';
+                return 'uniform3fv';
             case WebGLRenderingContext.FLOAT_VEC4:
                 return 'uniform4f';
 

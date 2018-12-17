@@ -46,6 +46,7 @@ export class CameraSystem extends ComponentSystem {
     onUpdate() {
         for(let {components} of this.group) {
             let camera = components.Camera as Camera;
+            let trans = components.Transform as Transform;
             if(camera.isDirty) {
                 Camera.updateViewMatrix(camera);
                 // TODO: multiple scenes with multiple cameras
@@ -53,6 +54,7 @@ export class CameraSystem extends ComponentSystem {
                 for(let mr of meshRenderers) {
                     Material.setUniform(mr.materials[0], 'P', camera.projection);
                     Material.setUniform(mr.materials[0], 'V', camera.view);
+                    Material.setUniform(mr.materials[0], 'u_Camera', trans.worldPos);
                 }
                 camera.isDirty = false;
             }
