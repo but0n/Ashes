@@ -20,12 +20,13 @@ export class Example {
         // gltf = '/static/gltfsamples/sketchfab_3d_editor_challenge_littlest_tokyo/scene.gltf';
         // gltf = '/static/gltfsamples/hylian_shield/scene.gltf';
         gltf = '/static/gltfsamples/FlightHelmet/glTF/FlightHelmet.gltf';
+        gltf = '/static/kalestra_the_sorceress/scene.gltf';
 
         let screen = new Render('#screen');
 
         let scene = await Asset.loadGLTF(gltf, screen);
         let root = scene.components.Transform as Transform;
-        root.scale[0] = root.scale[1] = root.scale[2] = 10;
+        // root.scale[0] = root.scale[1] = root.scale[2] = 10;
 
 
         let mainCamera = EntityMgr.create('camera');
