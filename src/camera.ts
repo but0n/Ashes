@@ -17,7 +17,7 @@ export class Camera {
     up: Float32Array;
     lookAt: Float32Array;
     isDirty: boolean = true;
-    constructor(aspect: number = 1, fov = 45, near = 1, far = 10000) {
+    constructor(aspect: number = 1, fov = 45, near = 0.1, far = 1000) {
         this.aspect = aspect
         this.fov = fov;
         this.near = near;

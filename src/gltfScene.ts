@@ -21,24 +21,31 @@ export class gltfScene {
             console.log(config);
             for(let key in config) {
                 let {index, texCoord} = config[key];
-                if(index != null && texCoord != null) { // common texture
+                if(index != null) { // common texture
                     let {source, sampler} = gltf.textures[index];
-                    let texture = new Texture(gltf.images[source], gltf.samplers[sampler]);
+                    let currentSampler;
+                    if(gltf.samplers != null)
+                        currentSampler = gltf.samplers[sampler];
+                    let texture = new Texture(gltf.images[source], currentSampler);
                     Material.setTexture(mat, key, texture);
                 }
                 if(key == 'pbrMetallicRoughness') {
                     let pbrOptions = config[key];
                     for(let opt in pbrOptions) {
                         let {index, texCoord} = pbrOptions[opt];
-                        if(index != null && texCoord != null) { // common texture
+                        if(index != null) { // common texture
                             let {source, sampler} = gltf.textures[index];
-                            let texture = new Texture(gltf.images[source], gltf.samplers[sampler]);
+                            let currentSampler;
+                            if(gltf.samplers != null)
+                                currentSampler = gltf.samplers[sampler];
+                            let texture = new Texture(gltf.images[source], currentSampler);
 
                             Material.setTexture(mat, opt, texture);
                         }
                     }
                 }
             }
+            Material.setTexture(mat, 'brdfLUT', new Texture(gltf.brdfLUT, {minFilter: WebGL2RenderingContext.LINEAR}));
             return mat;
         });
 

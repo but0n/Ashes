@@ -8,20 +8,25 @@ import { QuadMesh } from "../mesh/quadMesh";
 import { MeshRenderer } from "./meshRenderer";
 import { Material } from "./material";
 import { OrbitControl } from "./component/orbitControl";
+import { Texture } from "./texture";
 
 export class Example {
 
     static async run() {
         let gltf = '/static/gltfsamples/BoxTextured/BoxTextured.gltf';
         // gltf = '/static/gltfsamples/Suzanne/Suzanne.gltf';
-        // gltf = '/static/gltfsamples/toon_shader_tutorial_files/scene.gltf';
+        gltf = '/static/gltfsamples/toon_shader_tutorial_files/scene.gltf';
         // gltf = '/static/gltfsamples/nierautomata__2b/scene.gltf';
         // gltf = '/static/gltfsamples/sketchfab_3d_editor_challenge_littlest_tokyo/scene.gltf';
-        gltf = '/static/gltfsamples/hylian_shield/scene.gltf';
+        // gltf = '/static/gltfsamples/hylian_shield/scene.gltf';
+        gltf = '/static/gltfsamples/FlightHelmet/glTF/FlightHelmet.gltf';
 
         let screen = new Render('#screen');
 
         let scene = await Asset.loadGLTF(gltf, screen);
+        let root = scene.components.Transform as Transform;
+        root.scale[0] = root.scale[1] = root.scale[2] = 10;
+
 
         let mainCamera = EntityMgr.create('camera');
         let cameraTrans = mainCamera.components.Transform as Transform;
@@ -32,16 +37,16 @@ export class Example {
         let control = new OrbitControl(screen, mainCamera);
 
         // BRDF test
-        let brdfLUT = await Asset.LoadMaterial('brdf');
+        let brdf = await Asset.LoadMaterial('brdf');
 
         let quad = EntityMgr.create('test-quad');
         let qmesh = new QuadMesh();
-        let quadMR = new MeshRenderer(screen, qmesh, brdfLUT);
+        let quadMR = new MeshRenderer(screen, qmesh, brdf);
         EntityMgr.addComponent(quad, quadMR);
         console.log(quadMR);
         quad.components.Transform.translate[0] = 2;
 
-        scene.appendChild(quad);
+        // scene.appendChild(quad);
 
         document.querySelector('body').appendChild(scene)
 
