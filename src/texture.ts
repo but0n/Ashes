@@ -17,10 +17,11 @@ export class Texture {
         tex.texture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, tex.texture);
         gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, tex.sampler.magFilter);
-        gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, tex.sampler.magFilter);
+        gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, tex.sampler.minFilter);
         gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, tex.sampler.wrapS);
         gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, tex.sampler.wrapT);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, tex.image);
+        gl.bindTexture(gl.TEXTURE_2D, null);
     }
 
     static bindTexture(gl: WebGL2RenderingContext, tex: Texture) {
@@ -48,7 +49,7 @@ class Sampler {
     minFilter;
     wrapS;
     wrapT;
-    constructor({magFilter, minFilter, wrapS = 10497, wrapT = 10497}) {
+    constructor({magFilter, minFilter, wrapS = 10497, wrapT = 10497} = {magFilter: WebGL2RenderingContext.NEAREST, minFilter: WebGL2RenderingContext.NEAREST, wrapS: 10497, wrapT: 10497}) {
         this.magFilter = magFilter;
         this.minFilter = minFilter;
         this.wrapS = wrapS;
