@@ -5,6 +5,7 @@ import { gltfScene } from "./gltfScene";
 import { EntityMgr } from "./ECS/entityMgr";
 import { Shader } from "./shader";
 import { Mesh } from "./mesh";
+import { Texture } from "./texture";
 
 export class Asset {
     // static load(url, type: XMLHttpRequestResponseType = 'json') {
@@ -29,6 +30,7 @@ export class Asset {
     static loadImage(url) {
         return new Promise((resolve, reject) => {
             let image = new Image();
+            image.crossOrigin = "anonymous";
             image.src = url;
             image.onload = () => {
                 resolve(image);
@@ -53,6 +55,9 @@ export class Asset {
 
         // Load shader
         gltf.commonShader = await this.LoadShaderProgram(shader);
+
+        // Load brdfLUT
+        gltf.brdfLUT = await Asset.loadImage('https://raw.githubusercontent.com/KhronosGroup/glTF-WebGL-PBR/master/textures/brdfLUT.png');
 
         // Parse scene
         let {scene} = new gltfScene(gltf);

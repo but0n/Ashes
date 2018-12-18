@@ -9,6 +9,7 @@ varying vec3 color;
 varying mat3 TBN;
 
 
+uniform sampler2D brdfLUT;
 uniform sampler2D emissiveTexture;
 uniform sampler2D normalTexture;
 uniform sampler2D baseColorTexture;
@@ -71,7 +72,7 @@ void main() {
     vec4 ao = texture2D(occlusionTexture, uv);
 
 
-    vec3 lightDir = vec3(1, 0, 1);
+    vec3 lightDir = vec3(0.5, 2, 0);
 
     vec3 diffuse = base.rgb / PI;
 
@@ -99,20 +100,25 @@ void main() {
     // float G = G_CookTorrance(NoV, NoH, VoH, NoL);
     float D = D_GGX(roughness, NoH);
 
-
-    vec3 lightColor = vec3(1) * 5.0;
+    // IBL
+    vec3 brdf = sRGBtoLINEAR(texture2D(brdfLUT, vec2(NoV, 1.0 - roughness))).rgb;
+    vec3 IBLspecular = 0.5 * vec3(0.7, 0.8, 0.9) * (f0 * brdf.x + brdf.y);
+    vec3 lightColor = vec3(1) * 3.0;
 
     vec3 specContrib = F * G * D / (4.0 * NoL * NoV);
     vec3 diffuseContrib = (1.0 - F) * diffuse * (1.0 - metallic);
     vec3 color = NoL * lightColor * (diffuseContrib + specContrib);
+    color += IBLspecular;
 
-    // outColor = vec4(uv, 0, 1);
+    // gl_FragColor = vec4(uv, 0, 1);
     // gl_FragColor = (base) * vec4(vec3(max(LoN, 0.0)), 1);
     // gl_FragColor = vec4(F, 1);
     // gl_FragColor = vec4(vec3(NoV), 1);
     // gl_FragColor = vec4(vec3(VoH), 1);
     // gl_FragColor = vec4(vec3(G), 1);
     // gl_FragColor = vec4(vec3(D), 1);
+    // gl_FragColor = vec4(IBLspecular, 1);
+    // gl_FragColor = vec4(brdf, 1);
     // gl_FragColor = vec4(base);
     gl_FragColor = LINEARtoSRGB(vec4(color + em.rgb * 0.0, base.a));
 }

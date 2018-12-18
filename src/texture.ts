@@ -5,7 +5,7 @@ export class Texture {
     texture: WebGLTexture = null;
     channel: number = null;
     isDirty: boolean = true;
-    constructor(rawImage: HTMLImageElement, sampler) {
+    constructor(rawImage: HTMLImageElement | any, sampler = undefined) {
         this.image = rawImage;
         this.sampler = new Sampler(sampler);
     }
@@ -49,7 +49,7 @@ class Sampler {
     minFilter;
     wrapS;
     wrapT;
-    constructor({magFilter, minFilter, wrapS = 10497, wrapT = 10497} = {magFilter: WebGL2RenderingContext.NEAREST, minFilter: WebGL2RenderingContext.NEAREST, wrapS: 10497, wrapT: 10497}) {
+    constructor({magFilter = WebGL2RenderingContext.NEAREST, minFilter = WebGL2RenderingContext.NEAREST, wrapS = 10497, wrapT = 10497} = {magFilter: WebGL2RenderingContext.NEAREST, minFilter: WebGL2RenderingContext.NEAREST, wrapS: 10497, wrapT: 10497}) {
         this.magFilter = magFilter;
         this.minFilter = minFilter;
         this.wrapS = wrapS;
