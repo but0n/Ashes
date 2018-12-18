@@ -16,11 +16,18 @@ export class Texture {
         }
         tex.texture = gl.createTexture();
         gl.bindTexture(gl.TEXTURE_2D, tex.texture);
-        gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, tex.sampler.magFilter);
-        gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, tex.sampler.minFilter);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, tex.image);
         gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, tex.sampler.wrapS);
         gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, tex.sampler.wrapT);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, tex.image);
+
+        if(tex.sampler.minFilter == WebGL2RenderingContext.NEAREST_MIPMAP_NEAREST || tex.sampler.minFilter == WebGL2RenderingContext.NEAREST_MIPMAP_LINEAR || tex.sampler.minFilter == WebGL2RenderingContext.LINEAR_MIPMAP_NEAREST || tex.sampler.minFilter == WebGL2RenderingContext.LINEAR_MIPMAP_LINEAR) {
+            gl.generateMipmap(gl.TEXTURE_2D);
+
+        } else {
+            gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, tex.sampler.minFilter);
+            gl.texParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, tex.sampler.magFilter);
+        }
+
         gl.bindTexture(gl.TEXTURE_2D, null);
     }
 

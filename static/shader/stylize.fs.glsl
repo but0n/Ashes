@@ -14,6 +14,10 @@ uniform sampler2D emissiveTexture;
 uniform sampler2D normalTexture;
 uniform sampler2D baseColorTexture;
 
+uniform vec4 baseColorFactor;
+uniform float roughnessFactor;
+uniform float metallicFactor;
+
 uniform sampler2D metallicRoughnessTexture;
 uniform sampler2D occlusionTexture;
 uniform vec3 u_Camera;
@@ -72,7 +76,7 @@ void main() {
     vec4 ao = texture2D(occlusionTexture, uv);
 
 
-    vec3 lightDir = vec3(0.5, 2, 0);
+    vec3 lightDir = vec3(0.5, 2, 2);
 
     vec3 diffuse = base.rgb / PI;
 
@@ -90,8 +94,10 @@ void main() {
     float LoH = clamp(dot(L, H), 0.0, 1.0);
     float VoH = clamp(dot(V, H), 0.0, 1.0);
 
-    float roughness = clamp(1.0-rm.g, 0.0, 1.0);
+    float roughness = clamp((1.0-rm.g), 0.0, 1.0);
     float metallic = clamp(rm.b, 0.0, 1.0);
+    // float roughness = clamp((1.0-rm.g) * roughnessFactor, 0.0, 1.0);
+    // float metallic = clamp(rm.b * metallicFactor, 0.0, 1.0);
 
     vec3 f0 = vec3(0.04);
     f0 = mix(f0, base.xyz, metallic);
@@ -102,8 +108,8 @@ void main() {
 
     // IBL
     vec3 brdf = sRGBtoLINEAR(texture2D(brdfLUT, vec2(NoV, 1.0 - roughness))).rgb;
-    vec3 IBLspecular = 0.5 * vec3(0.7, 0.8, 0.9) * (f0 * brdf.x + brdf.y);
-    vec3 lightColor = vec3(1) * 3.0;
+    vec3 IBLspecular = 0.6 * vec3(0.7, 0.8, 0.9) * (f0 * brdf.x + brdf.y);
+    vec3 lightColor = vec3(1) * 4.0;
 
     vec3 specContrib = F * G * D / (4.0 * NoL * NoV);
     vec3 diffuseContrib = (1.0 - F) * diffuse * (1.0 - metallic);
@@ -119,6 +125,9 @@ void main() {
     // gl_FragColor = vec4(vec3(D), 1);
     // gl_FragColor = vec4(IBLspecular, 1);
     // gl_FragColor = vec4(brdf, 1);
+    // gl_FragColor = vec4(N, 1);
     // gl_FragColor = vec4(base);
+    // gl_FragColor = vec4(rm, 1);
+    // gl_FragColor = vec4(ao, 1);
     gl_FragColor = LINEARtoSRGB(vec4(color + em.rgb * 0.0, base.a));
 }
