@@ -7,8 +7,12 @@ export class Material {
     isDirty: boolean = true;
     textures: Texture[] = [];
     constructor(shader: Shader, name = null) {
-        this.shader = shader;
+        this.shader = Shader.clone(shader);
         this.name = name;
+    }
+
+    static useMaterial(mat: Material, ctx: WebGL2RenderingContext) {
+        ctx.useProgram(mat.shader.program);
     }
 
     static setUniform(mat: Material, key: string, value) {
@@ -24,6 +28,7 @@ export class Material {
     static updateUniform(mat: Material, ctx: WebGL2RenderingContext) {
         if(mat.shader.isDirty) {
             Shader.buildProgram(mat.shader, ctx);
+            this.useMaterial(mat, ctx);
         }
 
         this.bindAllTextures(mat, ctx);
@@ -42,6 +47,12 @@ export class Material {
                 Material.setUniform(mat, tex.uniform, tex.channel);
                 tex.isDirty = false;
             }
+        }
+    }
+
+    static unbindAllTextures(mat: Material, ctx: WebGL2RenderingContext) {
+        for (let tex of mat.textures) {
+            Texture.unbindTexture(ctx, tex);
         }
     }
 

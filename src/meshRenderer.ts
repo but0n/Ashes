@@ -34,7 +34,7 @@ export class MeshRendererSystem extends ComponentSystem {
     }
 
     static useMaterial(mr: MeshRenderer, index) {
-        mr.gl.useProgram(mr.materials[index].shader.program);
+        Material.useMaterial(mr.materials[index], mr.gl);
     }
 
     static attachMaterial(mr: MeshRenderer, mat: Material) {
@@ -76,6 +76,8 @@ export class MeshRendererSystem extends ComponentSystem {
         this.bindVAO(target, target.vao); // Bind VAO
         Mesh.bindIndecesEBO(target.mesh, target.gl);
         Mesh.drawElement(target.mesh, target.gl);
+        // Clean texture channels
+        // Material.unbindAllTextures(target.materials[0], target.gl);
     }
     // According those discussion below, having actors draw themselves is not a good design
     // https://gamedev.stackexchange.com/questions/50531/entity-component-based-engine-rendering-separation-from-logic

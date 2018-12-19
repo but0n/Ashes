@@ -126,8 +126,7 @@ void main() {
     // gl_FragColor = vec4(IBLspecular, 1);
     // gl_FragColor = vec4(brdf, 1);
     // gl_FragColor = vec4(N, 1);
-    // gl_FragColor = vec4(base);
-    // gl_FragColor = vec4(rm, 1);
+    // gl_FragColor = vec4(base.rgb, 1);
     // gl_FragColor = vec4(ao, 1);
     gl_FragColor = LINEARtoSRGB(vec4(color + em.rgb * 0.0, base.a));
 }

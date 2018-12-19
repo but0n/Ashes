@@ -31,6 +31,22 @@ export class Texture {
         gl.bindTexture(gl.TEXTURE_2D, null);
     }
 
+    static unbindTexture(gl: WebGL2RenderingContext, tex: Texture) {
+        if(tex.channel != null) {
+            gl.activeTexture([
+                gl.TEXTURE0,
+                gl.TEXTURE1,
+                gl.TEXTURE2,
+                gl.TEXTURE3,
+                gl.TEXTURE4,
+                gl.TEXTURE5,
+                gl.TEXTURE6,
+                gl.TEXTURE7
+            ][tex.channel]);
+        }
+        gl.bindTexture(gl.TEXTURE_2D, null);
+    }
+
     static bindTexture(gl: WebGL2RenderingContext, tex: Texture) {
         if(tex.channel != null) {
             gl.activeTexture([

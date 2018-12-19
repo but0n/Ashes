@@ -20,7 +20,7 @@ export class Example {
         // gltf = '/static/gltfsamples/sketchfab_3d_editor_challenge_littlest_tokyo/scene.gltf';
         // gltf = '/static/gltfsamples/hylian_shield/scene.gltf';
         gltf = '/static/gltfsamples/FlightHelmet/glTF/FlightHelmet.gltf';
-        gltf = '/static/kalestra_the_sorceress/scene.gltf';
+        gltf = '/static/futuristic_safe/scene.gltf';
 
         let screen = new Render('#screen');
 
