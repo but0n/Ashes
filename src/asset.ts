@@ -87,8 +87,8 @@ export class Asset {
         let vertPath = url + '.vs.glsl';
         let fragPath = url + '.fs.glsl';
         let [vert, frag] = await Promise.all([vertPath, fragPath].map(path => fetch(path).then(e=>e.text())));
-        console.log(vert);
-        console.log(frag);
+        // console.log(vert);
+        // console.log(frag);
         return new Shader(vert, frag);
     }
 

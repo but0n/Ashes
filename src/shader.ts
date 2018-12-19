@@ -19,6 +19,10 @@ export class Shader {
         this.fragmentSource = fragCode;
     }
 
+    static clone(shader: Shader) {
+        return new Shader(shader.vertexSource, shader.fragmentSource);
+    }
+
     static buildProgram(shader: Shader, ctx) {
         shader.isDirty = false;
         // if(!this.isDirty) return;
@@ -50,9 +54,9 @@ export class Shader {
         let gl = shader.ctx;
         for(let k in shader.uniforms) {
             let uni: Uniform = shader.uniforms[k];
-            if(uni.value && uni.isDirty) {
+            if(uni.value != null && uni.isDirty) {
                 uni.isDirty = false;
-                if(uni.argLength == 3 || !uni.argLength) {
+                if(uni.argLength == 3 || !uni.argLength) {  // TODO: enhance
                     gl[uni.setter](uni.location, false, uni.value);
                 } else {
                     gl[uni.setter](uni.location, uni.value);
@@ -125,7 +129,7 @@ export class Uniform {
         this.setter = setter;
         this.argLength = argLength;
     }
-    value=0;
+    value=null; // empty texture channel must be null
     isDirty: boolean = false;
     static getUnifSetter(type: GLenum) {
         switch (type) {
