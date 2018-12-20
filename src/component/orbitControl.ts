@@ -33,7 +33,7 @@ export class OrbitControl {
 
     camera: Camera;
     trans: Transform;
-    constructor(screen: Render, target: Entity, pitch = 90, yaw = 90, speed = 0.2, damping = 0.9) {
+    constructor(screen: Render, target: Entity, pitch = 90, yaw = 90, speed = 0.2, damping = 0.92) {
         this.pitch = pitch;
         this.yaw = yaw;
         this.speed = speed;
