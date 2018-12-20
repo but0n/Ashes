@@ -86,6 +86,7 @@ void main() {
     // vec3 N = normalize(normal);
     vec3 V = normalize(u_Camera - pos);
     vec3 H = normalize(V + L);
+    vec3 R = -normalize(reflect(V, N));
 
 
     float NoL = clamp(dot(N, L), 0.001, 1.0);
@@ -108,7 +109,8 @@ void main() {
 
     // IBL
     vec3 brdf = sRGBtoLINEAR(texture2D(brdfLUT, vec2(NoV, 1.0 - roughness))).rgb;
-    vec3 IBLspecular = 0.6 * vec3(0.7, 0.8, 0.9) * (f0 * brdf.x + brdf.y);
+    vec3 IBLcolor = mix(vec3(0.2, 0.4, 1), vec3(0.7, 0.2, 0.2), -R.y * 0.5 + 0.5);
+    vec3 IBLspecular = 1.0 * IBLcolor * (f0 * brdf.x + brdf.y);
     vec3 lightColor = vec3(1) * 4.0;
 
     vec3 specContrib = F * G * D / (4.0 * NoL * NoV);
