@@ -94,7 +94,7 @@ void main() {
     float LoH = clamp(dot(L, H), 0.0, 1.0);
     float VoH = clamp(dot(V, H), 0.0, 1.0);
 
-    float roughness = clamp((1.0-rm.g), 0.0, 1.0);
+    float roughness = clamp(rm.g, 0.04, 1.0);
     float metallic = clamp(rm.b, 0.0, 1.0);
     // float roughness = clamp((1.0-rm.g) * roughnessFactor, 0.0, 1.0);
     // float metallic = clamp(rm.b * metallicFactor, 0.0, 1.0);
