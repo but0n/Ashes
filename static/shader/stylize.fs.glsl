@@ -77,9 +77,6 @@ void main() {
 
     vec3 lightDir = vec3(0.5, 2, 2);
 
-    vec3 diffuse = base.rgb / PI;
-
-
     vec3 L = normalize(lightDir);
     vec3 N = normalize(TBN * normalAddation);
     // vec3 N = normalize(normal);
@@ -102,13 +99,18 @@ void main() {
 
     vec3 f0 = vec3(0.04);
     f0 = mix(f0, base.xyz, metallic);
+
+    vec3 diffuse = base.rgb * (vec3(1) - f0);
+    diffuse *= 1.0 - metallic;
+    diffuse /= PI;
+
     vec3 F = F_Schlick(VoH, f0);
     float G = G_UE4(NoV, NoH, VoH, NoL, roughness);
     // float G = G_CookTorrance(NoV, NoH, VoH, NoL);
     float D = D_GGX(alphaRoughness, NoH);
 
     // IBL
-    vec3 brdf = sRGBtoLINEAR(texture2D(brdfLUT, vec2(NoV, 1.0 - roughness))).rgb;
+    vec3 brdf = sRGBtoLINEAR(texture2D(brdfLUT, vec2(NoV, 1.0 - alphaRoughness))).rgb;
     vec3 IBLcolor = mix(vec3(0.2, 0.4, 1), vec3(0.7, 0.2, 0.2), -R.y * 0.5 + 0.5);
     vec3 IBLspecular = 1.0 * IBLcolor * (f0 * brdf.x + brdf.y);
     vec3 lightColor = vec3(1) * 4.0;
