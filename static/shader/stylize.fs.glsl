@@ -46,17 +46,16 @@ vec3 F_UE4(float VoH, vec3 F0) {
 float G_CookTorrance(float NoV, float NoH, float VoH, float NoL) {
     return min(min(2.0 * NoV * NoH / VoH, 2.0 * NoL * NoH / VoH), 1.0);
 }
-// a (alphaRoughness) = Roughness
 // >    Schlick with k = α/2 matches Smith very closely
-float G_UE4(float NoV, float NoH, float VoH, float NoL, float a) {
-    a = a * a;
-    float k = (a + 1.0) * (a + 1.0) / 8.0;
+float G_UE4(float NoV, float NoH, float VoH, float NoL, float roughness) {
+    float k = (roughness + 1.0) * (roughness + 1.0) / 8.0;
     float l = NoL / (NoL * (1.0 - k) + k);  // There are another version which use NoH & LoH
     float v = NoV / (NoV * (1.0 - k) + k);
     return l * v;
 }
 
 
+// a (alphaRoughness) = Roughness
 // Distribution AKA normal distribution function (NDF)
 // Trowbridge-Reitz
 float D_GGX(float a, float NoH) {
@@ -96,6 +95,7 @@ void main() {
     float VoH = clamp(dot(V, H), 0.0, 1.0);
 
     float roughness = clamp(rm.g, 0.04, 1.0);
+    float alphaRoughness = roughness * roughness;
     float metallic = clamp(rm.b, 0.0, 1.0);
     // float roughness = clamp((1.0-rm.g) * roughnessFactor, 0.0, 1.0);
     // float metallic = clamp(rm.b * metallicFactor, 0.0, 1.0);
@@ -105,7 +105,7 @@ void main() {
     vec3 F = F_Schlick(VoH, f0);
     float G = G_UE4(NoV, NoH, VoH, NoL, roughness);
     // float G = G_CookTorrance(NoV, NoH, VoH, NoL);
-    float D = D_GGX(roughness, NoH);
+    float D = D_GGX(alphaRoughness, NoH);
 
     // IBL
     vec3 brdf = sRGBtoLINEAR(texture2D(brdfLUT, vec2(NoV, 1.0 - roughness))).rgb;
