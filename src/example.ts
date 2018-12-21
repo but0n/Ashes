@@ -24,9 +24,11 @@ export class Example {
 
         let screen = new Render('#screen');
 
-        let scene = await Asset.loadGLTF(gltf, screen);
-        let root = scene.components.Transform as Transform;
-        // root.scale[0] = root.scale[1] = root.scale[2] = 10;
+        let scene = EntityMgr.create('root');
+        let gltfroot = await Asset.loadGLTF(gltf, screen);
+        scene.appendChild(gltfroot);
+        let root = gltfroot.components.Transform as Transform;
+        root.scale[0] = root.scale[1] = root.scale[2] = 20;
 
 
         let mainCamera = EntityMgr.create('camera');
