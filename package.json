@@ -1,5 +1,5 @@
 {
-  "name": "Ashes",
+  "name": "ashes3d",
   "version": "0.0.1",
   "description": "An 3D engine for indie games",
   "main": "build/ashes.main.js",
