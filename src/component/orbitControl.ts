@@ -7,8 +7,6 @@ import { ComponentSystem } from "../ECS/component";
 import { System } from "../ECS/system";
 
 export class OrbitControl {
-    deltaX: number;
-    deltaY: number;
     pitch: number;
     yaw: number;
     speed: number;
@@ -67,13 +65,27 @@ export class OrbitControl {
 
 
         } else {    // Rotate
-            this.deltaX = movementX * this.speed;
-            this.deltaY = -movementY * this.speed;
-            this.vpitch += this.deltaY;
-            this.vyaw += this.deltaX;
+            let deltaX = movementX * this.speed;
+            let deltaY = -movementY * this.speed;
+            this.vpitch += deltaY;
+            this.vyaw += deltaX;
         }
         // OrbitControlSystem.updatePosition(this);
     }
+    touchHandler = (() => {
+        let lastX, lastY;
+        return (e)=>{
+            let {pageX, pageY} = e.touches[0];
+            if(lastX || lastY) {
+                let dX = pageX - lastX;
+                let dY = pageY - lastY;
+                this.vpitch += -dY * this.speed;
+                this.vyaw += dX * this.speed;
+            }
+            lastY = pageY;
+            lastX = pageX;
+        }
+    });
     scrollHandler = ({deltaY}) => {
         // vec3.scaleAndAdd(this.trans.translate, this.trans.translate, this.direction, deltaY);
         this.vscale += deltaY * this.speed * 0.05;
@@ -85,11 +97,22 @@ export class OrbitControl {
         screen.oncontextmenu = () => false;
         screen.addEventListener('mousedown', () => {
             screen.addEventListener('mousemove', controler.moveHandler)
-        })
-        screen.addEventListener('mouseup', () => {
-            screen.removeEventListener('mousemove', controler.moveHandler);
+            screen.addEventListener('mouseup', () => {
+                screen.removeEventListener('mousemove', controler.moveHandler);
+            })
         })
         screen.addEventListener('wheel', controler.scrollHandler);
+
+        // Mobile device
+        screen.addEventListener('touchstart', () => {
+            let handler = controler.touchHandler();
+            screen.addEventListener('touchmove', handler)
+            screen.addEventListener('touchend', () => {
+                screen.removeEventListener('touchmove', handler);
+            })
+        })
+        screen.addEventListener('wheel', controler.scrollHandler);
+
     }
 }
 
