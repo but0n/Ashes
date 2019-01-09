@@ -4,7 +4,7 @@ import { Camera } from "./camera";
 import { vec3, mat4, quat } from "../node_modules/gl-matrix/lib/gl-matrix";
 import { Transform } from "./transform";
 import { Render } from "./webgl2/render";
-import { QuadMesh } from "../mesh/quadMesh";
+import { QuadMesh } from "./mesh/quadMesh";
 import { MeshRenderer } from "./meshRenderer";
 import { Material } from "./material";
 import { OrbitControl } from "./component/orbitControl";
@@ -28,7 +28,7 @@ export class Example {
         let gltfroot = await Asset.loadGLTF(gltf, screen);
         scene.appendChild(gltfroot);
         let root = gltfroot.components.Transform as Transform;
-        root.scale[0] = root.scale[1] = root.scale[2] = 20;
+        root.scale[0] = root.scale[1] = root.scale[2] = 0.1;
 
 
         let mainCamera = EntityMgr.create('camera');

@@ -1,4 +1,4 @@
-import { Mesh, bufferView, Accessor } from "../src/mesh";
+import { Mesh, bufferView, Accessor } from "./mesh";
 
 export class QuadMesh extends Mesh {
     constructor() {

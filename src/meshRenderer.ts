@@ -1,4 +1,4 @@
-import { Mesh } from "./mesh";
+import { Mesh } from "./mesh/mesh";
 import { Material } from "./material";
 import { Entity } from "./ECS/entityMgr";
 import { Transform } from "./transform";

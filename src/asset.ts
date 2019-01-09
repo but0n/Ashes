@@ -4,7 +4,7 @@ import { Render } from "./webgl2/render";
 import { gltfScene } from "./gltfScene";
 import { EntityMgr } from "./ECS/entityMgr";
 import { Shader } from "./shader";
-import { Mesh } from "./mesh";
+import { Mesh } from "./mesh/mesh";
 import { Texture } from "./texture";
 
 export class Asset {
