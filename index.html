@@ -36,7 +36,7 @@
             let gltfroot = await Ashes.Asset.loadGLTF(gltf, screen);
             scene.appendChild(gltfroot);
             let root = gltfroot.components.Transform;
-            root.scale[0] = root.scale[1] = root.scale[2] = 0.1;
+            // root.scale[0] = root.scale[1] = root.scale[2] = 0.1;
 
 
             let mainCamera = Ashes.EntityMgr.create('camera');
