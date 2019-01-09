@@ -26,7 +26,7 @@
             gltf = '/gltfsamples/FlightHelmet/glTF/FlightHelmet.gltf';
             // gltf = '/static/gltfsamples/futuristic_safe/scene.gltf';
 
-            let cuspath = location.hash.split('#')[1];
+            let [,cuspath,scale] = location.hash.split('#');
             if(cuspath)
                 gltf = cuspath;
 
@@ -36,7 +36,8 @@
             let gltfroot = await Ashes.Asset.loadGLTF(gltf, screen);
             scene.appendChild(gltfroot);
             let root = gltfroot.components.Transform;
-            // root.scale[0] = root.scale[1] = root.scale[2] = 0.1;
+            if(scale)
+                root.scale[0] = root.scale[1] = root.scale[2] = scale;
 
 
             let mainCamera = Ashes.EntityMgr.create('camera');

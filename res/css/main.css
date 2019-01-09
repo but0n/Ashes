@@ -1,3 +1,4 @@
+* { -webkit-tap-highlight-color:rgba(0,0,0,0); }
 body {
 	width: 100%;
 	padding: 0;
