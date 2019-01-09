@@ -13,13 +13,13 @@ import { Texture } from "./texture";
 export class Example {
 
     static async run() {
-        let gltf = '/static/gltfsamples/BoxTextured/BoxTextured.gltf';
+        let gltf = '/gltfsamples/BoxTextured/BoxTextured.gltf';
         // gltf = '/static/gltfsamples/Suzanne/Suzanne.gltf';
-        gltf = '/static/gltfsamples/toon_shader_tutorial_files/scene.gltf';
+        gltf = '/gltfsamples/toon_shader_tutorial_files/scene.gltf';
         // gltf = '/static/gltfsamples/nierautomata__2b/scene.gltf';
         // gltf = '/static/gltfsamples/sketchfab_3d_editor_challenge_littlest_tokyo/scene.gltf';
         // gltf = '/static/gltfsamples/hylian_shield/scene.gltf';
-        gltf = 'static/gltfsamples/FlightHelmet/glTF/FlightHelmet.gltf';
+        gltf = '/gltfsamples/FlightHelmet/glTF/FlightHelmet.gltf';
         // gltf = '/static/gltfsamples/futuristic_safe/scene.gltf';
 
         let screen = new Render('#screen');
