@@ -1,4 +1,5 @@
 *.lock
 *.yml
+.rpt2_cache
 gltfsamples
 res
