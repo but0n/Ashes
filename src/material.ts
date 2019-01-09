@@ -64,6 +64,6 @@ export class Material {
         tex.isDirty = true;
     }
 
-    static SHADER_PATH = 'static/shader/';
+    static SHADER_PATH = 'res/shader/';
 
 }
