@@ -2,7 +2,7 @@ import { EntityMgr } from "./ECS/entityMgr";
 import { Accessor, bufferView, Mesh } from "./mesh/mesh";
 import { Texture } from "./texture";
 import { Material } from "./material";
-import { vec3, vec4, mat4 } from "../node_modules/gl-matrix/lib/gl-matrix";
+import { vec3, vec4, mat4 } from "./math";
 import { TransformSystem, Transform } from "./transform";
 
 export class gltfScene {

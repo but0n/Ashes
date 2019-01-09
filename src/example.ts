@@ -1,14 +1,12 @@
 import { Asset } from "./asset";
 import { EntityMgr } from "./ECS/entityMgr";
 import { Camera } from "./camera";
-import { vec3, mat4, quat } from "../node_modules/gl-matrix/lib/gl-matrix";
+import { vec3 } from "./math";
 import { Transform } from "./transform";
 import { Render } from "./webgl2/render";
 import { QuadMesh } from "./mesh/quadMesh";
 import { MeshRenderer } from "./meshRenderer";
-import { Material } from "./material";
 import { OrbitControl } from "./component/orbitControl";
-import { Texture } from "./texture";
 
 export class Example {
 

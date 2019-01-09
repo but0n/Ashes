@@ -1,5 +1,5 @@
 import { EntityMgr, Entity } from "./ECS/entityMgr";
-import { vec3, mat4, vec4 } from "../node_modules/gl-matrix/lib/gl-matrix";
+import { vec3, mat4 } from "./math";
 import { Transform } from "./transform";
 import { ComponentSystem } from "./ECS/component";
 import { MeshRenderer } from "./meshRenderer";

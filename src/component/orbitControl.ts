@@ -2,7 +2,7 @@ import { Render } from "../webgl2/render";
 import { Entity, EntityMgr } from "../ECS/entityMgr";
 import { Camera, CameraSystem } from "../camera";
 import { Transform } from "../transform";
-import { vec3, mat4, vec4 } from "../../node_modules/gl-matrix/lib/gl-matrix";
+import { vec3, mat4 } from "../math";
 import { ComponentSystem } from "../ECS/component";
 import { System } from "../ECS/system";
 

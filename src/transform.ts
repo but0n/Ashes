@@ -1,4 +1,4 @@
-import { vec3, mat4, vec4 } from "../node_modules/gl-matrix/lib/gl-matrix";
+import { vec3, mat4, vec4 } from "./math";
 import { Entity, EntityMgr } from "./ECS/entityMgr";
 import { ComponentSystem } from "./ECS/component";
 import { System } from "./ECS/system";

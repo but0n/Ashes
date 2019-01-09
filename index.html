@@ -14,5 +14,61 @@
     <script src="build/ashes.main.js"></script>
     <script>
         console.log(Ashes);
+
+
+        async function run() {
+            let gltf = '/gltfsamples/BoxTextured/BoxTextured.gltf';
+            // gltf = '/static/gltfsamples/Suzanne/Suzanne.gltf';
+            gltf = '/gltfsamples/toon_shader_tutorial_files/scene.gltf';
+            // gltf = '/static/gltfsamples/nierautomata__2b/scene.gltf';
+            // gltf = '/static/gltfsamples/sketchfab_3d_editor_challenge_littlest_tokyo/scene.gltf';
+            // gltf = '/static/gltfsamples/hylian_shield/scene.gltf';
+            gltf = '/gltfsamples/FlightHelmet/glTF/FlightHelmet.gltf';
+            // gltf = '/static/gltfsamples/futuristic_safe/scene.gltf';
+
+            let cuspath = location.hash.split('#')[1];
+            if(cuspath)
+                gltf = cuspath;
+
+            let screen = new Ashes.Render('#screen');
+
+            let scene = Ashes.EntityMgr.create('root');
+            let gltfroot = await Ashes.Asset.loadGLTF(gltf, screen);
+            scene.appendChild(gltfroot);
+            let root = gltfroot.components.Transform;
+            root.scale[0] = root.scale[1] = root.scale[2] = 0.1;
+
+
+            let mainCamera = Ashes.EntityMgr.create('camera');
+            let cameraTrans = mainCamera.components.Transform;
+            let cam = Ashes.EntityMgr.addComponent(mainCamera, new Ashes.Camera(screen.width / screen.height));
+            Ashes.vec3.set(cameraTrans.translate, 0, 0, 10);
+
+            scene.appendChild(mainCamera);
+            let control = new Ashes.OrbitControl(screen, mainCamera);
+
+            // BRDF test
+            let brdf = await Ashes.Asset.LoadMaterial('brdf');
+
+            let quad = Ashes.EntityMgr.create('test-quad');
+            let qmesh = new Ashes.QuadMesh();
+            let quadMR = new Ashes.MeshRenderer(screen, qmesh, brdf);
+            Ashes.EntityMgr.addComponent(quad, quadMR);
+            console.log(quadMR);
+            quad.components.Transform.translate[0] = 2;
+
+            // scene.appendChild(quad);
+
+            document.querySelector('body').appendChild(scene)
+
+
+
+        }
+
+        run();
+
+
+
+
     </script>
 </html>
