@@ -4,7 +4,12 @@ export class Render {
     public canvas: HTMLCanvasElement;
     public gl: WebGL2RenderingContext;
     public mainCamera: Camera;
+    static platform = 'unknown';
     constructor(selector) {
+        // Detect device
+        if(navigator.userAgent.indexOf('iPhone') != -1) {
+            Render.platform = 'iOS';
+        }
         this.canvas = document.querySelector(selector);
         if(!this.canvas) {
             console.error('Canvas not found!');

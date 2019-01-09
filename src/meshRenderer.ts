@@ -45,7 +45,11 @@ export class MeshRendererSystem extends ComponentSystem {
     }
 
     static bindVAO(mr: MeshRenderer, vao) {
-        mr.gl.bindVertexArray(vao);
+        if(Render.platform == 'iOS') {
+            Mesh.bindAccessorsVBO(mr.mesh, mr.gl, mr.materials[0].shader.attributes);
+        } else {
+            mr.gl.bindVertexArray(vao);
+        }
     }
 
     static updateVAO(mr: MeshRenderer) {
