@@ -96,4 +96,17 @@ export class Asset {
         let shader = await this.LoadShaderProgram(matName);
         return new Material(shader);
     }
+
+    static cubemapOrder = [
+        'posx.',
+        'negx.',
+        'posy.',
+        'negy.',
+        'posz.',
+        'negz.',
+    ];
+    static async loadCubemap(folder, format = 'jpg') {
+        let rawImages = await Promise.all(this.cubemapOrder.map(name => this.loadImage(folder + name + format)));
+        return new Texture(rawImages);
+    }
 }

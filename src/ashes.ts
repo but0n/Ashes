@@ -8,4 +8,5 @@ export { MeshRenderer } from "./meshRenderer";
 export { vec3, vec4, mat4, quat } from "./math";
 export { OrbitControl } from "./component/orbitControl";
 export { QuadMesh } from "./mesh/quadMesh";
+export { Texture } from "./texture";
 // export { Example } from "./example";
