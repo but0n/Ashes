@@ -48,19 +48,24 @@
             scene.appendChild(mainCamera);
             let control = new Ashes.OrbitControl(screen, mainCamera);
 
-            // BRDF test
-            let brdf = await Ashes.Asset.LoadMaterial('brdf');
+            // IBL test
+            let testmat = await Ashes.Asset.LoadMaterial('stylize');
+            let brdfLUT = await Ashes.Asset.loadImage('https://raw.githubusercontent.com/KhronosGroup/glTF-WebGL-PBR/master/textures/brdfLUT.png');
+            let map = await Ashes.Asset.loadCubemap('res/GoldenGateBridge2/');
+
+            Ashes.Material.setTexture(testmat, 'brdfLUT', new Ashes.Texture(brdfLUT, { minFilter: screen.gl.LINEAR }));
+            Ashes.Material.setTexture(testmat, 'env', map);
 
             let quad = Ashes.EntityMgr.create('test-quad');
             let qmesh = new Ashes.QuadMesh();
-            let quadMR = new Ashes.MeshRenderer(screen, qmesh, brdf);
+            let quadMR = new Ashes.MeshRenderer(screen, qmesh, testmat);
             Ashes.EntityMgr.addComponent(quad, quadMR);
             console.log(quadMR);
             quad.components.Transform.translate[0] = 2;
 
-            // scene.appendChild(quad);
+            scene.appendChild(quad);
 
-            document.querySelector('body').appendChild(scene)
+            document.querySelector('body').appendChild(scene);
 
 
 

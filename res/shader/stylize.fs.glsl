@@ -13,6 +13,7 @@ uniform sampler2D brdfLUT;
 uniform sampler2D emissiveTexture;
 uniform sampler2D normalTexture;
 uniform sampler2D baseColorTexture;
+uniform samplerCube env;
 
 uniform vec4 baseColorFactor;
 uniform float roughnessFactor;
@@ -111,7 +112,8 @@ void main() {
 
     // IBL
     vec3 brdf = sRGBtoLINEAR(texture2D(brdfLUT, vec2(NoV, 1.0 - alphaRoughness))).rgb;
-    vec3 IBLcolor = mix(vec3(0.2, 0.4, 1), vec3(0.7, 0.2, 0.2), -R.y * 0.5 + 0.5);
+    // vec3 IBLcolor = mix(vec3(0.2, 0.4, 1), vec3(0.7, 0.2, 0.2), -R.y * 0.5 + 0.5);
+    vec3 IBLcolor = sRGBtoLINEAR(textureCube(env, R)).rgb;
     vec3 IBLspecular = 1.0 * IBLcolor * (f0 * brdf.x + brdf.y);
     vec3 lightColor = vec3(1) * 4.0;
 
