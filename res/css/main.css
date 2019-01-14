@@ -11,7 +11,7 @@ body {
 
 @font-face {
     font-family: "kongtext";
-    src: url('/res/fonts/kongtext/kongtext.ttf') format('truetype');
+    src: url('../fonts/kongtext/kongtext.ttf') format('truetype');
 }
 * {
 	font-family: "kongtext";
