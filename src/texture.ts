@@ -17,6 +17,10 @@ export class Texture {
         }
     }
 
+    static clone(origin: Texture) {
+        return new Texture(origin.image, origin.sampler);
+    }
+
     static cubetexOrder = [
         WebGL2RenderingContext.TEXTURE_CUBE_MAP_POSITIVE_X,
         WebGL2RenderingContext.TEXTURE_CUBE_MAP_NEGATIVE_X,

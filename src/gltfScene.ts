@@ -45,8 +45,8 @@ export class gltfScene {
                     }
                 }
             }
-            Material.setTexture(mat, 'brdfLUT', new Texture(gltf.brdfLUT, {minFilter: WebGL2RenderingContext.LINEAR}));
-            Material.setTexture(mat, 'env', new Texture(gltf.envmap));
+            Material.setTexture(mat, 'brdfLUT', Texture.clone(gltf.brdfLUT));
+            Material.setTexture(mat, 'env', Texture.clone(gltf.envmap));
             return mat;
         });
 
