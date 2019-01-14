@@ -59,6 +59,8 @@ export class Asset {
         // Load brdfLUT
         gltf.brdfLUT = await Asset.loadImage('https://raw.githubusercontent.com/KhronosGroup/glTF-WebGL-PBR/master/textures/brdfLUT.png');
 
+        gltf.envmap = await this.loadCubeimg('res/GoldenGateBridge2/');
+
         // Parse scene
         let {scene} = new gltfScene(gltf);
 
@@ -105,8 +107,11 @@ export class Asset {
         'posz.',
         'negz.',
     ];
+    static async loadCubeimg(folder, format = 'jpg') {
+        return await Promise.all(this.cubemapOrder.map(name => this.loadImage(folder + name + format)));
+    }
     static async loadCubemap(folder, format = 'jpg') {
-        let rawImages = await Promise.all(this.cubemapOrder.map(name => this.loadImage(folder + name + format)));
+        let rawImages = await this.loadCubeimg(folder, format);
         return new Texture(rawImages);
     }
 }
