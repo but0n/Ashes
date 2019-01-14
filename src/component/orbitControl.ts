@@ -97,9 +97,9 @@ export class OrbitControl {
         screen.oncontextmenu = () => false;
         screen.addEventListener('mousedown', () => {
             screen.addEventListener('mousemove', controler.moveHandler)
-            screen.addEventListener('mouseup', () => {
-                screen.removeEventListener('mousemove', controler.moveHandler);
-            })
+        })
+        screen.addEventListener('mouseup', () => {
+            screen.removeEventListener('mousemove', controler.moveHandler);
         })
         screen.addEventListener('wheel', controler.scrollHandler);
 
