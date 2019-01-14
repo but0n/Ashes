@@ -27,13 +27,30 @@ export class Asset {
     //     });
     // }
 
+    // Analyze
+    static totalTask: number = 0;
+    static finishedTask: number = 0;
+    static addTask() {
+        this.totalTask++;
+        if (this.taskObserve)
+            this.taskObserve(this.finishedTask, this.totalTask);
+    };
+    static finishTask() {
+        this.finishedTask++;
+        if(this.taskObserve)
+            this.taskObserve(this.finishedTask, this.totalTask);
+    };
+    static taskObserve = null;
+
     static loadImage(url) {
         return new Promise((resolve, reject) => {
+            this.addTask();
             let image = new Image();
             image.crossOrigin = "anonymous";
             image.src = url;
             image.onload = () => {
                 resolve(image);
+                this.finishTask();
             }
         });
     }
@@ -85,8 +102,10 @@ export class Asset {
     }
 
     static async loadBuffer(bufferPath) {
-        return await (await fetch(bufferPath)).arrayBuffer();
-        // return await fetch(bufferPath).then(e => e.arrayBuffer());
+        this.addTask();
+        let buffer = await (await fetch(bufferPath)).arrayBuffer()
+        this.finishTask();
+        return buffer;
     }
 
     static async LoadShaderProgram(url) {
@@ -100,7 +119,9 @@ export class Asset {
     }
 
     static async LoadMaterial(matName) {
+        this.addTask();
         let shader = await this.LoadShaderProgram(matName);
+        this.finishTask();
         return new Material(shader);
     }
 

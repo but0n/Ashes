@@ -3,12 +3,16 @@
     <head>
         <meta charset=utf-8>
         <link rel="stylesheet" type="text/css" href="res/css/main.css" />
+        <link href="https://unpkg.com/nes.css/css/nes.min.css" rel="stylesheet" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
         <title>Ashes</title>
     </head>
     <body>
         <canvas id="screen"></canvas>
-
+        <section class="nes-container with-title">
+            <h2 class="title">PROGRESS</h2>
+            <progress id="progress" class="nes-progress" value="1" max="1"></progress>
+        </section>
     </body>
     <script src="https://cdn.jsdelivr.net/npm/ashes3d@0.0.9/build/ashes.main.js"></script>
     <!-- <script src="build/ashes.main.js"></script> -->
@@ -17,6 +21,11 @@
 
 
         async function run() {
+            let progressBar = document.querySelector('#progress');
+            Ashes.Asset.taskObserve = (finished, total) => {
+                let p = finished/total;
+                progressBar.value = p;
+            }
             let gltf = '/gltfsamples/BoxTextured/BoxTextured.gltf';
             // gltf = '/static/gltfsamples/Suzanne/Suzanne.gltf';
             gltf = '/gltfsamples/toon_shader_tutorial_files/scene.gltf';
@@ -35,6 +44,7 @@
             let scene = Ashes.EntityMgr.create('root');
             let gltfroot = await Ashes.Asset.loadGLTF(gltf, screen, 'res/envmap/GoldenGateBridge2/');
             scene.appendChild(gltfroot);
+            progressBar.parentElement.style.display = 'none';
             let root = gltfroot.components.Transform;
             if(scale)
                 root.scale[0] = root.scale[1] = root.scale[2] = scale;
