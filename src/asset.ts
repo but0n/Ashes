@@ -38,7 +38,7 @@ export class Asset {
         });
     }
 
-    static async loadGLTF(path: string, screen: Render, shader = 'stylize') {
+    static async loadGLTF(path: string, screen: Render, envmap, shader = 'stylize') {
 
         // parse current path
         let root: any = path.split('/');
@@ -59,7 +59,12 @@ export class Asset {
         // Load brdfLUT
         gltf.brdfLUT = await this.loadTexture('https://raw.githubusercontent.com/KhronosGroup/glTF-WebGL-PBR/master/textures/brdfLUT.png', { minFilter: WebGL2RenderingContext.LINEAR });
 
-        gltf.envmap = await this.loadCubemap('res/GoldenGateBridge2/');
+        if(envmap != null) {
+            gltf.hasEnvmap = true;
+            gltf.envmap = await this.loadCubemap(envmap);
+        } else {
+            gltf.hasEnvmap = false;
+        }
 
         // Parse scene
         let {scene} = new gltfScene(gltf);

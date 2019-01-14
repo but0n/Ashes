@@ -33,7 +33,7 @@
             let screen = new Ashes.Render('#screen');
 
             let scene = Ashes.EntityMgr.create('root');
-            let gltfroot = await Ashes.Asset.loadGLTF(gltf, screen);
+            let gltfroot = await Ashes.Asset.loadGLTF(gltf, screen, 'res/GoldenGateBridge2/');
             scene.appendChild(gltfroot);
             let root = gltfroot.components.Transform;
             if(scale)

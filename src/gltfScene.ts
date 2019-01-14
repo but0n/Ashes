@@ -46,7 +46,8 @@ export class gltfScene {
                 }
             }
             Material.setTexture(mat, 'brdfLUT', Texture.clone(gltf.brdfLUT));
-            Material.setTexture(mat, 'env', Texture.clone(gltf.envmap));
+            if(gltf.hasEnvmap)
+                Material.setTexture(mat, 'env', Texture.clone(gltf.envmap));
             return mat;
         });
 
