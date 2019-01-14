@@ -56,7 +56,7 @@ export class Shader {
             let uni: Uniform = shader.uniforms[k];
             if(uni.value != null && uni.isDirty) {
                 uni.isDirty = false;
-                if(uni.argLength == 3 || !uni.argLength) {  // TODO: enhance
+                if(uni.argLength == 3) {
                     gl[uni.setter](uni.location, false, uni.value);
                 } else {
                     gl[uni.setter](uni.location, uni.value);
@@ -83,7 +83,10 @@ export class Shader {
             const {name, type} = gl.getActiveUniform(shader, i);
             const location = gl.getUniformLocation(shader, name);
             const setter = Uniform.getUnifSetter(type);
-            const length = gl[setter].length;
+            let length = gl[setter].length;
+            if(length == 0) {   // prototype was modified by debugging tools
+                length = Uniform.getUnifArgLenght(type);
+            }
             uniforms[name] = new Uniform(location, type, setter, length);
         }
         return uniforms;
@@ -171,6 +174,35 @@ export class Uniform {
                 return 'uniform1i';
             case WebGLRenderingContext.SAMPLER_CUBE:
                 return 'uniform1i';
+        }
+    }
+
+    static getUnifArgLenght(type: GLenum) {
+        switch (type) {
+            case WebGLRenderingContext.FLOAT:
+            case WebGLRenderingContext.FLOAT_VEC2:
+            case WebGLRenderingContext.FLOAT_VEC3:
+            case WebGLRenderingContext.FLOAT_VEC4:
+
+            case WebGLRenderingContext.INT:
+            case WebGLRenderingContext.INT_VEC2:
+            case WebGLRenderingContext.INT_VEC3:
+            case WebGLRenderingContext.INT_VEC4:
+
+            case WebGLRenderingContext.SAMPLER_2D:
+            case WebGLRenderingContext.SAMPLER_CUBE:
+                return 2;
+
+            // case WebGLRenderingContext.BOOL:
+            // case WebGLRenderingContext.BOOL_VEC2:
+            // case WebGLRenderingContext.BOOL_VEC3:
+            // case WebGLRenderingContext.BOOL_VEC4:
+
+            case WebGLRenderingContext.FLOAT_MAT2:
+            case WebGLRenderingContext.FLOAT_MAT3:
+            case WebGLRenderingContext.FLOAT_MAT4:
+                return 3; // (location, transpose, value)
+
         }
     }
 }
