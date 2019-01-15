@@ -42,7 +42,7 @@ export class Render {
         this.height =height;
     }
 
-    clear(r = 1, g = 1, b = 1, a = 1, mode = this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT) {
+    clear(r = 0, g = 0, b = 0, a = 0, mode = this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT) {
         this.gl.clearColor(r, g, b, a);
         this.gl.clear(mode);
     }

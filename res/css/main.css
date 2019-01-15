@@ -2,6 +2,7 @@
 body {
 	width: 100%;
 	padding: 0;
+    background-color: #ededed !important;
 	/* font-family: Verdana, Geneva, Tahoma, sans-serif; */
     /* position: absolute; */
     /* margin: 0; */
@@ -25,7 +26,6 @@ body {
 
 #screen {
     position: fixed;
-    background-color: #ededed;
 	top: 0;
 	left: 0;
 	z-index: -1;
