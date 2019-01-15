@@ -58,5 +58,5 @@ ash-entity {
 	user-select: none;
 }
 ash-entity[meshrenderer] {
-	border-color: rgb(255, 171, 14, 0.5);
+	border-color: rgb(255, 171, 14, 0.5) !important;
 }
