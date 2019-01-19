@@ -1,2 +1,2 @@
 language: node_js
-script: yarn && yarn build
+node_js: "node"
