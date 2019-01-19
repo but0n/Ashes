@@ -1,5 +1,5 @@
 <h1 align="center">
-    Ashes
+    <img src="https://user-images.githubusercontent.com/7625588/51424529-163f2b00-1c0a-11e9-84fe-0a83d0659a1a.png">
 </h1>
 
 [![Build Status](https://travis-ci.org/but0n/Ashes.svg?branch=master)](https://travis-ci.org/but0n/Ashes)
