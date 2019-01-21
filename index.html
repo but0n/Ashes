@@ -33,9 +33,9 @@
             // gltf = '/static/gltfsamples/sketchfab_3d_editor_challenge_littlest_tokyo/scene.gltf';
             // gltf = '/static/gltfsamples/hylian_shield/scene.gltf';
             gltf = '/gltfsamples/FlightHelmet/glTF/FlightHelmet.gltf';
-            // gltf = '/static/gltfsamples/futuristic_safe/scene.gltf';
+            gltf = 'gltfsamples/police_drone/scene.gltf';
 
-            let [,cuspath,scale] = location.hash.split('#');
+            let [,cuspath,scale, yoffset] = location.hash.split('#');
             if(cuspath)
                 gltf = cuspath;
 
@@ -46,6 +46,8 @@
             scene.appendChild(gltfroot);
             progressBar.parentElement.style.display = 'none';
             let root = gltfroot.components.Transform;
+            if(yoffset)
+                root.translate[1] = yoffset;
             if(scale)
                 root.scale[0] = root.scale[1] = root.scale[2] = scale;
 

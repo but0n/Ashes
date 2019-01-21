@@ -41,7 +41,7 @@ body > ash-entity {
 	position: fixed;
 }
 ash-entity {
-	max-width: 200px;
+	max-width: 100px;
 	display: block;
 	min-height: 10px;
 	border-style: solid;
@@ -54,7 +54,7 @@ ash-entity {
 	flex-direction: column;
 	color: rgb(0, 0, 0);
 	text-shadow: 0 0 1px rgb(221, 238, 255);
-	font-size: 12px;
+	font-size: 6px;
 	cursor: pointer;
 	user-select: none;
 }
