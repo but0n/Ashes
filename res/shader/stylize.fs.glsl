@@ -67,6 +67,38 @@ float D_GGX(float a, float NoH) {
 }
 
 
+struct coreData {
+    vec3 diffuse;
+    vec3 f0;
+    vec3 N;
+    vec3 V;
+    vec3 R;
+    float NoV;
+    float metallic;
+    float roughness;
+    float alphaRoughness;
+};
+
+vec3 lightContrib(vec3 lightDir, vec3 lightColor, coreData core) {
+
+    vec3 L = normalize(lightDir);
+    vec3 H = normalize(core.V + L);
+
+    float NoL = clamp(dot(core.N, L), 0.001, 1.0);
+    float NoH = clamp(dot(core.N, H), 0.0, 1.0);
+    float LoH = clamp(dot(L, H), 0.0, 1.0);
+    float VoH = clamp(dot(core.V, H), 0.0, 1.0);
+
+    vec3 F = F_Schlick(VoH, core.f0);
+    float G = G_UE4(core.NoV, NoH, VoH, NoL, core.roughness);
+    float D = D_GGX(core.alphaRoughness, NoH);
+
+    vec3 specContrib = F * G * D / (4.0 * NoL * core.NoV);
+    vec3 diffuseContrib = (1.0 - F) * core.diffuse * (1.0 - core.metallic);
+    vec3 color = NoL * lightColor * (diffuseContrib + specContrib);
+    return color;
+}
+
 void main() {
     vec4 em = sRGBtoLINEAR(texture2D(emissiveTexture, uv));
     vec4 base = sRGBtoLINEAR(texture2D(baseColorTexture, uv));
@@ -75,29 +107,17 @@ void main() {
 
     vec4 ao = texture2D(occlusionTexture, uv);
 
-
-    vec3 lightDir = vec3(0.5, 2, 2);
-
-    vec3 L = normalize(lightDir);
+    vec3 V = normalize(u_Camera - pos);
     vec3 N = normalize(TBN * normalAddation);
     // vec3 N = normalize(normal);
-    vec3 V = normalize(u_Camera - pos);
-    vec3 H = normalize(V + L);
-    vec3 R = -normalize(reflect(V, N));
-
-
-    float NoL = clamp(dot(N, L), 0.001, 1.0);
     float NoV = clamp(abs(dot(N, V)), 0.001, 1.0);
-    float NoH = clamp(dot(N, H), 0.0, 1.0);
-    float LoH = clamp(dot(L, H), 0.0, 1.0);
-    float VoH = clamp(dot(V, H), 0.0, 1.0);
+    vec3 R = -normalize(reflect(V, N));
 
     float roughness = clamp(rm.g, 0.04, 1.0);
     float alphaRoughness = roughness * roughness;
     float metallic = clamp(rm.b, 0.0, 1.0);
     // float roughness = clamp((1.0-rm.g) * roughnessFactor, 0.0, 1.0);
     // float metallic = clamp(rm.b * metallicFactor, 0.0, 1.0);
-
     vec3 f0 = vec3(0.04);
     f0 = mix(f0, base.xyz, metallic);
 
@@ -105,22 +125,29 @@ void main() {
     diffuse *= 1.0 - metallic;
     diffuse /= PI;
 
-    vec3 F = F_Schlick(VoH, f0);
-    float G = G_UE4(NoV, NoH, VoH, NoL, roughness);
-    // float G = G_CookTorrance(NoV, NoH, VoH, NoL);
-    float D = D_GGX(alphaRoughness, NoH);
+    coreData core = coreData(
+        diffuse,
+        f0,
+        N,
+        V,
+        R,
+        NoV,
+        metallic,
+        roughness,
+        alphaRoughness
+    );
+
 
     // IBL
     vec3 brdf = sRGBtoLINEAR(texture2D(brdfLUT, vec2(NoV, 1.0 - alphaRoughness))).rgb;
-    // vec3 IBLcolor = mix(vec3(0.2, 0.4, 1), vec3(0.7, 0.2, 0.2), -R.y * 0.5 + 0.5);
     vec3 IBLcolor = sRGBtoLINEAR(textureCube(env, R)).rgb;
     vec3 IBLspecular = 1.0 * IBLcolor * (f0 * brdf.x + brdf.y);
-    vec3 lightColor = vec3(1) * 4.0;
 
-    vec3 specContrib = F * G * D / (4.0 * NoL * NoV);
-    vec3 diffuseContrib = (1.0 - F) * diffuse * (1.0 - metallic);
-    vec3 color = NoL * lightColor * (diffuseContrib + specContrib);
+    vec3 color;
     color += IBLspecular;
+
+    color += lightContrib(vec3(5, 5, 5), vec3(4), core);
+    color += lightContrib(vec3(-5, -5, -5), vec3(0.2, 0.4, 0.6), core);
 
     // gl_FragColor = vec4(uv, 0, 1);
     // gl_FragColor = (base) * vec4(vec3(max(LoN, 0.0)), 1);
@@ -134,5 +161,5 @@ void main() {
     // gl_FragColor = vec4(N, 1);
     // gl_FragColor = vec4(base.rgb, 1);
     // gl_FragColor = vec4(ao, 1);
-    gl_FragColor = LINEARtoSRGB(vec4(color + em.rgb * 0.0, base.a));
+    gl_FragColor = LINEARtoSRGB(vec4(color + em.rgb * 1.0, base.a));
 }
