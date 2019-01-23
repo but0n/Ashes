@@ -42,7 +42,11 @@ export class Filter {
         this.mesh = new QuadMesh();
         this.material = new Material(shader);
         this.meshRender = new MeshRenderer(screen, this.mesh, this.material);
-        Material.setTexture(this.material, 'base', this.color[0]);
+        this.setTexture();
+    }
+
+    setTexture(tex: Texture = this.color[0]) {
+        Material.setTexture(this.material, 'base', tex);
     }
 
     private static COLOR_ATTACH_BASE = WebGL2RenderingContext.COLOR_ATTACHMENT0;

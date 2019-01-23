@@ -1,13 +1,15 @@
 import { Camera } from "../camera";
 import { Filter } from "../filter";
 import { Shader } from "../shader";
+import { blur } from "../filter/blur";
+import { Material } from "../material";
 
 export class Screen {
     public canvas: HTMLCanvasElement;
     public gl: WebGL2RenderingContext;
     public mainCamera: Camera;
     static platform = 'unknown';
-    public filter: Filter;
+    public filters: Filter[] = [];
     constructor(selector) {
         // Detect device
         if(navigator.userAgent.indexOf('iPhone') != -1) {
@@ -29,7 +31,8 @@ export class Screen {
 
         this.setScreenSize(); // initial - full screen
 
-        this.filter = new Filter(this, new Shader());
+        this.attachFilter(new Filter(this, new Shader()))
+        // this.attachFilter(new blur(this));
     }
 
     width: number;
@@ -54,6 +57,20 @@ export class Screen {
     clear(r = 0, g = 0, b = 0, a = 0, mode = this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT) {
         this.gl.clearColor(r, g, b, a);
         this.gl.clear(mode);
+    }
+
+    attachFilter(ft: Filter) {
+        if(this.filters.length != 0) {
+            let lastft = this.filters[this.filters.length - 1]
+            ft.material.textures[0] = lastft.color[0];
+        }
+        this.filters.push(ft);
+    }
+
+    posteffect() {
+        for(let i = 0, l = this.filters.length; i < l; i++) {
+
+        }
     }
 
 }

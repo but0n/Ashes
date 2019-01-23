@@ -30,8 +30,8 @@ export class MeshRendererSystem extends ComponentSystem {
     onUpdate() {
         // Before render
         for(let screen of MeshRendererSystem.ctxSet.values()) {
-            screen.filter.bind();
-            screen.setViewport(screen.filter.width, screen.filter.height);
+            screen.filters[0].bind();
+            screen.setViewport(screen.filters[0].width, screen.filters[0].height);
             screen.clear();
         }
         for(let {components} of this.group) {
@@ -39,9 +39,26 @@ export class MeshRendererSystem extends ComponentSystem {
         }
         // After render
         for (let screen of MeshRendererSystem.ctxSet.values()) {
-            screen.filter.bind(null);
+
+            // post effects
+            for(let i = 1, l = screen.filters.length; i < l; i++) {
+                let ft = screen.filters[i];
+                if(i + 1 != l) {
+                    ft.bind();
+                    screen.setViewport(ft.width, ft.height);
+                    // let next = screen.filters[i+1];
+                    // let channel = next.material.shader.uniforms['base'].value;
+                    // next.material.textures[channel] = ft.color[0];
+                }
+                MeshRendererSystem.render(ft.meshRender);
+            }
+
+            // Render to screen
+            let lastft = screen.filters[screen.filters.length-1];
+            lastft.bind(null);
             screen.setViewport();
-            MeshRendererSystem.render(screen.filter.meshRender);
+            MeshRendererSystem.render(lastft.meshRender);
+
         }
     }
 
