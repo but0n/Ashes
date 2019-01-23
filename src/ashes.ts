@@ -1,4 +1,4 @@
-export { Render } from "./webgl2/render";
+export { Screen } from "./webgl2/screen";
 export { Asset } from "./asset";
 export { Material } from "./material";
 export { EntityMgr } from "./ECS/entityMgr";

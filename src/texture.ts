@@ -7,11 +7,19 @@ export class Texture {
     isDirty: boolean = true;
     glType = WebGL2RenderingContext.TEXTURE_2D;
     isCubetex = false;
-    constructor(rawImage, sampler = undefined) {
+    width: number;
+    height: number;
+    border: number;
+    data = null;
+    constructor(rawImage, sampler = undefined, width = 256, height = 256, border = 0) {
         this.sampler = new Sampler(sampler);
         this.image = rawImage;
 
-        if(rawImage.length == 6) {
+        this.width = width;
+        this.height = height;
+        this.border = border;
+
+        if (rawImage && rawImage.length == 6) {
             this.isCubetex = true;
             this.glType = WebGL2RenderingContext.TEXTURE_CUBE_MAP;
         }
@@ -42,7 +50,11 @@ export class Texture {
                 gl.texImage2D(this.cubetexOrder[i], 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, tex.image[i]);
             }
         } else {
-            gl.texImage2D(tex.glType, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, tex.image);
+            if(tex.image) {
+                gl.texImage2D(tex.glType, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, tex.image);
+            } else { // Data texture
+                gl.texImage2D(tex.glType, 0, gl.RGBA, tex.width, tex.height, tex.border, gl.RGBA, gl.UNSIGNED_BYTE, tex.data);
+            }
         }
 
         gl.texParameterf(tex.glType, gl.TEXTURE_WRAP_S, tex.sampler.wrapS);
@@ -89,7 +101,7 @@ export class Texture {
     }
 }
 
-class Sampler {
+export class Sampler {
     magFilter;
     minFilter;
     wrapS;

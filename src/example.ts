@@ -3,7 +3,7 @@ import { EntityMgr } from "./ECS/entityMgr";
 import { Camera } from "./camera";
 import { vec3 } from "./math";
 import { Transform } from "./transform";
-import { Render } from "./webgl2/render";
+import { Screen } from "./webgl2/screen";
 import { QuadMesh } from "./mesh/quadMesh";
 import { MeshRenderer } from "./meshRenderer";
 import { OrbitControl } from "./component/orbitControl";
@@ -20,7 +20,7 @@ export class Example {
         gltf = '/gltfsamples/FlightHelmet/glTF/FlightHelmet.gltf';
         // gltf = '/static/gltfsamples/futuristic_safe/scene.gltf';
 
-        let screen = new Render('#screen');
+        let screen = new Screen('#screen');
 
         let scene = EntityMgr.create('root');
         let gltfroot = await Asset.loadGLTF(gltf, screen);

@@ -1,6 +1,8 @@
 import { Camera } from "../camera";
+import { Filter } from "../filter";
+import { Asset } from "../asset";
 
-export class Render {
+export class Screen {
     public canvas: HTMLCanvasElement;
     public gl: WebGL2RenderingContext;
     public mainCamera: Camera;
@@ -8,7 +10,7 @@ export class Render {
     constructor(selector) {
         // Detect device
         if(navigator.userAgent.indexOf('iPhone') != -1) {
-            Render.platform = 'iOS';
+            Screen.platform = 'iOS';
         }
         this.canvas = document.querySelector(selector);
         if(!this.canvas) {
@@ -25,6 +27,11 @@ export class Render {
         this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
 
         this.setScreenSize(); // initial - full screen
+
+        // // Create filters
+        // Asset.LoadShaderProgram('test').then(shader => {
+        //     this.filter = new Filter(this, shader, 512, 512);
+        // });
     }
 
     width: number;
@@ -39,12 +46,20 @@ export class Render {
         this.canvas.style.height = height + 'px';
         this.gl.viewport(0, 0, width * devicePixelRatio, height * devicePixelRatio);
         this.width = width;
-        this.height =height;
+        this.height = height;
     }
 
     clear(r = 0, g = 0, b = 0, a = 0, mode = this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT) {
         this.gl.clearColor(r, g, b, a);
         this.gl.clear(mode);
+    }
+
+    beforeDrawcall() {
+
+    }
+
+    afterDrawcall() {
+
     }
 
 }

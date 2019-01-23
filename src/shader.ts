@@ -1,5 +1,3 @@
-import { Render } from "./webgl2/render";
-
 export class Shader {
     vertex: WebGLShader;
     fragment: WebGLShader;

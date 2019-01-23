@@ -1,6 +1,6 @@
 import { MeshRenderer } from "./meshRenderer";
 import { Material } from "./material";
-import { Render } from "./webgl2/render";
+import { Screen } from "./webgl2/screen";
 import { gltfScene } from "./gltfScene";
 import { EntityMgr } from "./ECS/entityMgr";
 import { Shader } from "./shader";
@@ -55,7 +55,7 @@ export class Asset {
         });
     }
 
-    static async loadGLTF(path: string, screen: Render, envmap, shader = 'stylize') {
+    static async loadGLTF(path: string, screen: Screen, envmap = null, shader = 'stylize') {
 
         // parse current path
         let root: any = path.split('/');

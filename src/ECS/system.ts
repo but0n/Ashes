@@ -35,6 +35,9 @@ export class System {
     static registSystem(system: ComponentSystem) {
         this.sysQueue[system.depends.toString()] = system;
     }
+    static getSystem(system: ComponentSystem) {
+        return this.sysQueue[system.depends.toString()];
+    }
     static removeSystem(system: ComponentSystem) {
         this.sysQueue[system.depends.toString()] = null;
     }
