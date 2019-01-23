@@ -1,8 +1,6 @@
 import { Camera } from "../camera";
 import { Filter } from "../filter";
 import { Shader } from "../shader";
-import { blur } from "../filter/blur";
-import { Material } from "../material";
 
 export class Screen {
     public canvas: HTMLCanvasElement;
