@@ -55,7 +55,7 @@ export class Asset {
         });
     }
 
-    static async loadGLTF(path: string, screen: Screen, envmap = null, shader = 'stylize') {
+    static async loadGLTF(path: string, screen: Screen, envmap?, shader = 'stylize') {
 
         // parse current path
         let root: any = path.split('/');
