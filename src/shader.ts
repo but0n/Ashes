@@ -12,10 +12,37 @@ export class Shader {
 
     isDirty: boolean = true;    // Shader sources status
 
-    constructor(vertCode, fragCode) {
+    constructor(vertCode = Shader.basicVS, fragCode = Shader.basicFS) {
         this.vertexSource = vertCode;
         this.fragmentSource = fragCode;
     }
+
+    static basicVS = `
+attribute vec3 POSITION;
+attribute vec2 TEXCOORD_0;
+
+varying vec2 uv;
+varying vec4 pos;
+
+void main() {
+  uv = TEXCOORD_0;
+  vec4 position = vec4(POSITION, 1);
+  pos = position;
+  gl_Position = position;
+}
+    `;
+    static basicFS = `
+precision mediump float;
+uniform sampler2D base;
+
+varying vec2 uv;
+varying vec4 pos;
+
+void main() {
+    gl_FragColor = texture2D(base, uv);
+    // gl_FragColor = vec4(uv, 1, 1);
+}
+    `;
 
     static clone(shader: Shader) {
         return new Shader(shader.vertexSource, shader.fragmentSource);

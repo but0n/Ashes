@@ -11,6 +11,12 @@ export class Texture {
     height: number;
     border: number;
     data = null;
+
+    level: number = 0;
+    internalformat: number = WebGL2RenderingContext.RGBA;
+    format: number = WebGL2RenderingContext.RGBA;
+    type: number = WebGL2RenderingContext.UNSIGNED_BYTE;
+
     constructor(rawImage, sampler = undefined, width = 256, height = 256, border = 0) {
         this.sampler = new Sampler(sampler);
         this.image = rawImage;
@@ -47,13 +53,13 @@ export class Texture {
 
         if(tex.isCubetex) {
             for(let i in this.cubetexOrder) {
-                gl.texImage2D(this.cubetexOrder[i], 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, tex.image[i]);
+                gl.texImage2D(this.cubetexOrder[i], tex.level, tex.internalformat, tex.format, tex.type, tex.image[i]);
             }
         } else {
             if(tex.image) {
-                gl.texImage2D(tex.glType, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, tex.image);
+                gl.texImage2D(tex.glType, tex.level, tex.internalformat, tex.format, tex.type, tex.image);
             } else { // Data texture
-                gl.texImage2D(tex.glType, 0, gl.RGBA, tex.width, tex.height, tex.border, gl.RGBA, gl.UNSIGNED_BYTE, tex.data);
+                gl.texImage2D(tex.glType, tex.level, tex.internalformat, tex.width, tex.height, tex.border, tex.format, tex.type, tex.data);
             }
         }
 

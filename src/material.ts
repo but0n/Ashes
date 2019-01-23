@@ -31,8 +31,6 @@ export class Material {
             this.useMaterial(mat, ctx);
         }
 
-        this.bindAllTextures(mat, ctx);
-
         Shader.updateUniform(mat.shader);
         mat.isDirty = false;
     }
