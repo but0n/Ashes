@@ -34,8 +34,8 @@ export class Screen {
         this.setScreenSize(); // initial - full screen
 
         // initial capture
-        this.pow2width = nearestPow2(this.width * this.ratio);
-        this.pow2height = nearestPow2(this.height * this.ratio);
+        this.pow2width = nearestPow2(this.width);
+        this.pow2height = nearestPow2(this.height);
         this.capture = new Filter(this, new Shader(), this.pow2width, this.pow2height);
         this.capture.renderToScreen = false;
 
@@ -49,7 +49,6 @@ export class Screen {
 
     width: number;
     height: number;
-    ratio: number;
 
     setScreenSize(width = window.innerWidth, height = window.innerHeight) {
         let {devicePixelRatio} = window;
@@ -58,9 +57,8 @@ export class Screen {
         this.canvas.setAttribute('height', height * devicePixelRatio + '');
         this.canvas.style.width = width + 'px';
         this.canvas.style.height = height + 'px';
-        this.width = width;
-        this.height = height;
-        this.ratio = devicePixelRatio;
+        this.width = width * devicePixelRatio;
+        this.height = height * devicePixelRatio;
         this.setViewport();
     }
 
