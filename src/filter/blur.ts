@@ -56,13 +56,14 @@ vec4 avrgBlur() {
 }
 
 void main() {
-    float mo = length(uv * 2.0 - 1.0);
+    vec2 offset = uv * 2.0 - 1.0;
+    float mask = dot(offset, offset);
     vec4 color = texture2D(base, uv);
     // gl_FragColor = avrgBlur();
     // gl_FragColor = vec4(0);
     // gl_FragColor = vec4(0);
     // gl_FragColor = vec4(0);
     // gl_FragColor = vec4(0);
-    gl_FragColor = mix(color, vec4(0, 0, 0, 1), mo-0.5);
+    gl_FragColor = mix(color, vec4(0,0,0,1), mask * 0.45);
 }
 `;

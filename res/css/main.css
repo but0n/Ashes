@@ -39,9 +39,10 @@ body > ash-entity {
 	overflow: scroll;
 	z-index: 1;
 	position: fixed;
+	display: none;
 }
 ash-entity {
-	max-width: 100px;
+	max-width: 300px;
 	display: block;
 	min-height: 10px;
 	border-style: solid;
