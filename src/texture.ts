@@ -1,5 +1,4 @@
 export class Texture {
-    uniform: string;
     image: HTMLImageElement;
     sampler: Sampler;
     texture: WebGLTexture = null;

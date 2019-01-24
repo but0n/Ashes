@@ -59,8 +59,9 @@ export class Screen {
 
     attachFilter(ft: Filter) {
         if(this.filters.length != 0) {
-            let lastft = this.filters[this.filters.length - 1]
-            ft.material.textures[0] = lastft.color[0];
+            // Attach to the filter chain
+            let lastft = this.filters[this.filters.length - 1];
+            ft.setInput(lastft.color[0]);
         }
         this.filters.push(ft);
     }

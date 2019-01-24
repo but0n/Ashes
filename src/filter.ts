@@ -42,10 +42,10 @@ export class Filter {
         this.mesh = new QuadMesh();
         this.material = new Material(shader);
         this.meshRender = new MeshRenderer(screen, this.mesh, this.material);
-        this.setTexture();
+        this.setInput();
     }
 
-    setTexture(tex: Texture = this.color[0]) {
+    setInput(tex: Texture = this.color[0]) {
         Material.setTexture(this.material, 'base', tex);
     }
 

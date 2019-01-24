@@ -5,7 +5,8 @@ export class Material {
     name: string;
     shader: Shader;
     isDirty: boolean = true;
-    textures: Texture[] = [];
+    // textures: Texture[] = [];
+    textures: Map<string, Texture> = new Map();
     constructor(shader: Shader, name = null) {
         this.shader = Shader.clone(shader);
         this.name = name;
@@ -36,28 +37,33 @@ export class Material {
     }
 
     static bindAllTextures(mat: Material, ctx: WebGL2RenderingContext) {
-        if(mat.textures.length == 0) {
+        if(mat.textures.size == 0) {
             // FIXME:
         }
-        for (let tex of mat.textures) {
+        for (let [uniform, tex] of mat.textures) {
             Texture.bindTexture(ctx, tex);
             if(tex.isDirty) {
-                Material.setUniform(mat, tex.uniform, tex.channel);
+                Material.setUniform(mat, uniform, tex.channel);
                 tex.isDirty = false;
             }
         }
     }
 
     static unbindAllTextures(mat: Material, ctx: WebGL2RenderingContext) {
-        for (let tex of mat.textures) {
+        for (let [,tex] of mat.textures) {
             Texture.unbindTexture(ctx, tex);
         }
     }
 
-    static setTexture(mat: Material, name: string, tex: Texture, channel: number = mat.textures.length) {
-        tex.uniform = name;
-        tex.channel = channel;
-        mat.textures.push(tex);
+    static setTexture(mat: Material, name: string, tex: Texture) {
+        if(mat.textures.has(name)) {
+            tex.channel = mat.textures.get(name).channel;
+        } else {
+            tex.channel = mat.textures.size;
+        }
+
+        mat.textures.set(name, tex);
+
         mat.isDirty = true;
         tex.isDirty = true;
     }
