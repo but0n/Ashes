@@ -30,9 +30,11 @@ export class MeshRendererSystem extends ComponentSystem {
     onUpdate() {
         // Before render
         for(let screen of MeshRendererSystem.ctxSet.values()) {
-            screen.filters[0].bind();
-            screen.setViewport(screen.filters[0].width, screen.filters[0].height);
-            screen.clear();
+            if(screen.filters.length) {
+                screen.capture.bind();
+                screen.setViewport(screen.capture.width, screen.capture.height);
+                screen.clear();
+            }
         }
         for(let {components} of this.group) {
             MeshRendererSystem.render(components.MeshRenderer);
@@ -41,23 +43,24 @@ export class MeshRendererSystem extends ComponentSystem {
         for (let screen of MeshRendererSystem.ctxSet.values()) {
 
             // post effects
-            for(let i = 1, l = screen.filters.length; i < l; i++) {
-                let ft = screen.filters[i];
-                if(i + 1 != l) {
+            for(let [i,ft] of screen.filters.entries()) {
+                if(ft.renderToScreen) {
+                    // Render to screen
+                    ft.bind(null);
+                    screen.setViewport();
+                } else {
                     ft.bind();
                     screen.setViewport(ft.width, ft.height);
-                    // let next = screen.filters[i+1];
-                    // let channel = next.material.shader.uniforms['base'].value;
-                    // next.material.textures[channel] = ft.color[0];
                 }
                 MeshRendererSystem.render(ft.meshRender);
+                ft.bind(null);
             }
 
-            // Render to screen
-            let lastft = screen.filters[screen.filters.length-1];
-            lastft.bind(null);
-            screen.setViewport();
-            MeshRendererSystem.render(lastft.meshRender);
+            // // Render to screen
+            // let lastft = screen.filters[screen.filters.length-1];
+            // lastft.bind(null);
+            // screen.setViewport();
+            // MeshRendererSystem.render(lastft.meshRender);
 
         }
     }

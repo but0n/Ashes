@@ -1,6 +1,7 @@
 import { Camera } from "../camera";
 import { Filter } from "../filter";
 import { Shader } from "../shader";
+import { blur } from "../filter/blur";
 
 export class Screen {
     public canvas: HTMLCanvasElement;
@@ -8,6 +9,9 @@ export class Screen {
     public mainCamera: Camera;
     static platform = 'unknown';
     public filters: Filter[] = [];
+    public pow2width: number;
+    public pow2height: number;
+    public capture: Filter;
     constructor(selector) {
         // Detect device
         if(navigator.userAgent.indexOf('iPhone') != -1) {
@@ -29,12 +33,23 @@ export class Screen {
 
         this.setScreenSize(); // initial - full screen
 
-        this.attachFilter(new Filter(this, new Shader()))
-        // this.attachFilter(new blur(this));
+        // initial capture
+        this.pow2width = nearestPow2(this.width * this.ratio);
+        this.pow2height = nearestPow2(this.height * this.ratio);
+        this.capture = new Filter(this, new Shader(), this.pow2width, this.pow2height);
+        this.capture.renderToScreen = false;
+
+        // this.attachFilter(new Filter(this, new Shader(), 128, 128))
+        // this.attachFilter(new Filter(this, new Shader(), 1024, 1024))
+        // this.attachFilter(new Filter(this, new Shader(), 1024, 1024))
+        // this.attachFilter(new Filter(this, new Shader(), 1024, 1024))
+        this.attachFilter(new blur(this, 2, 0));
+        // this.attachFilter(new blur(this, 0, 2));
     }
 
     width: number;
     height: number;
+    ratio: number;
 
     setScreenSize(width = window.innerWidth, height = window.innerHeight) {
         let {devicePixelRatio} = window;
@@ -45,6 +60,7 @@ export class Screen {
         this.canvas.style.height = height + 'px';
         this.width = width;
         this.height = height;
+        this.ratio = devicePixelRatio;
         this.setViewport();
     }
 
@@ -58,10 +74,14 @@ export class Screen {
     }
 
     attachFilter(ft: Filter) {
-        if(this.filters.length != 0) {
+        if(this.filters.length) {
             // Attach to the filter chain
             let lastft = this.filters[this.filters.length - 1];
-            ft.setInput(lastft.color[0]);
+            lastft.renderToScreen = false;
+            ft.setInput(lastft.output);
+        } else {
+            // filter head
+            ft.setInput(this.capture.output);
         }
         this.filters.push(ft);
     }
@@ -72,4 +92,15 @@ export class Screen {
         }
     }
 
+}
+
+// https://bocoup.com/blog/find-the-closest-power-of-2-with-javascript#comment-351783898
+function nearestPow2(n) {
+    var m = n;
+    for (var i = 0; m > 1; i++) {
+        m = m >>> 1;
+    }
+    // Round to nearest power
+    if (n & 1 << i - 1) { i++; }
+    return 1 << i;
 }

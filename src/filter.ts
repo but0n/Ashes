@@ -25,10 +25,13 @@ export class Filter {
     height: number;
     buffer: WebGLFramebuffer;
     color: Texture[] = [];
+    input: Texture;
+    output: Texture;
     depth: Texture[] = [];
     meshRender: MeshRenderer;
     material: Material;
     mesh: Mesh;
+    renderToScreen = true;
     constructor(screen: Screen, shader: Shader, width: number = 512, height: number = 512) {
         this.ctx = screen.gl;
         this.width = width;
@@ -37,16 +40,17 @@ export class Filter {
         // Create framebuffer
         this.buffer = this.ctx.createFramebuffer();
 
-        this.attachTexture();
+        this.output = this.attachTexture();
 
         this.mesh = new QuadMesh();
         this.material = new Material(shader);
         this.meshRender = new MeshRenderer(screen, this.mesh, this.material);
-        this.setInput();
     }
 
-    setInput(tex: Texture = this.color[0]) {
+    setInput(tex: Texture) {
+        this.input = tex;
         Material.setTexture(this.material, 'base', tex);
+        this.material.isDirty = true;
     }
 
     private static COLOR_ATTACH_BASE = WebGL2RenderingContext.COLOR_ATTACHMENT0;
@@ -74,5 +78,7 @@ export class Filter {
         this.depth.push(depth);
 
         this.bind(null);
+
+        return color;
     }
 }
