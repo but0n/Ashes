@@ -86,7 +86,7 @@ void main() {
         // gl_FragColor = vec4(vec3(brightness), color.a);
         gl_FragColor = color;
     } else {
-        gl_FragColor = vec4(vec3(0),1);
+        gl_FragColor = vec4(0);
     }
 }
 `;
