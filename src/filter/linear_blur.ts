@@ -2,11 +2,11 @@ import { Filter } from "../filter";
 import { Screen } from "../webgl2/screen";
 import { Shader } from "../shader";
 
-export class blur extends Filter {
+export class linearBlur extends Filter {
     constructor(screen: Screen, dx = 1, dy = 0) {
         let {width, height} = screen;
 
-        super(screen, blur.getShader(width, height, dx, dy), 512, 512);
+        super(screen, linearBlur.getShader(width, height, dx, dy), 512, 512);
 
     }
 

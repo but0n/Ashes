@@ -1,7 +1,6 @@
 import { Camera } from "../camera";
 import { Filter } from "../filter";
 import { Shader } from "../shader";
-import { blur } from "../filter/blur";
 import { Bloom } from "../filter/bloom";
 
 export class Screen {

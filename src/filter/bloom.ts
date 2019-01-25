@@ -10,7 +10,7 @@ export class Bloom {
 
         // threshold filter
         macro = [
-            `#define THRESHOLD 0.4`
+            `#define THRESHOLD 0.7`
         ].join('/n');
 
         let threshold = new Filter(screen, new Shader(threshold_vs, macro+threshold_fs));
@@ -33,7 +33,7 @@ export class Bloom {
 
         // Combiand
         macro = [
-            `#define BLOOM_INTENSITY (1.0)`
+            `#define BLOOM_INTENSITY (0.6)`
         ].join('/n');
         let comb = new Filter(screen, new Shader(combine_vs, macro + combine_fs));
         if(screen.output) {
@@ -47,6 +47,8 @@ export class Bloom {
         screen.attachFilter(threshold);
         screen.attachFilter(blur1);
         screen.attachFilter(blur2);
+        screen.attachFilter(blur1.clone());
+        screen.attachFilter(blur2.clone());
         screen.attachFilter(comb);
 
 
@@ -173,7 +175,7 @@ varying vec4 pos;
 
 void main() {
     vec4 origin = texture2D(originTex, uv);
-    vec4 addition = texture2D(base, uv) * BLOOM_INTENSITY;
+    vec4 addition = texture2D(base, uv) * vec4(vec3(BLOOM_INTENSITY),1);
     gl_FragColor = origin + addition;
 }
 `;
