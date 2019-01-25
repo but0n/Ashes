@@ -11,7 +11,7 @@ export class Bloom {
         // threshold filter
         macro = [
             `#define THRESHOLD 0.7`
-        ].join('/n');
+        ].join('\n');
 
         let threshold = new Filter(screen, new Shader(threshold_vs, macro+threshold_fs));
 
@@ -22,19 +22,19 @@ export class Bloom {
 
         macro = [
             `#define OFFSET vec2(${radius/screen.width}, 0)`
-        ].join('/n');
+        ].join('\n');
         let blur1 = new Filter(screen, new Shader(blurvs, macro + blurfs), blurSize, blurSize);
 
         macro = [
             `#define OFFSET vec2(0, ${radius/screen.height})`
-        ].join('/n');
+        ].join('\n');
         let blur2 = new Filter(screen, new Shader(blurvs, macro+blurfs), blurSize, blurSize);
 
 
         // Combiand
         macro = [
             `#define BLOOM_INTENSITY (0.6)`
-        ].join('/n');
+        ].join('\n');
         let comb = new Filter(screen, new Shader(combine_vs, macro + combine_fs));
         if(screen.output) {
             comb.setInput(screen.output.output, 'originTex');

@@ -13,7 +13,7 @@ export class linearBlur extends Filter {
     static getShader(width, height, dx, dy) {
         let define = [
             `#define OFFSET (vec2(${dx / width}, ${dy / height}))`,
-        ].join('/n');
+        ].join('\n');
         return new Shader(blurvs, define + blurfs);
     }
 

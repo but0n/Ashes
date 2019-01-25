@@ -2,6 +2,7 @@ import { Camera } from "../camera";
 import { Filter } from "../filter";
 import { Shader } from "../shader";
 import { Bloom } from "../filter/bloom";
+import { Vignetting } from "../filter/vignetting";
 
 export class Screen {
     public canvas: HTMLCanvasElement;
@@ -41,15 +42,8 @@ export class Screen {
         this.capture = new Filter(this, new Shader(), this.pow2width, this.pow2height);
         this.capture.renderToScreen = false;
 
-        // this.attachFilter(new Filter(this, new Shader(), 512, 512))
-        // this.attachFilter(new Filter(this, new Shader()))
-        // this.attachFilter(new Filter(this, new Shader()))
-        // this.attachFilter(new Filter(this, new Shader(), 1024, 1024))
-        // this.attachFilter(new Filter(this, new Shader(), 1024, 1024))
-        // this.attachFilter(new Filter(this, new Shader(), 1024, 1024))
-        // this.attachFilter(new blur(this, 2, 0));
-        // this.attachFilter(new blur(this, 0, 2));
         Bloom.initFilters(this)
+        this.attachFilter(new Vignetting(this));
     }
 
     width: number;
@@ -71,7 +65,7 @@ export class Screen {
         this.gl.viewport(0, 0, width, height);
     }
 
-    clear(r = 0, g = 0, b = 0, a = 1, mode = this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT) {
+    clear(r = 0, g = 0, b = 0, a = 0, mode = this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT) {
         this.gl.clearColor(r, g, b, a);
         this.gl.clear(mode);
     }
@@ -87,12 +81,6 @@ export class Screen {
         }
         this.filters.push(ft);
         this.output = ft;
-    }
-
-    posteffect() {
-        for(let i = 0, l = this.filters.length; i < l; i++) {
-
-        }
     }
 
 }
