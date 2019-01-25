@@ -32,8 +32,10 @@ export class Filter {
     material: Material;
     mesh: Mesh;
     renderToScreen = true;
+    screen: Screen;
     constructor(screen: Screen, shader: Shader, width: number = screen.pow2width, height: number = screen.pow2height) {
         this.ctx = screen.gl;
+        this.screen = screen;
         this.width = width;
         this.height = height;
 
@@ -47,9 +49,13 @@ export class Filter {
         this.meshRender = new MeshRenderer(screen, this.mesh, this.material);
     }
 
-    setInput(tex: Texture) {
+    clone(screen: Screen = this.screen) {
+        let shader = this.material.shader;
+        return new Filter(screen, new Shader(shader.vertexSource, shader.fragmentSource), this.width, this.height);
+    }
+    setInput(tex: Texture, channel = 'base') {
         this.input = tex;
-        Material.setTexture(this.material, 'base', tex);
+        Material.setTexture(this.material, channel, tex);
         this.material.isDirty = true;
     }
 

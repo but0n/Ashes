@@ -2,6 +2,7 @@ import { Camera } from "../camera";
 import { Filter } from "../filter";
 import { Shader } from "../shader";
 import { blur } from "../filter/blur";
+import { Bloom } from "../filter/bloom";
 
 export class Screen {
     public canvas: HTMLCanvasElement;
@@ -12,6 +13,7 @@ export class Screen {
     public pow2width: number;
     public pow2height: number;
     public capture: Filter;
+    public output: Filter = null;
     constructor(selector) {
         // Detect device
         if(navigator.userAgent.indexOf('iPhone') != -1) {
@@ -30,6 +32,7 @@ export class Screen {
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.enable(this.gl.BLEND);
         this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
+        // this.ext = this.gl.getExtension('WEBGL_draw_buffers');
 
         this.setScreenSize(); // initial - full screen
 
@@ -47,6 +50,7 @@ export class Screen {
         // this.attachFilter(new Filter(this, new Shader(), 1024, 1024))
         // this.attachFilter(new blur(this, 2, 0));
         // this.attachFilter(new blur(this, 0, 2));
+        Bloom.initFilters(this)
     }
 
     width: number;
@@ -74,16 +78,16 @@ export class Screen {
     }
 
     attachFilter(ft: Filter) {
-        if(this.filters.length) {
-            // Attach to the filter chain
-            let lastft = this.filters[this.filters.length - 1];
-            lastft.renderToScreen = false;
-            ft.setInput(lastft.output);
-        } else {
+        if(this.output == null) {
             // filter head
             ft.setInput(this.capture.output);
+        } else {
+            // Attach to the filter chain
+            this.output.renderToScreen = false;
+            ft.setInput(this.output.output);
         }
         this.filters.push(ft);
+        this.output = ft;
     }
 
     posteffect() {
