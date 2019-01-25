@@ -19,14 +19,16 @@ export class Bloom {
         // Two pass gaussian blur
         let radius = 2;
         let blurSize = 512;
+        let width = screen.width / screen.ratio;
+        let height = screen.height/screen.ratio;
 
         macro = [
-            `#define OFFSET vec2(${radius/screen.width}, 0)`
+            `#define OFFSET vec2(${radius/width}, 0)`
         ].join('\n');
         let blur1 = new Filter(screen, new Shader(blurvs, macro + blurfs), blurSize, blurSize);
 
         macro = [
-            `#define OFFSET vec2(0, ${radius/screen.height})`
+            `#define OFFSET vec2(0, ${radius/height})`
         ].join('\n');
         let blur2 = new Filter(screen, new Shader(blurvs, macro+blurfs), blurSize, blurSize);
 

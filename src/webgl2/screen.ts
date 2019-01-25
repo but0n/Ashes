@@ -14,6 +14,7 @@ export class Screen {
     public pow2height: number;
     public capture: Filter;
     public output: Filter = null;
+    public ratio: number;
     constructor(selector) {
         // Detect device
         if(navigator.userAgent.indexOf('iPhone') != -1) {
@@ -58,6 +59,7 @@ export class Screen {
         this.canvas.style.height = height + 'px';
         this.width = width * devicePixelRatio;
         this.height = height * devicePixelRatio;
+        this.ratio = devicePixelRatio;
         this.setViewport();
     }
 
