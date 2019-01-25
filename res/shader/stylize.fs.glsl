@@ -146,7 +146,7 @@ void main() {
     vec3 color;
     color += IBLspecular;
 
-    color += lightContrib(vec3(5, 5, 5), vec3(2.2), core);
+    color += lightContrib(vec3(5, 5, 5), vec3(4), core);
     color += lightContrib(vec3(-5, -5, -5), vec3(0.2, 0.4, 0.6), core);
 
     // gl_FragColor = vec4(uv, 0, 1);
