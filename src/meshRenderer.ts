@@ -51,9 +51,9 @@ export class MeshRendererSystem extends ComponentSystem {
                 } else {
                     ft.bind();
                     screen.setViewport(ft.width, ft.height);
+                    screen.clear(); // clear current framebuffer
                 }
                 MeshRendererSystem.render(ft.meshRender);
-                ft.bind(null);
             }
 
             // // Render to screen

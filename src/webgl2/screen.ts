@@ -39,11 +39,13 @@ export class Screen {
         this.capture = new Filter(this, new Shader(), this.pow2width, this.pow2height);
         this.capture.renderToScreen = false;
 
-        // this.attachFilter(new Filter(this, new Shader(), 128, 128))
+        // this.attachFilter(new Filter(this, new Shader(), 512, 512))
+        // this.attachFilter(new Filter(this, new Shader()))
+        // this.attachFilter(new Filter(this, new Shader()))
         // this.attachFilter(new Filter(this, new Shader(), 1024, 1024))
         // this.attachFilter(new Filter(this, new Shader(), 1024, 1024))
         // this.attachFilter(new Filter(this, new Shader(), 1024, 1024))
-        this.attachFilter(new blur(this, 2, 0));
+        // this.attachFilter(new blur(this, 2, 0));
         // this.attachFilter(new blur(this, 0, 2));
     }
 
