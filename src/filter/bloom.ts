@@ -13,24 +13,24 @@ export class Bloom {
             `#define THRESHOLD 0.7`
         ].join('\n');
 
-        let threshold = new Filter(screen, new Shader(threshold_vs, macro+threshold_fs));
+        let blurSize = 512;
+        let threshold = new Filter(screen, new Shader(threshold_vs, macro+threshold_fs), blurSize, blurSize);
 
 
         // Two pass gaussian blur
-        let radius = 2;
-        let blurSize = 512;
+        let radius = 2 * screen.ratio;
         let width = screen.width / screen.ratio;
-        let height = screen.height/screen.ratio;
+        let height = screen.height /screen.ratio;
 
         macro = [
             `#define OFFSET vec2(${radius/width}, 0)`
         ].join('\n');
-        let blur1 = new Filter(screen, new Shader(blurvs, macro + blurfs), blurSize, blurSize);
+        let blur1 = new Filter(screen, new Shader(blurvs, macro + blurfs));
 
         macro = [
             `#define OFFSET vec2(0, ${radius/height})`
         ].join('\n');
-        let blur2 = new Filter(screen, new Shader(blurvs, macro+blurfs), blurSize, blurSize);
+        let blur2 = new Filter(screen, new Shader(blurvs, macro+blurfs));
 
 
         // Combiand

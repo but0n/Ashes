@@ -9,4 +9,6 @@ export { vec3, vec4, mat4, quat } from "./math";
 export { OrbitControl } from "./component/orbitControl";
 export { QuadMesh } from "./mesh/quadMesh";
 export { Texture } from "./texture";
+export { Bloom } from "./filter/bloom";
+export { Vignetting } from "./filter/vignetting";
 // export { Example } from "./example";

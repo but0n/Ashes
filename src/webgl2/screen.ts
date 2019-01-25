@@ -43,8 +43,8 @@ export class Screen {
         this.capture = new Filter(this, new Shader(), this.pow2width, this.pow2height);
         this.capture.renderToScreen = false;
 
-        Bloom.initFilters(this)
-        this.attachFilter(new Vignetting(this));
+        // Bloom.initFilters(this)
+        // this.attachFilter(new Vignetting(this));
     }
 
     width: number;
