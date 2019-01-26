@@ -108,7 +108,9 @@ export class gltfScene {
             case 'metallicRoughnessTexture':
                 shader.macros['HAS_METALLIC_ROUGHNESS_MAP'] = '';
                 return;
-
+            case 'emissiveTexture':
+                shader.macros['HAS_EMISSIVE_MAP'] = '';
+                return;
             // Factors - pbrMetallicRoughness
             case 'baseColorFactor':
                 shader.macros['BASECOLOR_FACTOR'] = `vec4(${value.join(',')})`;
