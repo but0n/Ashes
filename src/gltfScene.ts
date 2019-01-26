@@ -15,7 +15,10 @@ export class gltfScene {
         gltf.bufferViews = gltf.bufferViews.map(bv => new bufferView(gltf.buffers[bv.buffer], bv));
 
         // Materials
-        console.log(gltf.materials[0]);
+        // set default material if materials does not exist
+        if(!gltf.materials) {
+            gltf.materials = [{name: 'Default_Material'}];
+        }
         gltf.materials = gltf.materials.map(config => {
             let mat = new Material(gltf.commonShader, config.name);
             console.log(config);
@@ -76,11 +79,11 @@ export class gltfScene {
             ebo.bufferView.target = WebGL2RenderingContext.ELEMENT_ARRAY_BUFFER;
 
             let mf = new Mesh(accessors, ebo, meshData.mode);
-            let mat = gltf.materials[meshData.material];
+            let mat = gltf.materials[meshData.material || 0];
             return [mf, mat];
         });
 
-        let roots = scenes[scene].nodes;
+        let roots = scenes[scene || 0].nodes;
         for(let r of roots) {
             let root = this.parseNode(r, nodes);
             this.scene.appendChild(root);

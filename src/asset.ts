@@ -68,7 +68,9 @@ export class Asset {
         gltf.buffers = await Promise.all(gltf.buffers.map(({ uri }) => this.loadBuffer(root + uri)));
 
         // then download images
-        gltf.images = await Promise.all(gltf.images.map(({ uri }) => this.loadImage(root + uri)));
+        if(gltf.images) {
+            gltf.images = await Promise.all(gltf.images.map(({ uri }) => this.loadImage(root + uri)));
+        }
 
         // Load shader
         gltf.commonShader = await this.LoadShaderProgram(shader);
