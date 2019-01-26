@@ -6,15 +6,17 @@ export class Shader {
     fragmentSource: string;
     attributes: {};
     uniforms: {};
+    macros: {};
 
     ctx: WebGL2RenderingContext;
     program: WebGLProgram;
 
     isDirty: boolean = true;    // Shader sources status
 
-    constructor(vertCode = Shader.basicVS, fragCode = Shader.basicFS) {
+    constructor(vertCode = Shader.basicVS, fragCode = Shader.basicFS, macros = {}) {
         this.vertexSource = vertCode;
         this.fragmentSource = fragCode;
+        this.macros = macros;
     }
 
     static basicVS = `
@@ -45,9 +47,12 @@ void main() {
     `;
 
     static clone(shader: Shader) {
-        return new Shader(shader.vertexSource, shader.fragmentSource);
+        let temp = new Shader(shader.vertexSource, shader.fragmentSource);
+        temp.macros = Object.assign({}, shader.macros);
+        return temp;
     }
 
+    static fragcodeCache = ''; // Reduce GC?
     static buildProgram(shader: Shader, ctx) {
         shader.isDirty = false;
         // if(!this.isDirty) return;
@@ -59,10 +64,20 @@ void main() {
         }
         shader.vertex = Shader.compileShader(shader.ctx, shader.ctx.VERTEX_SHADER, shader.vertexSource);
 
-        if(shader.fragment) { // Fragment shader
+
+        this.fragcodeCache = '';
+        for(let macro in shader.macros) {
+            this.fragcodeCache += `\n#define ${macro} ${shader.macros[macro]}\n`;
+        }
+        this.fragcodeCache += shader.fragmentSource;
+        if (shader.fragment) { // Fragment shader
             shader.ctx.deleteShader(shader.fragment);
         }
-        shader.fragment = Shader.compileShader(shader.ctx, shader.ctx.FRAGMENT_SHADER, shader.fragmentSource);
+        shader.fragment = Shader.compileShader(shader.ctx, shader.ctx.FRAGMENT_SHADER, this.fragcodeCache);
+
+        if(!shader.vertex || !shader.fragment) {
+            return;
+        }
 
         if(shader.program) {  // Shader Program
             shader.ctx.deleteProgram(shader.program);

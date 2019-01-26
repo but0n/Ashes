@@ -9,12 +9,12 @@ export class Bloom {
         let macro;
 
         // threshold filter
-        macro = [
-            `#define THRESHOLD 0.7`
-        ].join('\n');
+        macro = {
+            THRESHOLD: '0.7'
+        };
 
         let blurSize = 512;
-        let threshold = new Filter(screen, new Shader(threshold_vs, macro+threshold_fs), blurSize, blurSize);
+        let threshold = new Filter(screen, new Shader(threshold_vs, threshold_fs, macro), blurSize, blurSize);
 
 
         // Two pass gaussian blur
@@ -22,22 +22,22 @@ export class Bloom {
         let width = screen.width / screen.ratio;
         let height = screen.height /screen.ratio;
 
-        macro = [
-            `#define OFFSET vec2(${radius/width}, 0)`
-        ].join('\n');
-        let blur1 = new Filter(screen, new Shader(blurvs, macro + blurfs));
+        macro = {
+            OFFSET: `vec2(${radius / width}, 0)`
+        };
+        let blur1 = new Filter(screen, new Shader(blurvs, blurfs, macro));
 
-        macro = [
-            `#define OFFSET vec2(0, ${radius/height})`
-        ].join('\n');
-        let blur2 = new Filter(screen, new Shader(blurvs, macro+blurfs));
+        macro = {
+            OFFSET: `vec2(0, ${radius / height})`
+        };
+        let blur2 = new Filter(screen, new Shader(blurvs, blurfs, macro));
 
 
         // Combiand
-        macro = [
-            `#define BLOOM_INTENSITY (0.6)`
-        ].join('\n');
-        let comb = new Filter(screen, new Shader(combine_vs, macro + combine_fs));
+        macro = {
+            BLOOM_INTENSITY: `0.6`
+        };
+        let comb = new Filter(screen, new Shader(combine_vs, combine_fs, macro));
         if(screen.output) {
             comb.setInput(screen.output.output, 'originTex');
         } else {

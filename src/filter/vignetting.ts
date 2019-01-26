@@ -4,12 +4,10 @@ import { Shader } from "../shader";
 
 export class Vignetting extends Filter {
     constructor(screen: Screen, factor = 0.4, hardness = 1) {
-        let macro = [
-            `#define FACTOR float(${factor})`,
-            `#define HARDNESS float(${hardness})`
-        ].join('\n');
-        // super(screen, new Shader(vig_vs, vig_fs));
-        super(screen, new Shader(vig_vs, macro + vig_fs));
+        super(screen, new Shader(vig_vs, vig_fs, {
+            FACTOR:     `float(${factor})`,
+            HARDNESS:   `float(${hardness})`,
+        }));
     }
 
 

@@ -50,8 +50,7 @@ export class Filter {
     }
 
     clone(screen: Screen = this.screen) {
-        let shader = this.material.shader;
-        return new Filter(screen, new Shader(shader.vertexSource, shader.fragmentSource), this.width, this.height);
+        return new Filter(screen, Shader.clone(this.material.shader), this.width, this.height);
     }
     setInput(tex: Texture, channel = 'base') {
         this.input = tex;
