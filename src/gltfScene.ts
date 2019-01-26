@@ -4,6 +4,7 @@ import { Texture } from "./texture";
 import { Material } from "./material";
 import { vec3, vec4, mat4 } from "./math";
 import { TransformSystem, Transform } from "./transform";
+import { Shader } from "./shader";
 
 export class gltfScene {
     gltf;
@@ -23,28 +24,16 @@ export class gltfScene {
             let mat = new Material(gltf.commonShader, config.name);
             console.log(config);
             for(let key in config) {
-                let {index, texCoord} = config[key];
-                if(index != null) { // common texture
-                    let {source, sampler} = gltf.textures[index];
-                    let currentSampler;
-                    if(gltf.samplers != null)
-                        currentSampler = gltf.samplers[sampler];
-                    let texture = new Texture(gltf.images[source], currentSampler);
-                    Material.setTexture(mat, key, texture);
-                }
+
+                this.detectMacro(mat.shader, key, config[key]);
+                this.detectTexture(config, key, mat);
+
                 if(key == 'pbrMetallicRoughness') {
                     let pbrOptions = config[key];
                     for(let opt in pbrOptions) {
-                        let {index, texCoord} = pbrOptions[opt];
-                        if(index != null) { // common texture
-                            let {source, sampler} = gltf.textures[index];
-                            let currentSampler;
-                            if(gltf.samplers != null)
-                                currentSampler = gltf.samplers[sampler];
-                            let texture = new Texture(gltf.images[source], currentSampler);
 
-                            Material.setTexture(mat, opt, texture);
-                        }
+                        this.detectMacro(mat.shader, opt, pbrOptions[opt]);
+                        this.detectTexture(pbrOptions, opt, mat);
                     }
                 }
             }
@@ -87,6 +76,50 @@ export class gltfScene {
         for(let r of roots) {
             let root = this.parseNode(r, nodes);
             this.scene.appendChild(root);
+        }
+    }
+
+    detectTexture(config, texName, mat) {
+        let { index, texCoord } = config[texName];
+        let gltf = this.gltf;
+        if (index != null) { // common texture
+            let { source, sampler } = gltf.textures[index];
+            let currentSampler;
+            if (gltf.samplers != null)
+                currentSampler = gltf.samplers[sampler];
+            let texture = new Texture(gltf.images[source], currentSampler);
+
+            Material.setTexture(mat, texName, texture);
+        }
+    }
+
+    detectMacro(shader: Shader, key: string, value) {
+        switch(key) {
+            // Textures
+            case 'normalTexture':
+                shader.macros['HAS_NORMAL_MAP'] = '';
+                return;
+            case 'occlusionTexture':
+                shader.macros['HAS_AO_MAP'] = '';
+                return;
+            case 'baseColorTexture':
+                shader.macros['HAS_BASECOLOR_MAP'] = '';
+                return;
+            case 'metallicRoughnessTexture':
+                shader.macros['HAS_METALLIC_ROUGHNESS_MAP'] = '';
+                return;
+
+            // Factors - pbrMetallicRoughness
+            case 'baseColorFactor':
+                shader.macros['BASECOLOR_FACTOR'] = `vec4(${value.join(',')})`;
+                return;
+            case 'metallicFactor':
+                shader.macros['METALLIC_FACTOR'] = `float(${value})`;
+                return;
+            case 'roughnessFactor':
+                shader.macros['ROUGHNESS_FACTOR'] = `float(${value})`;
+                return;
+
         }
     }
 
