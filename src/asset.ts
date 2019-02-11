@@ -75,7 +75,7 @@ export class Asset {
 
         // Textures
         if (gltf.textures) {
-            gltf.textures.map(tex => {
+            gltf.textures = gltf.textures.map(tex => {
                 let { source, sampler } = tex;
                 let currentSampler;
                 if (gltf.samplers != null)

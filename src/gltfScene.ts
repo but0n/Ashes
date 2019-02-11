@@ -86,13 +86,7 @@ export class gltfScene {
         let { index, texCoord } = config[texName];
         let gltf = this.gltf;
         if (index != null) { // common texture
-            // let { source, sampler } = gltf.textures[index];
-            // let currentSampler;
-            // if (gltf.samplers != null)
-            //     currentSampler = gltf.samplers[sampler];
-            // let texture = new Texture(gltf.images[source], currentSampler);
-
-            Material.setTexture(mat, texName, gltf.textures[index]);
+            Material.setTexture(mat, texName, Texture.clone(gltf.textures[index]));
         }
     }
 
