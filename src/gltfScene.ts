@@ -51,25 +51,26 @@ export class gltfScene {
         });
         // Create mesh
         gltf.meshes = gltf.meshes.map(mesh => {
-            let meshData = mesh.primitives[0];
-            let {attributes} = meshData;
+            return mesh.primitives.map(meshData => {
+                let {attributes} = meshData;
 
-            // Pick up attributes
-            let accessors: Accessor[] = [];
-            for (let attr in attributes) {
-                let acc: Accessor = gltf.accessors[attributes[attr]];
-                acc.attribute = attr; // Set attribute name
-                accessors.push(acc);
-            }
+                // Pick up attributes
+                let accessors: Accessor[] = [];
+                for (let attr in attributes) {
+                    let acc: Accessor = gltf.accessors[attributes[attr]];
+                    acc.attribute = attr; // Set attribute name
+                    accessors.push(acc);
+                }
 
-            // Triangles
-            let ebo = gltf.accessors[meshData.indices];
-            // Ensure current buffer type is exist, considering the target value is not required at glTF
-            ebo.bufferView.target = WebGL2RenderingContext.ELEMENT_ARRAY_BUFFER;
+                // Triangles
+                let ebo = gltf.accessors[meshData.indices];
+                // Ensure current buffer type is exist, considering the target value is not required at glTF
+                ebo.bufferView.target = WebGL2RenderingContext.ELEMENT_ARRAY_BUFFER;
 
-            let mf = new Mesh(accessors, ebo, meshData.mode);
-            let mat = gltf.materials[meshData.material || 0];
-            return [mf, mat];
+                let mf = new Mesh(accessors, ebo, meshData.mode);
+                let mat = gltf.materials[meshData.material || 0];
+                return [mf, mat];
+            })
         });
 
         let roots = scenes[scene || 0].nodes;
@@ -122,6 +123,14 @@ export class gltfScene {
                 shader.macros['ROUGHNESS_FACTOR'] = `float(${value})`;
                 return;
 
+            // Alpha Blend Mode
+            case 'alphaMode':
+                shader.macros[value] = '';
+                return;
+            case 'alphaCutoff':
+                shader.macros['ALPHA_CUTOFF'] = `float(${value})`;
+                return;
+
         }
     }
 
@@ -146,9 +155,22 @@ export class gltfScene {
         }
         TransformSystem.updateMatrix(trans);
         if(mesh != null) {
-            let [mf, mat] = this.gltf.meshes[mesh];
-            EntityMgr.addComponent(entity, mf);
-            EntityMgr.addComponent(entity, mat);
+            let meshChunk = this.gltf.meshes[mesh];
+            if(meshChunk.length > 1) {
+                // Contains multiple mesh data
+                // append as a group
+                for(let meshData of meshChunk) {
+                    let subMesh = EntityMgr.create(name);
+                    let [mf, mat] = meshData;
+                    EntityMgr.addComponent(subMesh, mf);
+                    EntityMgr.addComponent(subMesh, mat);
+                    entity.appendChild(subMesh);
+                }
+            } else {
+                let [mf, mat] = meshChunk[0];
+                EntityMgr.addComponent(entity, mf);
+                EntityMgr.addComponent(entity, mat);
+            }
         }
         if(node.children) {
             for(let child of node.children) {

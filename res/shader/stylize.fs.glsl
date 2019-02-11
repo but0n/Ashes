@@ -213,5 +213,20 @@ void main() {
 #ifdef HAS_EMISSIVE_MAP
     color += em.rgb;
 #endif
+
+#ifdef BLEND
     gl_FragColor = LINEARtoSRGB(vec4(color, base.a));
+
+#elif defined(MASK)
+
+#ifndef ALPHA_CUTOFF
+#define ALPHA_CUTOFF 0.5
+#endif
+    if(base.a < ALPHA_CUTOFF)
+        discard;
+    gl_FragColor = LINEARtoSRGB(vec4(color,1));
+#else
+    // Opaque
+    gl_FragColor = LINEARtoSRGB(vec4(color,1));
+#endif
 }
