@@ -136,9 +136,11 @@ export class gltfScene {
         } else {
             if(rotation != null) {
                 vec4.set(trans.quaternion, ...rotation);
-            } else if (scale != null) {
+            }
+            if (scale != null) {
                 vec3.set(trans.scale, ...scale);
-            } else if (translation != null) {
+            }
+            if (translation != null) {
                 vec3.set(trans.translate, ...translation);
             }
         }
