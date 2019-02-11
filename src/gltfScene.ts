@@ -38,8 +38,10 @@ export class gltfScene {
                 }
             }
             Material.setTexture(mat, 'brdfLUT', Texture.clone(gltf.brdfLUT));
-            if(gltf.hasEnvmap)
+            if(gltf.hasEnvmap) {
+                mat.shader.macros['HAS_ENV_MAP'] = '';
                 Material.setTexture(mat, 'env', Texture.clone(gltf.envmap));
+            }
             return mat;
         });
 
@@ -84,13 +86,13 @@ export class gltfScene {
         let { index, texCoord } = config[texName];
         let gltf = this.gltf;
         if (index != null) { // common texture
-            let { source, sampler } = gltf.textures[index];
-            let currentSampler;
-            if (gltf.samplers != null)
-                currentSampler = gltf.samplers[sampler];
-            let texture = new Texture(gltf.images[source], currentSampler);
+            // let { source, sampler } = gltf.textures[index];
+            // let currentSampler;
+            // if (gltf.samplers != null)
+            //     currentSampler = gltf.samplers[sampler];
+            // let texture = new Texture(gltf.images[source], currentSampler);
 
-            Material.setTexture(mat, texName, texture);
+            Material.setTexture(mat, texName, gltf.textures[index]);
         }
     }
 

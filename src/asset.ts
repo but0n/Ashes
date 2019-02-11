@@ -6,6 +6,7 @@ import { EntityMgr } from "./ECS/entityMgr";
 import { Shader } from "./shader";
 import { Mesh } from "./mesh/mesh";
 import { Texture } from "./texture";
+import { System } from "./ECS/system";
 
 export class Asset {
     // static load(url, type: XMLHttpRequestResponseType = 'json') {
@@ -72,15 +73,30 @@ export class Asset {
             gltf.images = await Promise.all(gltf.images.map(({ uri }) => this.loadImage(root + uri)));
         }
 
+        // Textures
+        if (gltf.textures) {
+            gltf.textures.map(tex => {
+                let { source, sampler } = tex;
+                let currentSampler;
+                if (gltf.samplers != null)
+                    currentSampler = gltf.samplers[sampler];
+                let texture = new Texture(gltf.images[source], currentSampler);
+                Texture.createTexture(screen.gl, texture);
+                return texture;
+            })
+        }
+
         // Load shader
         gltf.commonShader = await this.LoadShaderProgram(shader);
 
         // Load brdfLUT
         gltf.brdfLUT = await this.loadTexture('https://raw.githubusercontent.com/KhronosGroup/glTF-WebGL-PBR/master/textures/brdfLUT.png', { minFilter: WebGL2RenderingContext.LINEAR });
+        Texture.createTexture(screen.gl, gltf.brdfLUT);
 
         if(envmap != null) {
             gltf.hasEnvmap = true;
             gltf.envmap = await this.loadCubemap(envmap);
+            Texture.createTexture(screen.gl, gltf.envmap);
         } else {
             gltf.hasEnvmap = false;
         }

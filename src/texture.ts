@@ -31,7 +31,9 @@ export class Texture {
     }
 
     static clone(origin: Texture) {
-        return new Texture(origin.image, origin.sampler);
+        let temp = new Texture(origin.image, origin.sampler);
+        temp.texture = origin.texture;
+        return temp;
     }
 
     static cubetexOrder = [
