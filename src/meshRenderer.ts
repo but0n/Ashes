@@ -121,8 +121,6 @@ export class MeshRendererSystem extends ComponentSystem {
         } else {
             gl.enable(gl.CULL_FACE);
         }
-        // gl.enable(gl.CULL_FACE);
-        // gl.disable(gl.CULL_FACE);
 
         if(target.entity) {
             if(!target.entity.components.Transform.isVisible)
