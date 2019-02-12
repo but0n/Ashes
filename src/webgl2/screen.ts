@@ -17,7 +17,7 @@ export class Screen {
     public ratio: number;
     constructor(selector) {
         // Detect device
-        if(navigator.userAgent.indexOf('iPhone') != -1) {
+        if(navigator.userAgent.indexOf('iPhone') != -1 || navigator.userAgent.indexOf('iPad') != -1) {
             Screen.platform = 'iOS';
         }
         this.canvas = document.querySelector(selector);
