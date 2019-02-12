@@ -76,6 +76,7 @@ export class MeshRendererSystem extends ComponentSystem {
 
     static useMaterial(mr: MeshRenderer, index) {
         Material.useMaterial(mr.materials[index], this.ctxCache[mr.SID].gl);
+        return mr.materials[index];
     }
 
     static attachMaterial(mr: MeshRenderer, mat: Material) {
@@ -111,32 +112,41 @@ export class MeshRendererSystem extends ComponentSystem {
 
 
     static render(target: MeshRenderer) {
+        let gl = this.ctxCache[target.SID].gl;
         // Enable material
-        this.useMaterial(target, 0);
+        let currentMat = this.useMaterial(target, 0);
+
+        if(currentMat.doubleSided) {
+            gl.disable(gl.CULL_FACE);
+        } else {
+            gl.enable(gl.CULL_FACE);
+        }
+        // gl.enable(gl.CULL_FACE);
+        // gl.disable(gl.CULL_FACE);
 
         if(target.entity) {
             if(!target.entity.components.Transform.isVisible)
                 return;
             let trans: Transform = target.entity.components.Transform;
-            Material.setUniform(target.materials[0], 'M', trans.worldMatrix);
-            Material.setUniform(target.materials[0], 'nM', trans.worldNormalMatrix);
+            Material.setUniform(currentMat, 'M', trans.worldMatrix);
+            Material.setUniform(currentMat, 'nM', trans.worldNormalMatrix);
         }
 
         // Update uniforms of material
         this.updateMaterial(target);
 
         // Bind all textures
-        Material.bindAllTextures(target.materials[0], this.ctxCache[target.SID].gl);
+        Material.bindAllTextures(currentMat, gl);
 
         // Bind Mesh
         this.bindVAO(target, target.vao); // Bind VAO
-        Mesh.bindIndecesEBO(target.mesh, this.ctxCache[target.SID].gl);
+        Mesh.bindIndecesEBO(target.mesh, gl);
 
         // Drawcall
-        Mesh.drawElement(target.mesh, this.ctxCache[target.SID].gl);
+        Mesh.drawElement(target.mesh, gl);
 
         // Clean texture channels
-        Material.unbindAllTextures(target.materials[0], this.ctxCache[target.SID].gl);
+        Material.unbindAllTextures(currentMat, gl);
     }
     // According those discussion below, having actors draw themselves is not a good design
     // https://gamedev.stackexchange.com/questions/50531/entity-component-based-engine-rendering-separation-from-logic

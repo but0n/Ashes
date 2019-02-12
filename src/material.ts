@@ -7,9 +7,11 @@ export class Material {
     isDirty: boolean = true;
     // textures: Texture[] = [];
     textures: Map<string, Texture> = new Map();
-    constructor(shader: Shader, name = null) {
+    doubleSided: boolean;
+    constructor(shader: Shader, name = null, doubleSided = false) {
         this.shader = Shader.clone(shader);
         this.name = name;
+        this.doubleSided = doubleSided;
     }
 
     static useMaterial(mat: Material, ctx: WebGL2RenderingContext) {

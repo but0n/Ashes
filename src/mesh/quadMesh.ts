@@ -3,10 +3,10 @@ import { Mesh, bufferView, Accessor } from "./mesh";
 export class QuadMesh extends Mesh {
     constructor() {
         let meshVBO = new Float32Array([
-            -1, 1, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0,
-            1, 1, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0,
+            -1, -1, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0,
             1, -1, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0,
-            -1, -1, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0
+            1, 1, 0.0, 1.0, 1.0, 0.0, 0.0, 1.0,
+            -1, 1, 0.0, 0.0, 1.0, 0.0, 0.0, 1.0
         ]);
         let meshEBO = new Uint16Array([
             0, 1, 2,

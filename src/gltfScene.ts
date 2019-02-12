@@ -21,7 +21,7 @@ export class gltfScene {
             gltf.materials = [{name: 'Default_Material'}];
         }
         gltf.materials = gltf.materials.map(config => {
-            let mat = new Material(gltf.commonShader, config.name);
+            let mat = new Material(gltf.commonShader, config.name, config.doubleSided);
             console.log(config);
             for(let key in config) {
 
