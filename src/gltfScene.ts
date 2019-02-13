@@ -4,7 +4,6 @@ import { Texture } from "./texture";
 import { Material } from "./material";
 import { vec3, vec4, mat4 } from "./math";
 import { TransformSystem, Transform } from "./transform";
-import { Shader } from "./shader";
 
 export class gltfScene {
     gltf;
