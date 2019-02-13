@@ -23,20 +23,8 @@ export class gltfScene {
         gltf.materials = gltf.materials.map(config => {
             let mat = new Material(gltf.commonShader, config.name, config.doubleSided);
             console.log(config);
-            for(let key in config) {
+            this.detectConfig(mat, config);
 
-                this.detectMacro(mat.shader, key, config[key]);
-                this.detectTexture(config, key, mat);
-
-                if(key == 'pbrMetallicRoughness') {
-                    let pbrOptions = config[key];
-                    for(let opt in pbrOptions) {
-
-                        this.detectMacro(mat.shader, opt, pbrOptions[opt]);
-                        this.detectTexture(pbrOptions, opt, mat);
-                    }
-                }
-            }
             Material.setTexture(mat, 'brdfLUT', Texture.clone(gltf.brdfLUT));
             if(gltf.hasEnvmap) {
                 mat.shader.macros['HAS_ENV_MAP'] = '';
@@ -82,51 +70,60 @@ export class gltfScene {
         }
     }
 
-    detectTexture(config, texName, mat) {
-        let { index, texCoord } = config[texName];
+    detectTexture(mat: Material, texName, texInfo) {
+        let { index, texCoord } = texInfo;
         let gltf = this.gltf;
         if (index != null) { // common texture
             Material.setTexture(mat, texName, Texture.clone(gltf.textures[index]));
         }
     }
 
-    detectMacro(shader: Shader, key: string, value) {
-        switch(key) {
-            // Textures
-            case 'normalTexture':
-                shader.macros['HAS_NORMAL_MAP'] = '';
-                return;
-            case 'occlusionTexture':
-                shader.macros['HAS_AO_MAP'] = '';
-                return;
-            case 'baseColorTexture':
-                shader.macros['HAS_BASECOLOR_MAP'] = '';
-                return;
-            case 'metallicRoughnessTexture':
-                shader.macros['HAS_METALLIC_ROUGHNESS_MAP'] = '';
-                return;
-            case 'emissiveTexture':
-                shader.macros['HAS_EMISSIVE_MAP'] = '';
-                return;
-            // Factors - pbrMetallicRoughness
-            case 'baseColorFactor':
-                shader.macros['BASECOLOR_FACTOR'] = `vec4(${value.join(',')})`;
-                return;
-            case 'metallicFactor':
-                shader.macros['METALLIC_FACTOR'] = `float(${value})`;
-                return;
-            case 'roughnessFactor':
-                shader.macros['ROUGHNESS_FACTOR'] = `float(${value})`;
-                return;
+    detectConfig(mat: Material, config) {
+        let shader = mat.shader;
+        for(let key in config) {
+            let value = config[key];
+            // assueme current property is an texture info
+            this.detectTexture(mat, key, value);
+            switch(key) {
+                // Textures
+                case 'normalTexture':
+                    shader.macros['HAS_NORMAL_MAP'] = '';
+                    return;
+                case 'occlusionTexture':
+                    shader.macros['HAS_AO_MAP'] = '';
+                    return;
+                case 'baseColorTexture':
+                    shader.macros['HAS_BASECOLOR_MAP'] = '';
+                    return;
+                case 'metallicRoughnessTexture':
+                    shader.macros['HAS_METALLIC_ROUGHNESS_MAP'] = '';
+                    return;
+                case 'emissiveTexture':
+                    shader.macros['HAS_EMISSIVE_MAP'] = '';
+                    return;
+                // Factors - pbrMetallicRoughness
+                case 'baseColorFactor':
+                    shader.macros['BASECOLOR_FACTOR'] = `vec4(${value.join(',')})`;
+                    return;
+                case 'metallicFactor':
+                    shader.macros['METALLIC_FACTOR'] = `float(${value})`;
+                    return;
+                case 'roughnessFactor':
+                    shader.macros['ROUGHNESS_FACTOR'] = `float(${value})`;
+                    return;
 
-            // Alpha Blend Mode
-            case 'alphaMode':
-                shader.macros[value] = '';
-                return;
-            case 'alphaCutoff':
-                shader.macros['ALPHA_CUTOFF'] = `float(${value})`;
-                return;
-
+                // Alpha Blend Mode
+                case 'alphaMode':
+                    shader.macros[value] = '';
+                    return;
+                case 'alphaCutoff':
+                    shader.macros['ALPHA_CUTOFF'] = `float(${value})`;
+                    return;
+                default:
+                    // such as pbrMetallicRoughness, etc
+                    this.detectConfig(mat, value);
+                    return;
+            }
         }
     }
 
