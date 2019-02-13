@@ -71,6 +71,7 @@ export class Accessor {
 }
 
 export class bufferView {
+    rawBuffer: ArrayBuffer;
     dataView: DataView;
     byteLength: number;
     byteOffset: number;
@@ -78,7 +79,7 @@ export class bufferView {
     target: number;
     buffer: WebGLBuffer = null;
     constructor(rawData: ArrayBuffer, {byteOffset = 0, byteLength, byteStride = 0, target = 34962}) {
-        // this.rawData = rawData;
+        this.rawBuffer = rawData;
         this.byteOffset = byteOffset;
         this.byteLength = byteLength;
         this.byteStride = byteStride;

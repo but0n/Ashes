@@ -1,16 +1,18 @@
-import { EntityMgr } from "./ECS/entityMgr";
+import { EntityMgr, Entity } from "./ECS/entityMgr";
 import { Accessor, bufferView, Mesh } from "./mesh/mesh";
 import { Texture } from "./texture";
 import { Material } from "./material";
 import { vec3, vec4, mat4 } from "./math";
 import { TransformSystem, Transform } from "./transform";
+import { Skin } from "./skin";
 
 export class gltfScene {
     gltf;
     scene = EntityMgr.create('scene');
+    entities: Entity[];
     constructor(gltf) {
         this.gltf = gltf;
-        let {scene, scenes, nodes} = gltf;
+        let {scene, scenes, nodes, skins} = gltf;
         //  BufferViews
         gltf.bufferViews = gltf.bufferViews.map(bv => new bufferView(gltf.buffers[bv.buffer], bv));
 
@@ -28,6 +30,9 @@ export class gltfScene {
             if(gltf.hasEnvmap) {
                 mat.shader.macros['HAS_ENV_MAP'] = '';
                 Material.setTexture(mat, 'env', Texture.clone(gltf.envmap));
+            }
+            if(skins) {
+                mat.shader.macros['HAS_SKINS'] = '';
             }
             return mat;
         });
@@ -62,11 +67,37 @@ export class gltfScene {
             })
         });
 
+        // Create entity instance for each node
+        this.entities = gltf.nodes.map(node => this.createEntity(node));
+
+        if(skins) {
+            skins = skins.map(skin => {
+                skin.joints = skin.joints.map(jointIndex => this.entities[jointIndex].components.Transform);
+                let skinComp = new Skin();
+                skinComp.materials = gltf.materials;
+                skinComp.joints = skin.joints;
+
+                let acc: Accessor = gltf.accessors[skin.inverseBindMatrices];
+                let IBM = new Float32Array(acc.bufferView.rawBuffer, acc.byteOffset + acc.bufferView.byteOffset, acc.size * acc.count);
+                for(let i = 0; i < acc.count; i++) {
+                    let offset = i * acc.size;
+                    skinComp.ibm.push(IBM.slice(offset, offset + acc.size));
+                    skinComp.jointMat.push(mat4.create());
+                }
+                skinComp.outputMat = new Float32Array(acc.count * acc.size);
+                EntityMgr.addComponent(this.entities[skin.skeleton|0], skinComp);
+                return skinComp;
+            });
+        }
+
+        // assemble scene tree
         let roots = scenes[scene || 0].nodes;
-        for(let r of roots) {
+        for (let r of roots) {
             let root = this.parseNode(r, nodes);
             this.scene.appendChild(root);
         }
+
+        console.log(this);
     }
 
     detectTexture(mat: Material, texName, texInfo) {
@@ -87,55 +118,53 @@ export class gltfScene {
                 // Textures
                 case 'normalTexture':
                     shader.macros['HAS_NORMAL_MAP'] = '';
-                    return;
+                    break;
                 case 'occlusionTexture':
                     shader.macros['HAS_AO_MAP'] = '';
-                    return;
+                    break;
                 case 'baseColorTexture':
                     shader.macros['HAS_BASECOLOR_MAP'] = '';
-                    return;
+                    break;
                 case 'metallicRoughnessTexture':
                     shader.macros['HAS_METALLIC_ROUGHNESS_MAP'] = '';
-                    return;
+                    break;
                 case 'emissiveTexture':
                     shader.macros['HAS_EMISSIVE_MAP'] = '';
-                    return;
+                    break;
                 // Factors - pbrMetallicRoughness
                 case 'baseColorFactor':
                     shader.macros['BASECOLOR_FACTOR'] = `vec4(${value.join(',')})`;
-                    return;
+                    break;
                 case 'metallicFactor':
                     shader.macros['METALLIC_FACTOR'] = `float(${value})`;
-                    return;
+                    break;
                 case 'roughnessFactor':
                     shader.macros['ROUGHNESS_FACTOR'] = `float(${value})`;
-                    return;
+                    break;
 
                 // Alpha Blend Mode
                 case 'alphaMode':
                     shader.macros[value] = '';
-                    return;
+                    break;
                 case 'alphaCutoff':
                     shader.macros['ALPHA_CUTOFF'] = `float(${value})`;
-                    return;
-                default:
-                    // such as pbrMetallicRoughness, etc
+                    break;
+                case 'pbrMetallicRoughness':
                     this.detectConfig(mat, value);
-                    return;
+                    break;
             }
         }
     }
 
-    parseNode(nodeIndex, nodeList) {
-        let node = nodeList[nodeIndex];
-        let {mesh, name, matrix, rotation, scale, translation} = node;
+    createEntity(node) {
+        let { mesh, name, matrix, rotation, scale, translation } = node;
         let entity = EntityMgr.create(name);
         let trans = entity.components.Transform as Transform;
-        if(matrix != null) {
+        if (matrix != null) {
             mat4.set(trans.localMatrix, ...matrix);
             TransformSystem.decomposeMatrix(trans);
         } else {
-            if(rotation != null) {
+            if (rotation != null) {
                 vec4.set(trans.quaternion, ...rotation);
             }
             if (scale != null) {
@@ -146,12 +175,12 @@ export class gltfScene {
             }
         }
         TransformSystem.updateMatrix(trans);
-        if(mesh != null) {
+        if (mesh != null) {
             let meshChunk = this.gltf.meshes[mesh];
-            if(meshChunk.length > 1) {
+            if (meshChunk.length > 1) {
                 // Contains multiple mesh data
                 // append as a group
-                for(let meshData of meshChunk) {
+                for (let meshData of meshChunk) {
                     let subMesh = EntityMgr.create(name);
                     let [mf, mat] = meshData;
                     EntityMgr.addComponent(subMesh, mf);
@@ -159,11 +188,18 @@ export class gltfScene {
                     entity.appendChild(subMesh);
                 }
             } else {
+                // attach mesh directly
                 let [mf, mat] = meshChunk[0];
                 EntityMgr.addComponent(entity, mf);
                 EntityMgr.addComponent(entity, mat);
             }
         }
+        return entity;
+    }
+
+    parseNode(nodeIndex, nodeList) {
+        let node = nodeList[nodeIndex];
+        let entity = this.entities[nodeIndex];
         if(node.children) {
             for(let child of node.children) {
                 entity.appendChild(this.parseNode(child, nodeList));

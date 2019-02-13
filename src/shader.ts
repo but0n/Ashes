@@ -52,28 +52,30 @@ void main() {
         return temp;
     }
 
-    static fragcodeCache = ''; // Reduce GC?
+    static macros = ''; // Reduce GC?
     static buildProgram(shader: Shader, ctx) {
         shader.isDirty = false;
         // if(!this.isDirty) return;
         // If current program needs recompile
         shader.ctx = ctx;
         // if WebGL shader is already exist, then dispose them
+
+        // prepare macros
+        this.macros = '';
+        for(let macro in shader.macros) {
+            this.macros += `\n#define ${macro} ${shader.macros[macro]}\n`;
+        }
+
         if(shader.vertex) {   // Vertex shader
             shader.ctx.deleteShader(shader.vertex);
         }
-        shader.vertex = Shader.compileShader(shader.ctx, shader.ctx.VERTEX_SHADER, shader.vertexSource);
+        shader.vertex = Shader.compileShader(shader.ctx, shader.ctx.VERTEX_SHADER, this.macros + shader.vertexSource);
 
 
-        this.fragcodeCache = '';
-        for(let macro in shader.macros) {
-            this.fragcodeCache += `\n#define ${macro} ${shader.macros[macro]}\n`;
-        }
-        this.fragcodeCache += shader.fragmentSource;
         if (shader.fragment) { // Fragment shader
             shader.ctx.deleteShader(shader.fragment);
         }
-        shader.fragment = Shader.compileShader(shader.ctx, shader.ctx.FRAGMENT_SHADER, this.fragcodeCache);
+        shader.fragment = Shader.compileShader(shader.ctx, shader.ctx.FRAGMENT_SHADER, this.macros + shader.fragmentSource);
 
         if(!shader.vertex || !shader.fragment) {
             return;
