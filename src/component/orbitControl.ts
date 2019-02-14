@@ -88,7 +88,7 @@ export class OrbitControl {
     });
     scrollHandler = ({deltaY}) => {
         // vec3.scaleAndAdd(this.trans.translate, this.trans.translate, this.direction, deltaY);
-        this.vscale += deltaY * this.speed * 0.05;
+        this.vscale += deltaY * this.speed * 0.01;
         // OrbitControlSystem.updatePosition(this);
     }
 
