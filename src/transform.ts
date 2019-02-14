@@ -72,8 +72,7 @@ export class TransformSystem extends ComponentSystem {
         // Calculate local matrix
         mat4.fromRotationTranslationScale(trans.localMatrix, trans.quaternion, trans.translate, trans.scale);
         mat4.invert(trans.worldInverseMatrix, trans.worldMatrix);
-        mat4.invert(trans.worldNormalMatrix, trans.worldInverseMatrix);
-        mat4.transpose(trans.worldNormalMatrix, trans.worldNormalMatrix);
+        mat4.transpose(trans.worldNormalMatrix, trans.worldInverseMatrix);
 // Calculate world matrix
         let parent = trans.entity.parentElement as Entity;
         if(parent != null && parent.components) {
