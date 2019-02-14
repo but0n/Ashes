@@ -31,7 +31,9 @@ export class AnimationChannel {
         this.endTime = this.timeline[this.timeline.length-1];
 
         this.keyframe = Accessor.getFloat32Blocks(keyframe);
-
+        if(this.endTime == 0 || this.timeline.length == 1) {
+            AnimationSystem.step(this);
+        }
     }
 }
 
@@ -44,20 +46,23 @@ class AnimationSystem extends ComponentSystem {
         anim.step = 0;
         anim.currentTime = 0;
     }
-    step(anim: AnimationChannel) {
+    static step(anim: AnimationChannel) {
 
-        if(anim.currentTime < anim.timeline[anim.step]) {
-            console.error('Wrong step!');
-        }
         let prev = anim.step;
         let next = prev+1;
+
         if (anim.timeline.length == 1) {
             next--;
             anim.pause = true;
         }
+
+        if (anim.currentTime < anim.timeline[prev] || ((anim.currentTime > anim.timeline[next]))) {
+            console.error('Wrong step!', anim.currentTime, anim.timeline[prev], anim.timeline[next]);
+        }
+
         let prevTime = anim.timeline[prev];
         let nextTime = anim.timeline[next];
-        let interpolationValue = (anim.currentTime - prevTime) / (nextTime - prevTime);
+        let interpolationValue = (anim.currentTime - prevTime) / (nextTime - prevTime)|0;
         let prevKey = anim.keyframe[prev];
         let nextKey = anim.keyframe[next];
         switch(anim.channel.length) {
@@ -72,16 +77,6 @@ class AnimationSystem extends ComponentSystem {
     playStep(anim: AnimationChannel, dt: number) {
         if (!anim.pause) {
 
-            if(anim.currentTime > anim.startTime) {
-                this.step(anim);
-            }
-
-            if (anim.currentTime > anim.timeline[anim.step + 1]) {
-                anim.step++;
-            }
-
-
-
             if (anim.currentTime > anim.endTime) {
                 this.reset(anim);
                 if (!anim.isLoop) {
@@ -90,7 +85,15 @@ class AnimationSystem extends ComponentSystem {
                     // anim.currentTime = anim.endTime;
                     console.log('stop');
                 }
+                return;
             }
+
+            while(anim.currentTime > anim.timeline[anim.step + 1]) {
+                anim.step++;
+            }
+
+
+            AnimationSystem.step(anim);
 
             anim.currentTime += dt * anim.speed;
 
