@@ -1,5 +1,5 @@
 export abstract class ComponentSystem {
     abstract group: any[];
     abstract depends: string[];
-    abstract onUpdate();
+    abstract onUpdate(deltaTime: number);
 }

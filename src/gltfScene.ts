@@ -5,6 +5,7 @@ import { Material } from "./material";
 import { vec3, vec4, mat4 } from "./math";
 import { TransformSystem, Transform } from "./transform";
 import { Skin } from "./skin";
+import { Animation, AnimationChannel } from "./animation";
 
 export class gltfScene {
     gltf;
@@ -12,7 +13,7 @@ export class gltfScene {
     entities: Entity[];
     constructor(gltf) {
         this.gltf = gltf;
-        let {scene, scenes, nodes, skins} = gltf;
+        let {scene, scenes, nodes, skins, animations} = gltf;
         //  BufferViews
         gltf.bufferViews = gltf.bufferViews.map(bv => new bufferView(gltf.buffers[bv.buffer], bv));
 
@@ -78,16 +79,48 @@ export class gltfScene {
                 skinComp.joints = skin.joints;
 
                 let acc: Accessor = gltf.accessors[skin.inverseBindMatrices];
-                let IBM = new Float32Array(acc.bufferView.rawBuffer, acc.byteOffset + acc.bufferView.byteOffset, acc.size * acc.count);
+                skinComp.ibm = Accessor.getFloat32Blocks(acc);
                 for(let i = 0; i < acc.count; i++) {
-                    let offset = i * acc.size;
-                    skinComp.ibm.push(IBM.slice(offset, offset + acc.size));
                     skinComp.jointMat.push(mat4.create());
                 }
                 skinComp.outputMat = new Float32Array(acc.count * acc.size);
                 EntityMgr.addComponent(this.entities[skin.skeleton|0], skinComp);
                 return skinComp;
             });
+        }
+
+        if(animations) {
+            for (let { channels, samplers} of animations) {
+                for (let { sampler, target} of channels) {
+                    let e = this.entities[target.node];
+                    let trans = e.components.Transform as Transform;
+                    let controlChannel: Float32Array;
+                    switch(target.path) {
+                        case 'translation':
+                            controlChannel = trans.translate;
+                            break;
+                        case 'rotation':
+                            controlChannel = trans.quaternion;
+                            break;
+                        case 'scale':
+                            controlChannel = trans.scale;
+                            break;
+                        case 'weights':
+                            break;
+                    }
+                    if(controlChannel != null) {
+                        let { input, interpolation, output } = samplers[sampler];
+                        let timeline = gltf.accessors[input];
+                        let keyframe = gltf.accessors[output];
+                        if(e.components.Animation == null) {
+                            EntityMgr.addComponent(e, new Animation());
+                        }
+                        let anim = e.components.Animation as Animation;
+                        anim.channels.push(new AnimationChannel(controlChannel, timeline, keyframe));
+                        // console.log(anim);
+                    }
+                }
+            }
         }
 
         // assemble scene tree

@@ -68,6 +68,18 @@ export class Accessor {
         this.min = min;
         this.size = Accessor.types[type];
     }
+    static newFloat32Array(acc: Accessor) {
+        return new Float32Array(acc.bufferView.rawBuffer, acc.byteOffset + acc.bufferView.byteOffset, acc.size * acc.count);
+    }
+    static getFloat32Blocks(acc: Accessor) {
+        let blocks = [];
+        let data = Accessor.newFloat32Array(acc);
+        for (let i = 0; i < acc.count; i++) {
+            let offset = i * acc.size;
+            blocks.push(data.slice(offset, offset + acc.size));
+        }
+        return blocks;
+    }
 }
 
 export class bufferView {

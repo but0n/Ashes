@@ -12,7 +12,7 @@ export class System {
             if(EntityMgr.hasNewMember || sys.group.length == 0) {
                 sys.group = EntityMgr.getEntites(sys.depends);
             }
-            sys.onUpdate();
+            sys.onUpdate(this.deltaTime);
         }
         EntityMgr.hasNewMember = false;
         this.deltaTime = (Date.now() - this.lastTime)/1000;

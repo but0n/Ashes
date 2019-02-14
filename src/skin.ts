@@ -28,13 +28,6 @@ class SkinSystem extends ComponentSystem {
                 mat4.mul(skin.jointMat[i], joint.worldMatrix, skin.ibm[i]);
                 mat4.mul(skin.jointMat[i], trans.worldInverseMatrix, skin.jointMat[i]);
                 skin.outputMat.set(skin.jointMat[i], i * 16);
-                // Test joint
-                joint.rotate[0] += Math.random() * 1;
-                joint.rotate[1] += Math.random() * 1;
-                joint.rotate[2] += Math.random() * 1;
-
-                quat.fromEuler(joint.quaternion, ...joint.rotate);
-
             }
             // update matrices
             for(let mat of skin.materials) {
