@@ -47,7 +47,7 @@
             let screen = new Ashes.Screen('#screen');
             // Filters
             // Ashes.Bloom.initFilters(screen)
-            // screen.attachFilter(new Ashes.Vignetting(screen));
+            screen.attachFilter(new Ashes.Vignetting(screen));
 
             let scene = Ashes.EntityMgr.create('root');
             let gltfroot = await Ashes.Asset.loadGLTF(gltf, screen, 'res/envmap/GoldenGateBridge2/');
