@@ -1,6 +1,6 @@
 import { Mesh } from "./mesh/mesh";
 import { Material } from "./material";
-import { Entity } from "./ECS/entityMgr";
+import { Entity, EntityMgr } from "./ECS/entityMgr";
 import { Transform } from "./transform";
 import { Screen } from "./webgl2/screen";
 import { ComponentSystem } from "./ECS/component";
@@ -13,14 +13,24 @@ export class MeshRenderer {
     vao: WebGLVertexArrayObject;
     isDirty: boolean = true;
     SID: number; // Screen ID
-    constructor(screen: Screen, mesh: Mesh, material: Material) {
-        this.SID = MeshRendererSystem.regScreen(screen);
+    constructor(screen: Screen, mesh: Mesh, material?: Material) {
+        if(screen != null)
+            this.SID = MeshRendererSystem.regScreen(screen);
         this.mesh = mesh;
         MeshRendererSystem.attachMaterial(this, material);
     }
 
+    static clone(source: MeshRenderer) {
+        let mr = new MeshRenderer(null, source.mesh);
+        mr.SID = source.SID;
+        for(let mat of source.materials) {
+            MeshRendererSystem.attachMaterial(mr, mat);
+        }
+        return mr;
+    }
 
 }
+EntityMgr.cloneMethods['MeshRenderer'] = MeshRenderer.clone;
 
 export class MeshRendererSystem extends ComponentSystem {
     group = [];
@@ -80,6 +90,7 @@ export class MeshRendererSystem extends ComponentSystem {
     }
 
     static attachMaterial(mr: MeshRenderer, mat: Material) {
+        if(mr.SID == null) return;
         mr.materials.push(mat);
         Material.updateUniform(mat, this.ctxCache[mr.SID].gl); // the first time this material get context
         this.useMaterial(mr, 0);

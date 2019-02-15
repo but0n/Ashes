@@ -22,7 +22,16 @@ export class Transform {
         mat4.identity(this.localMatrix);
         mat4.identity(this.worldMatrix);
     }
+    static clone(source: Transform) {
+        let trans = new Transform();
+        vec3.copy(trans.translate, source.translate);
+        vec3.copy(trans.rotate, source.rotate);
+        vec3.copy(trans.scale, source.scale);
+        vec4.copy(trans.quaternion, source.quaternion);
+        return trans;
+    }
 } EntityMgr.getDefaultComponent = () => new Transform();
+EntityMgr.cloneMethods['_Transform'] = Transform.clone;
 
 export class TransformSystem extends ComponentSystem {
     group = [];

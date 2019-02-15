@@ -13,6 +13,9 @@ export class Material {
         this.name = name;
         this.doubleSided = doubleSided;
     }
+    static clone(mat: Material) {
+        return new Material(mat.shader, mat.name, mat.doubleSided);
+    }
 
     static useMaterial(mat: Material, ctx: WebGL2RenderingContext) {
         ctx.useProgram(mat.shader.program);

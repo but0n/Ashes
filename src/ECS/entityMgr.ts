@@ -1,3 +1,5 @@
+import { Transform } from "../transform";
+
 export interface Entity extends HTMLElement {
     components: any;
 }
@@ -5,7 +7,7 @@ export class EntityMgr {
     static entityTag = 'ash-entity';
     static getDefaultComponent;
     static hasNewMember: boolean = false;
-    static create(name: string = null) {
+    static create(name: string = null, pure = false) {
         this.hasNewMember = true;
         let gameObject = document.createElement(this.entityTag) as Entity;
         if(name) {
@@ -13,7 +15,7 @@ export class EntityMgr {
             gameObject.textContent = name;
         }
         gameObject.components = {};
-        if(this.getDefaultComponent)
+        if(this.getDefaultComponent && !pure)
             this.addComponent(gameObject, this.getDefaultComponent());
         // Debug envent
         gameObject.addEventListener('pointerdown', e => {
@@ -27,6 +29,17 @@ export class EntityMgr {
             e.stopPropagation();
         })
         return gameObject;
+    }
+    static cloneMethods = {};
+    static clone(entity: Entity) {
+        let temp = this.create(entity.dataset.name, true);
+        this.addComponent(temp, this.cloneMethods['_Transform'](entity.components.Transform));
+        for(let comp in entity.components) {
+            if(this.cloneMethods[comp]) {
+                this.addComponent(temp, this.cloneMethods[comp](entity.components[comp]));
+            }
+        }
+        return temp;
     }
 
     static find(selector:string, root:any = document) {
