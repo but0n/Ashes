@@ -68,19 +68,16 @@
             scene.appendChild(mainCamera);
             let control = new Ashes.OrbitControl(screen, mainCamera);
 
-            // IBL test
-            let testmat = await Ashes.Asset.LoadMaterial('test');
-            // let brdfLUT = await Ashes.Asset.loadImage('https://raw.githubusercontent.com/KhronosGroup/glTF-WebGL-PBR/master/textures/brdfLUT.png');
+            // let matfloor = await Ashes.Asset.LoadMaterial('stylize');
+            // let floor = await Ashes.Asset.loadTexture('res/textures/floor.png', { minFilter: screen.gl.NEAREST_MIPMAP_NEAREST });
+            // Ashes.Material.setTexture(matfloor, 'baseColorTexture', floor);
+            // matfloor.shader.macros['HAS_BASECOLOR_MAP'] = '';
             // let map = await Ashes.Asset.loadCubemap('res/GoldenGateBridge2/');
 
-            // Ashes.Material.setTexture(testmat, 'brdfLUT', new Ashes.Texture(brdfLUT, { minFilter: screen.gl.LINEAR }));
-            // Ashes.Material.setTexture(testmat, 'baseColorTexture', Ashes.MeshRendererSystem);
 
             // let quad = Ashes.EntityMgr.create('test-quad');
-            // let qmesh = new Ashes.QuadMesh();
-            // let quadMR = new Ashes.MeshRenderer(screen, qmesh, testmat);
+            // let quadMR = new Ashes.MeshRenderer(screen, new Ashes.QuadMesh(), matfloor);
             // Ashes.EntityMgr.addComponent(quad, quadMR);
-            // console.log(quadMR);
             // quad.components.Transform.translate[0] = 2;
 
             // scene.appendChild(quad);
