@@ -16,6 +16,8 @@ export class Texture {
     format: number = WebGL2RenderingContext.RGBA;
     type: number = WebGL2RenderingContext.UNSIGNED_BYTE;
 
+    flipY = false;
+
     constructor(rawImage, sampler = undefined, width = 256, height = 256, border = 0) {
         this.sampler = new Sampler(sampler);
         this.image = rawImage;
@@ -51,6 +53,8 @@ export class Texture {
         }
         tex.texture = gl.createTexture();
         gl.bindTexture(tex.glType, tex.texture);
+
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, tex.flipY ? 1 : 0);
 
         if(tex.isCubetex) {
             for(let i in this.cubetexOrder) {
