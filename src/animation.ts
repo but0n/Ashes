@@ -32,6 +32,7 @@ export class AnimationChannel {
 
         this.keyframe = Accessor.getFloat32Blocks(keyframe);
         if(this.endTime == 0 || this.timeline.length == 1) {
+            this.currentTime = this.startTime;
             AnimationSystem.step(this);
         }
     }
@@ -58,6 +59,7 @@ class AnimationSystem extends ComponentSystem {
 
         if (anim.currentTime < anim.timeline[prev] || ((anim.currentTime > anim.timeline[next]))) {
             console.error('Wrong step!', anim.currentTime, anim.timeline[prev], anim.timeline[next]);
+            return;
         }
 
         let prevTime = anim.timeline[prev];
