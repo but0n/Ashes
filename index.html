@@ -46,7 +46,7 @@
 
             let screen = new Ashes.Screen('#screen');
             // Filters
-            Ashes.Bloom.initFilters(screen)
+            // Ashes.Bloom.initFilters(screen)
             screen.attachFilter(new Ashes.Vignetting(screen));
 
             let skybox = await Ashes.Asset.loadCubemap('res/envmap/GoldenGateBridge2/');
