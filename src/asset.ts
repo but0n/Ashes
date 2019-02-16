@@ -94,6 +94,7 @@ export class Asset {
         if(envmap != null) {
             gltf.hasEnvmap = true;
             gltf.envmap = envmap;
+            Texture.createTexture(screen.gl, gltf.envmap);  // TODO:
         } else {
             gltf.hasEnvmap = false;
         }
