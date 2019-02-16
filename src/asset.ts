@@ -56,7 +56,7 @@ export class Asset {
         });
     }
 
-    static async loadGLTF(path: string, screen: Screen, envmap?, shader = 'stylize') {
+    static async loadGLTF(path: string, screen: Screen, envmap?: Texture, shader = 'stylize') {
 
         // parse current path
         let root: any = path.split('/');
@@ -81,7 +81,6 @@ export class Asset {
                 if (gltf.samplers != null)
                     currentSampler = gltf.samplers[sampler];
                 let texture = new Texture(gltf.images[source], currentSampler);
-                Texture.createTexture(screen.gl, texture);
                 return texture;
             })
         }
@@ -91,12 +90,10 @@ export class Asset {
 
         // Load brdfLUT
         gltf.brdfLUT = await this.loadTexture('https://raw.githubusercontent.com/KhronosGroup/glTF-WebGL-PBR/master/textures/brdfLUT.png', { minFilter: WebGL2RenderingContext.LINEAR });
-        Texture.createTexture(screen.gl, gltf.brdfLUT);
 
         if(envmap != null) {
             gltf.hasEnvmap = true;
-            gltf.envmap = await this.loadCubemap(envmap);
-            Texture.createTexture(screen.gl, gltf.envmap);
+            gltf.envmap = envmap;
         } else {
             gltf.hasEnvmap = false;
         }
