@@ -62,7 +62,10 @@ class AnimationSystem extends ComponentSystem {
 
         let prevTime = anim.timeline[prev];
         let nextTime = anim.timeline[next];
-        let interpolationValue = (anim.currentTime - prevTime) / (nextTime - prevTime)|0;
+        let interpolationValue = (anim.currentTime - prevTime) / (nextTime - prevTime);
+        if(isNaN(interpolationValue)) {
+            interpolationValue = 0;
+        }
         let prevKey = anim.keyframe[prev];
         let nextKey = anim.keyframe[next];
         switch(anim.channel.length) {
@@ -92,8 +95,9 @@ class AnimationSystem extends ComponentSystem {
                 anim.step++;
             }
 
-
-            AnimationSystem.step(anim);
+            if(anim.currentTime > anim.startTime) {
+                AnimationSystem.step(anim);
+            }
 
             anim.currentTime += dt * anim.speed;
 
