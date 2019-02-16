@@ -39,6 +39,8 @@
             // gltf = 'res/BrainStem/glTF/BrainStem.gltf';
             // gltf = 'res/CesiumMan/glTF/CesiumMan.gltf';
             gltf = 'gltfsamples/kgirls01/scene.gltf';
+            // gltf = 'gltfsamples/miku/scene.gltf';
+            // gltf = 'gltfsamples/endless_floor_vr/scene.gltf';
 
             let [,cuspath,scale, yoffset] = location.hash.split('#');
             if(cuspath)
@@ -107,8 +109,8 @@
             scene.appendChild(gltfroot);
             progressBar.parentElement.style.display = 'none';
             let root = gltfroot.components.Transform;
-            // root.translate[1] = 3;
-            // Ashes.vec3.scale(root.scale, root.scale, 0.03)
+            root.translate[1] = 3;
+            Ashes.vec3.scale(root.scale, root.scale, 0.03)
             if (yoffset)
                 root.translate[1] = yoffset;
             if (scale)
