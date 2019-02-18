@@ -33,6 +33,7 @@ export class Texture {
 
     static clone(origin: Texture) {
         let temp = new Texture(origin.image, origin.sampler);
+        temp.sampler = origin.sampler;
         temp.flipY = origin.flipY;
         return temp;
     }
