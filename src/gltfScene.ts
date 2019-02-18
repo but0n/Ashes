@@ -10,10 +10,9 @@ import { Animation, AnimationChannel } from "./animation";
 export class gltfScene {
     gltf;
     scene = EntityMgr.create('scene');
-    entities: Entity[];
+    entities;
     constructor(gltf) {
         this.gltf = gltf;
-        let {scene, scenes, nodes, skins, animations} = gltf;
         //  BufferViews
         gltf.bufferViews = gltf.bufferViews.map(bv => new bufferView(gltf.buffers[bv.buffer], bv));
 
@@ -32,7 +31,7 @@ export class gltfScene {
                 mat.shader.macros['HAS_ENV_MAP'] = '';
                 Material.setTexture(mat, 'env', Texture.clone(gltf.envmap));
             }
-            if(skins) {
+            if(gltf.skins) {
                 mat.shader.macros['HAS_SKINS'] = '';
             }
             return mat;
@@ -68,22 +67,29 @@ export class gltfScene {
             })
         });
 
-        // Create entity instance for each node
-        this.entities = gltf.nodes.map(node => this.createEntity(node));
 
-        if(skins) {
+    }
+
+    async assemble() {
+        // Create entity instance for each node
+        let gltf = this.gltf;
+        let { scene, scenes, nodes, skins, animations } = gltf;
+        this.entities = await Promise.all(gltf.nodes.map(node => this.waitEntity(node)));
+
+
+        if (skins) {
             skins = skins.map(skin => {
                 skin.joints = skin.joints.map(jointIndex => this.entities[jointIndex].components.Transform);
                 let skinComp = new Skin();
                 skinComp.materials = gltf.materials;
                 skinComp.joints = skin.joints;
-                for(let mat of skinComp.materials) {
+                for (let mat of skinComp.materials) {
                     mat.shader.macros['JOINT_AMOUNT'] = Math.min(skin.joints.length, 200);
                 }
 
                 let acc: Accessor = gltf.accessors[skin.inverseBindMatrices];
                 skinComp.ibm = Accessor.getFloat32Blocks(acc);
-                for(let i = 0; i < acc.count; i++) {
+                for (let i = 0; i < acc.count; i++) {
                     skinComp.jointMat.push(mat4.create());
                 }
                 skinComp.outputMat = new Float32Array(acc.count * acc.size);
@@ -92,13 +98,13 @@ export class gltfScene {
             });
         }
 
-        if(animations) {
-            for (let { channels, samplers} of animations) {
-                for (let { sampler, target} of channels) {
+        if (animations) {
+            for (let { channels, samplers } of animations) {
+                for (let { sampler, target } of channels) {
                     let e = this.entities[target.node];
                     let trans = e.components.Transform as Transform;
                     let controlChannel: Float32Array;
-                    switch(target.path) {
+                    switch (target.path) {
                         case 'translation':
                             controlChannel = trans.translate;
                             break;
@@ -111,11 +117,11 @@ export class gltfScene {
                         case 'weights':
                             break;
                     }
-                    if(controlChannel != null) {
+                    if (controlChannel != null) {
                         let { input, interpolation, output } = samplers[sampler];
                         let timeline = gltf.accessors[input];
                         let keyframe = gltf.accessors[output];
-                        if(e.components.Animation == null) {
+                        if (e.components.Animation == null) {
                             EntityMgr.addComponent(e, new Animation());
                         }
                         let anim = e.components.Animation as Animation;
@@ -134,6 +140,15 @@ export class gltfScene {
         }
 
         console.log(this);
+        return this;
+    }
+
+    waitEntity(node) {
+        return new Promise((resolve: (e:Entity)=>void, reject) => {
+            setTimeout(() => {
+                resolve(this.createEntity(node));
+            }, 0);
+        })
     }
 
     detectTexture(mat: Material, texName, texInfo) {
