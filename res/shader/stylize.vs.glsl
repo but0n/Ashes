@@ -27,7 +27,7 @@ varying mat3 TBN;
 void main() {
     uv = TEXCOORD_0;
     uv1 = TEXCOORD_1;
-    normal = normalize((nM * vec4(NORMAL, 0)).xyz);
+    vec3 skinedNormal = NORMAL;
     vec3 tangent = normalize(vec3(nM * vec4(TANGENT.xyz, 0)));
     vec3 bitangent = cross(normal, tangent) * TANGENT.w;
     TBN = mat3(tangent, bitangent, normal);
@@ -38,12 +38,12 @@ void main() {
         WEIGHTS_0.y * jointMat[int(JOINTS_0.y)] +
         WEIGHTS_0.z * jointMat[int(JOINTS_0.z)] +
         WEIGHTS_0.w * jointMat[int(JOINTS_0.w)];
-
+    skinedNormal = (skinMat * vec4(skinedNormal, 0)).xyz;
     vec4 position = skinMat * vec4(POSITION, 1);
 #else
     vec4 position = M * vec4(POSITION,1);
 #endif// HAS_SKINS
-
+    normal = normalize((nM * vec4(skinedNormal,0)).xyz);
     pos = position.xyz / position.w;
     gl_Position = P * V * position;
 }
