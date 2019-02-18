@@ -7,7 +7,6 @@ attribute vec3 COLOR_0;
 #ifdef HAS_SKINS
 attribute vec4 JOINTS_0;
 attribute vec4 WEIGHTS_0;
-#define JOINT_AMOUNT 26
 uniform mat4 jointMat[JOINT_AMOUNT];
 #endif // HAS_SKINS
 

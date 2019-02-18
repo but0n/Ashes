@@ -77,6 +77,9 @@ export class gltfScene {
                 let skinComp = new Skin();
                 skinComp.materials = gltf.materials;
                 skinComp.joints = skin.joints;
+                for(let mat of skinComp.materials) {
+                    mat.shader.macros['JOINT_AMOUNT'] = Math.min(skin.joints.length, 200);
+                }
 
                 let acc: Accessor = gltf.accessors[skin.inverseBindMatrices];
                 skinComp.ibm = Accessor.getFloat32Blocks(acc);
