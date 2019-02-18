@@ -141,6 +141,10 @@ export class gltfScene {
         let gltf = this.gltf;
         if (index != null) { // common texture
             Material.setTexture(mat, texName, Texture.clone(gltf.textures[index]));
+            // Multi UV
+            if(texCoord) { // > 0
+                mat.shader.macros[`${texName}_uv`] = `uv${texCoord}`;
+            }
         }
     }
 

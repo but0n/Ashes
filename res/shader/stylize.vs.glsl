@@ -1,6 +1,7 @@
 attribute vec3 POSITION;
 attribute vec3 NORMAL;
 attribute vec2 TEXCOORD_0;
+attribute vec2 TEXCOORD_1;
 attribute vec4 TANGENT;
 attribute vec3 COLOR_0;
 
@@ -17,6 +18,7 @@ uniform mat4 nM;
 
 varying vec3 normal;
 varying vec2 uv;
+varying vec2 uv1;
 varying vec3 pos;
 varying vec3 color;
 varying mat3 TBN;
@@ -24,6 +26,7 @@ varying mat3 TBN;
 
 void main() {
     uv = TEXCOORD_0;
+    uv1 = TEXCOORD_1;
     normal = normalize((nM * vec4(NORMAL, 0)).xyz);
     vec3 tangent = normalize(vec3(nM * vec4(TANGENT.xyz, 0)));
     vec3 bitangent = cross(normal, tangent) * TANGENT.w;

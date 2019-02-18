@@ -4,6 +4,7 @@ precision mediump float;
 
 varying vec3 normal;
 varying vec2 uv;
+varying vec2 uv1;
 varying vec3 pos;
 varying vec3 color;
 varying mat3 TBN;
@@ -12,22 +13,37 @@ varying mat3 TBN;
 uniform sampler2D brdfLUT;
 
 #ifdef HAS_EMISSIVE_MAP
+#ifndef emissiveTexture_uv
+#define emissiveTexture_uv uv
+#endif
 uniform sampler2D emissiveTexture;
 #endif
 
 #ifdef HAS_NORMAL_MAP
+#ifndef normalTexture_uv
+#define normalTexture_uv uv
+#endif
 uniform sampler2D normalTexture;
 #endif
 
 #ifdef HAS_BASECOLOR_MAP
+#ifndef baseColorTexture_uv
+#define baseColorTexture_uv uv
+#endif
 uniform sampler2D baseColorTexture;
 #endif
 
 #ifdef HAS_METALLIC_ROUGHNESS_MAP
+#ifndef metallicRoughnessTexture_uv
+#define metallicRoughnessTexture_uv uv
+#endif
 uniform sampler2D metallicRoughnessTexture;
 #endif
 
 #ifdef HAS_AO_MAP
+#ifndef occlusionTexture_uv
+#define occlusionTexture_uv uv
+#endif
 uniform sampler2D occlusionTexture;
 #endif
 
@@ -119,11 +135,11 @@ vec3 lightContrib(vec3 lightDir, coreData core) {
 
 void main() {
 #ifdef HAS_EMISSIVE_MAP
-    vec4 em = sRGBtoLINEAR(texture2D(emissiveTexture, uv));
+    vec4 em = sRGBtoLINEAR(texture2D(emissiveTexture, emissiveTexture_uv));
 #endif
 
 #ifdef HAS_BASECOLOR_MAP
-    vec4 base = sRGBtoLINEAR(texture2D(baseColorTexture, uv));
+    vec4 base = sRGBtoLINEAR(texture2D(baseColorTexture, baseColorTexture_uv));
 #else
     vec4 base = vec4(1);
 #endif
@@ -133,18 +149,18 @@ void main() {
 #endif
 
 #ifdef HAS_METALLIC_ROUGHNESS_MAP
-    vec3 rm = texture2D(metallicRoughnessTexture, uv).rgb;
+    vec3 rm = texture2D(metallicRoughnessTexture, metallicRoughnessTexture_uv).rgb;
 #else
     vec3 rm = vec3(0, 0.7, 0);
 #endif
 
 #ifdef HAS_AO_MAP
-    vec4 ao = texture2D(occlusionTexture, uv);
+    vec4 ao = texture2D(occlusionTexture, occlusionTexture_uv);
 #endif
 
 
 #ifdef HAS_NORMAL_MAP
-    vec3 normalAddation = texture2D(normalTexture, uv).rgb * 2.0 - 1.0;
+    vec3 normalAddation = texture2D(normalTexture, normalTexture_uv).rgb * 2.0 - 1.0;
     vec3 N = normalize(TBN * normalAddation);
 #else
     vec3 N = normalize(normal);
