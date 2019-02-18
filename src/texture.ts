@@ -1,7 +1,6 @@
 export class Texture {
     image: HTMLImageElement;
     sampler: Sampler;
-    texture: WebGLTexture = null;
     channel: number = null;
     isDirty: boolean = true;
     glType = WebGL2RenderingContext.TEXTURE_2D;
@@ -34,7 +33,7 @@ export class Texture {
 
     static clone(origin: Texture) {
         let temp = new Texture(origin.image, origin.sampler);
-        temp.texture = origin.texture;
+        temp.flipY = origin.flipY;
         return temp;
     }
 
@@ -48,11 +47,11 @@ export class Texture {
     ];
 
     static createTexture(gl: WebGL2RenderingContext, tex: Texture) {
-        if(tex.texture) {   // if the texuter is already exist
-            gl.deleteTexture(tex.texture);
+        if(tex.sampler.texture) {   // if the texuter is already exist
+            gl.deleteTexture(tex.sampler.texture);
         }
-        tex.texture = gl.createTexture();
-        gl.bindTexture(tex.glType, tex.texture);
+        tex.sampler.texture = gl.createTexture();
+        gl.bindTexture(tex.glType, tex.sampler.texture);
 
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, tex.flipY ? 1 : 0);
 
@@ -105,10 +104,10 @@ export class Texture {
         if(tex.channel != null) {
             gl.activeTexture(this.texChannels[tex.channel]);
         }
-        if(tex.texture == null) {
+        if(tex.sampler.texture == null) {
             this.createTexture(gl, tex);
         }
-        gl.bindTexture(tex.glType, tex.texture);
+        gl.bindTexture(tex.glType, tex.sampler.texture);
     }
 }
 
@@ -117,10 +116,12 @@ export class Sampler {
     minFilter;
     wrapS;
     wrapT;
-    constructor({magFilter = WebGL2RenderingContext.NEAREST, minFilter = WebGL2RenderingContext.NEAREST, wrapS = 10497, wrapT = 10497} = {magFilter: WebGL2RenderingContext.NEAREST, minFilter: WebGL2RenderingContext.NEAREST, wrapS: 10497, wrapT: 10497}) {
+    texture?: WebGLTexture = null;
+    constructor({magFilter = WebGL2RenderingContext.NEAREST, minFilter = WebGL2RenderingContext.NEAREST, wrapS = 10497, wrapT = 10497, texture = null} = {magFilter: WebGL2RenderingContext.NEAREST, minFilter: WebGL2RenderingContext.NEAREST, wrapS: 10497, wrapT: 10497, texture: null}) {
         this.magFilter = magFilter;
         this.minFilter = minFilter;
         this.wrapS = wrapS;
         this.wrapT = wrapT;
+        this.texture = texture;
     }
 }

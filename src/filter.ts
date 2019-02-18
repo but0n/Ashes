@@ -71,7 +71,7 @@ export class Filter {
 
         let color = new Texture(null, Filter.sampleColor, this.width, this.height);
         Texture.createTexture(this.ctx, color);
-        this.ctx.framebufferTexture2D(Filter.FRAMEBUFFER, Filter.COLOR_ATTACH_BASE + this.color.length, color.glType, color.texture, color.level);
+        this.ctx.framebufferTexture2D(Filter.FRAMEBUFFER, Filter.COLOR_ATTACH_BASE + this.color.length, color.glType, color.sampler.texture, color.level);
         this.color.push(color);
 
         let depth = new Texture(null, Filter.sampleDepth, this.width, this.height);
@@ -79,7 +79,7 @@ export class Filter {
         depth.format = WebGL2RenderingContext.DEPTH_COMPONENT;
         depth.type = WebGL2RenderingContext.UNSIGNED_INT;
         Texture.createTexture(this.ctx, depth);
-        this.ctx.framebufferTexture2D(Filter.FRAMEBUFFER, Filter.DEPTH_ATTACHMENT, depth.glType, depth.texture, depth.level);
+        this.ctx.framebufferTexture2D(Filter.FRAMEBUFFER, Filter.DEPTH_ATTACHMENT, depth.glType, depth.sampler.texture, depth.level);
         this.depth.push(depth);
 
         this.bind(null);
