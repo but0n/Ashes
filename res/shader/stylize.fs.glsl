@@ -51,10 +51,6 @@ uniform sampler2D occlusionTexture;
 uniform samplerCube env;
 #endif
 
-uniform vec4 baseColorFactor;
-uniform float roughnessFactor;
-uniform float metallicFactor;
-
 uniform vec3 u_Camera;
 
 // texture stuff

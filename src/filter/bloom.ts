@@ -4,23 +4,24 @@ import { Screen } from "../webgl2/screen";
 
 export class Bloom {
 
-    static initFilters(screen: Screen) {
+    static initFilters(screen: Screen, threshold = 0.7, radius = 60, intensity = 1) {
 
         let macro;
 
         // threshold filter
         macro = {
-            THRESHOLD: '0.7'
+            THRESHOLD: threshold
         };
 
-        let threshold = new Filter(screen, new Shader(threshold_vs, threshold_fs, macro));
+        let blurSize = 256;
+        let thresholdFilter = new Filter(screen, new Shader(threshold_vs, threshold_fs, macro), blurSize, blurSize);
 
 
         // Two pass gaussian blur
-        let radius = 60 * screen.ratio;
         let width = screen.width / screen.ratio;
         let height = screen.height /screen.ratio;
 
+        radius *= screen.ratio;
         macro = {
             OFFSET: `vec2(${radius / width}, 0)`
         };
@@ -34,7 +35,7 @@ export class Bloom {
 
         // Combiand
         macro = {
-            BLOOM_INTENSITY: `1.0`
+            BLOOM_INTENSITY: `float(${intensity})`
         };
         let comb = new Filter(screen, new Shader(combine_vs, combine_fs, macro));
         if(screen.output) {
@@ -45,9 +46,10 @@ export class Bloom {
 
         // Assemble
         // The first stage must be attach to screen
-        screen.attachFilter(threshold);
+        screen.attachFilter(thresholdFilter);
         screen.attachFilter(blur1);
         screen.attachFilter(blur2);
+
         screen.attachFilter(comb);
 
 

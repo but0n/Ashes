@@ -43,13 +43,13 @@
             // gltf = 'gltfsamples/endless_floor_vr/scene.gltf';
             // gltf = 'res/link_-_breath_of_the_wild_-_animation/scene.gltf';
 
-            let [,cuspath,scale, yoffset] = location.hash.split('#');
+            let [,cuspath,scale, yoffset, threshold, radiu, intensity] = location.hash.split('#');
             if(cuspath)
                 gltf = cuspath;
 
             let screen = new Ashes.Screen('#screen');
             // Filters
-            // Ashes.Bloom.initFilters(screen)
+            // Ashes.Bloom.initFilters(screen, threshold || 0.5, radiu || 80, intensity || 1.2);
             // screen.attachFilter(new Ashes.Vignetting(screen));
 
             let skybox = await Ashes.Asset.loadCubemap('res/envmap/GoldenGateBridge2/');
@@ -110,12 +110,8 @@
             scene.appendChild(gltfroot);
             progressBar.parentElement.style.display = 'none';
             let root = gltfroot.components.Transform;
-            root.translate[1] = 3;
-            Ashes.vec3.scale(root.scale, root.scale, 0.03)
-            if (yoffset)
-                root.translate[1] = yoffset;
-            if (scale)
-                Ashes.vec3.scale(root.scale, root.scale, scale)
+            root.translate[1] = yoffset || 3;
+            Ashes.vec3.scale(root.scale, root.scale, scale || 0.03)
 
             // scene.appendChild(await Ashes.Asset.loadGLTF('gltfsamples/police_drone/scene.gltf', screen, skybox));
 

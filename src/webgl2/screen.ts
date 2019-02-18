@@ -15,6 +15,7 @@ export class Screen {
     public capture: Filter;
     public output: Filter = null;
     public ratio: number;
+    public bgColor = [0, 0, 0, 1];
     constructor(selector) {
         // Detect device
         if(navigator.userAgent.indexOf('iPhone') != -1 || navigator.userAgent.indexOf('iPad') != -1) {
@@ -67,7 +68,8 @@ export class Screen {
         this.gl.viewport(0, 0, width, height);
     }
 
-    clear(r = 0, g = 0, b = 0, a = 0, mode = this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT) {
+    clear(mode = this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT) {
+        let [r, g, b, a] = this.bgColor;
         this.gl.clearColor(r, g, b, a);
         this.gl.clear(mode);
     }
