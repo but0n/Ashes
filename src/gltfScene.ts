@@ -87,7 +87,7 @@ export class gltfScene {
                     skinComp.jointMat.push(mat4.create());
                 }
                 skinComp.outputMat = new Float32Array(acc.count * acc.size);
-                EntityMgr.addComponent(this.entities[skin.skeleton|0], skinComp);
+                EntityMgr.addComponent(this.entities[skin.skeleton || 0], skinComp);
                 return skinComp;
             });
         }

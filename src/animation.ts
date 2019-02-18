@@ -32,12 +32,14 @@ export class AnimationChannel {
     constructor(pTarget, timeline: Accessor, keyframe: Accessor) {
         this.channel = pTarget;
         this.timeline = Accessor.newFloat32Array(timeline);
-        this.startTime = this.timeline[0];
         this.endTime = this.timeline[this.timeline.length-1];
 
         this.keyframe = Accessor.getFloat32Blocks(keyframe);
-        if(this.endTime == 0 || this.timeline.length == 1) {
-            AnimationSystem.step(this);
+
+        if(this.timeline.length != 1) {
+            this.currentTime = this.startTime = this.timeline[0];
+        } else {
+            this.currentTime = this.endTime;
         }
     }
 }
@@ -51,35 +53,49 @@ class AnimationSystem extends ComponentSystem {
         anim.step = 0;
         anim.currentTime = 0;
     }
+    static defaultQuat = quat.create();
+    static defaultVec3 = vec3.create();
     static step(anim: AnimationChannel) {
+        let rigLength = anim.channel.length;
+        let prevKey = anim.step;
+        let nextKey = prevKey+1;
 
-        let prev = anim.step;
-        let next = prev+1;
+        let prevTime, prevFrame, nextTime, nextFrame;
 
-        if (anim.timeline.length == 1) {
-            next--;
+        if (anim.timeline.length == 1) { // Single frame
+            nextKey = 0;
+            prevTime = 0;
             anim.pause = true;
+        } else {
+            prevTime = anim.timeline[prevKey];
+            prevFrame = anim.keyframe[prevKey];
         }
 
-        if (anim.currentTime < anim.timeline[prev] || ((anim.currentTime > anim.timeline[next]))) {
-            console.error('Wrong step!', anim.currentTime, anim.timeline[prev], anim.timeline[next]);
+        nextTime = anim.timeline[nextKey];
+        nextFrame = anim.keyframe[nextKey];
+
+
+        let scopeTime = nextTime - prevTime;
+
+
+
+        // Confirm
+        if (anim.currentTime < prevTime || anim.currentTime > nextTime) {
+            console.error('Wrong step!', anim.currentTime, prevTime, nextTime);
+            console.log(anim.timeline);
             return;
         }
 
-        let prevTime = anim.timeline[prev];
-        let nextTime = anim.timeline[next];
-        let interpolationValue = (anim.currentTime - prevTime) / (nextTime - prevTime);
-        if(isNaN(interpolationValue)) {
-            interpolationValue = 0;
-        }
-        let prevKey = anim.keyframe[prev];
-        let nextKey = anim.keyframe[next];
-        switch(anim.channel.length) {
+        let interpolationValue = scopeTime
+            ? (anim.currentTime - prevTime) / scopeTime
+            : 1;
+
+        switch (rigLength) {
             case 4:
-                quat.slerp(anim.channel, prevKey, nextKey, interpolationValue);
+                quat.slerp(anim.channel, prevFrame||this.defaultQuat, nextFrame, interpolationValue);
                 break;
             case 3:
-                vec3.lerp(anim.channel, prevKey, nextKey, interpolationValue);
+                vec3.lerp(anim.channel, prevFrame||this.defaultVec3, nextFrame, interpolationValue);
                 break;
         }
     }
@@ -101,7 +117,7 @@ class AnimationSystem extends ComponentSystem {
                 anim.step++;
             }
 
-            if(anim.currentTime > anim.startTime && anim.currentTime < anim.endTime) {
+            if(anim.currentTime > anim.startTime && anim.currentTime <= anim.endTime) {
                 AnimationSystem.step(anim);
             }
 

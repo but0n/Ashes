@@ -38,8 +38,8 @@ void main() {
         WEIGHTS_0.y * jointMat[int(JOINTS_0.y)] +
         WEIGHTS_0.z * jointMat[int(JOINTS_0.z)] +
         WEIGHTS_0.w * jointMat[int(JOINTS_0.w)];
+    vec4 position = M * skinMat * vec4(POSITION, 1);
     skinedNormal = (skinMat * vec4(skinedNormal, 0)).xyz;
-    vec4 position = skinMat * vec4(POSITION, 1);
 #else
     vec4 position = M * vec4(POSITION,1);
 #endif// HAS_SKINS
