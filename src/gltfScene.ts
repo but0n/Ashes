@@ -119,7 +119,7 @@ export class gltfScene {
                             EntityMgr.addComponent(e, new Animation());
                         }
                         let anim = e.components.Animation as Animation;
-                        anim.channels.push(new AnimationChannel(controlChannel, timeline, keyframe));
+                        Animation.attachChannel(anim, new AnimationChannel(controlChannel, timeline, keyframe))
                         // console.log(anim);
                     }
                 }

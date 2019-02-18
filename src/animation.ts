@@ -6,6 +6,11 @@ import { Entity } from "./ECS/entityMgr";
 
 export class Animation {
     channels: AnimationChannel[] = [];
+    static totalTime = 0;
+    static attachChannel(anim: Animation, chan: AnimationChannel) {
+        anim.channels.push(chan);
+        this.totalTime = Math.max(this.totalTime, chan.endTime);
+    }
 }
 
 
@@ -32,7 +37,6 @@ export class AnimationChannel {
 
         this.keyframe = Accessor.getFloat32Blocks(keyframe);
         if(this.endTime == 0 || this.timeline.length == 1) {
-            this.currentTime = this.startTime;
             AnimationSystem.step(this);
         }
     }
@@ -82,7 +86,7 @@ class AnimationSystem extends ComponentSystem {
     playStep(anim: AnimationChannel, dt: number) {
         if (!anim.pause) {
 
-            if (anim.currentTime > anim.endTime) {
+            if (anim.currentTime > Animation.totalTime) {
                 this.reset(anim);
                 if (!anim.isLoop) {
                     anim.pause = true;
@@ -97,7 +101,7 @@ class AnimationSystem extends ComponentSystem {
                 anim.step++;
             }
 
-            if(anim.currentTime > anim.startTime) {
+            if(anim.currentTime > anim.startTime && anim.currentTime < anim.endTime) {
                 AnimationSystem.step(anim);
             }
 
