@@ -42,7 +42,7 @@
             // gltf = 'gltfsamples/miku/scene.gltf';
             // gltf = 'gltfsamples/endless_floor_vr/scene.gltf';
             // gltf = 'res/link_-_breath_of_the_wild_-_animation/scene.gltf';
-            gltf = 'res/3_seconds_of_vacations/scene.gltf';
+            gltf = 'gltfsamples/3_seconds_of_vacations/scene.gltf';
 
             let [,cuspath,scale, yoffset, threshold, radiu, intensity] = location.hash.split('#');
             if(cuspath)
@@ -51,7 +51,7 @@
             let screen = new Ashes.Screen('#screen');
             screen.bgColor = [0.80859375, 0.62890625, 0.97265625, 1];
             // Filters
-            // Ashes.Bloom.initFilters(screen, threshold || 0.5, radiu || 80, intensity || 1.2);
+            Ashes.Bloom.initFilters(screen, threshold || 0.7, radiu || 80, intensity || 1.2);
             // screen.attachFilter(new Ashes.Vignetting(screen));
 
             let skybox = await Ashes.Asset.loadCubemap('res/envmap/GoldenGateBridge2/');

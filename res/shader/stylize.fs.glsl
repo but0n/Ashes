@@ -211,7 +211,8 @@ void main() {
 #endif
 
     color += lightContrib(vec3(5, 5, 5), core) * vec3(2);
-    color += lightContrib(vec3(-5, -5, -5), core) * vec3(0.2, 0.4, 0.6);
+    color += lightContrib(vec3(1, 1, 5), core) * vec3(1.0, 0.7922, 0.4078) * 2.0;
+    color += lightContrib(vec3(-5, 3, -5), core) * vec3(0.2, 0.4, 0.6);
 
     // gl_FragColor = vec4(uv, 0, 1);
     // gl_FragColor = (base) * vec4(vec3(max(LoN, 0.0)), 1);
