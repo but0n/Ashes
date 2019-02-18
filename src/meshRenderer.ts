@@ -43,8 +43,8 @@ export class MeshRendererSystem extends ComponentSystem {
             if(screen.filters.length) {
                 screen.capture.bind();
                 screen.setViewport(screen.capture.width, screen.capture.height);
-                screen.clear();
             }
+            screen.clear();
         }
         for(let {components} of this.group) {
             MeshRendererSystem.render(components.MeshRenderer);

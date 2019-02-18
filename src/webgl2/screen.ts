@@ -68,8 +68,7 @@ export class Screen {
         this.gl.viewport(0, 0, width, height);
     }
 
-    clear(mode = this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT) {
-        let [r, g, b, a] = this.bgColor;
+    clear(r = this.bgColor[0], g = this.bgColor[1], b = this.bgColor[2], a = this.bgColor[3], mode = this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT) {
         this.gl.clearColor(r, g, b, a);
         this.gl.clear(mode);
     }
