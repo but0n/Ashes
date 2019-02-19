@@ -125,7 +125,9 @@ export class MeshRendererSystem extends ComponentSystem {
     static render(target: MeshRenderer) {
         let gl = this.ctxCache[target.SID].gl;
         // Enable material
-        let currentMat = this.useMaterial(target, 0);
+        let idShader = 0;
+        let needsUpdateTexture = target.materials[idShader].shader.isDirty;
+        let currentMat = this.useMaterial(target, idShader);
 
         if(currentMat.doubleSided) {
             gl.disable(gl.CULL_FACE);
@@ -145,7 +147,7 @@ export class MeshRendererSystem extends ComponentSystem {
         this.updateMaterial(target);
 
         // Bind all textures
-        Material.bindAllTextures(currentMat, gl);
+        Material.bindAllTextures(currentMat, gl, needsUpdateTexture);
 
         // Bind Mesh
         this.bindVAO(target, target.vao); // Bind VAO

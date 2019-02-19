@@ -18,6 +18,10 @@ export class Material {
     }
 
     static useMaterial(mat: Material, ctx: WebGL2RenderingContext) {
+        if(mat.shader.isDirty) {
+            // Update Shader
+            Shader.buildProgram(mat.shader, ctx);
+        }
         ctx.useProgram(mat.shader.program);
     }
 
@@ -41,13 +45,13 @@ export class Material {
         mat.isDirty = false;
     }
 
-    static bindAllTextures(mat: Material, ctx: WebGL2RenderingContext) {
+    static bindAllTextures(mat: Material, ctx: WebGL2RenderingContext, force = false) {
         if(mat.textures.size == 0) {
             // FIXME:
         }
         for (let [uniform, tex] of mat.textures) {
             Texture.bindTexture(ctx, tex);
-            if(tex.isDirty) {
+            if(tex.isDirty || force) {
                 Material.setUniform(mat, uniform, tex.channel);
                 tex.isDirty = false;
             }

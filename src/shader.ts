@@ -58,7 +58,6 @@ void main() {
         // if(!this.isDirty) return;
         // If current program needs recompile
         shader.ctx = ctx;
-        // if WebGL shader is already exist, then dispose them
 
         // prepare macros
         this.macros = '';
@@ -66,6 +65,7 @@ void main() {
             this.macros += `\n#define ${macro} ${shader.macros[macro]}\n`;
         }
 
+        // if WebGL shader is already exist, then dispose them
         if(shader.vertex) {   // Vertex shader
             shader.ctx.deleteShader(shader.vertex);
         }
