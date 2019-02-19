@@ -4,7 +4,7 @@ import { Screen } from "./webgl2/screen";
 import { gltfScene } from "./gltfScene";
 import { EntityMgr } from "./ECS/entityMgr";
 import { Shader } from "./shader";
-import { Mesh } from "./mesh/mesh";
+import { Mesh, bufferView, Accessor } from "./mesh/mesh";
 import { Texture } from "./texture";
 
 export class Asset {
@@ -54,22 +54,100 @@ export class Asset {
             }
         });
     }
+    static loadBufferImage(buffer: DataView, mimeType) {
+        return new Promise((resolve, reject) => {
+            var blob = new Blob([buffer], { type: mimeType });
+            var url = URL.createObjectURL(blob);
+
+            let image = new Image();
+            image.src = url;
+            image.onload = () => {
+                resolve(image);
+            }
+        })
+
+    }
+
+    static glbMagic = 0x46546C67;
+    static decoder = new TextDecoder();
+    static async glbParse(path: string) {
+        let json, bin = [];
+        let glb = await this.loadBuffer(path);
+        let offset = 0;
+
+        // HEADER
+        let header = new Int32Array(glb, offset, 3);
+        offset += 3*4;
+
+        let [magic, version, length] = header;
+        if(magic != this.glbMagic) {
+            console.error('Magic number incorrect! - ' + header[0]);
+            return;
+        }
+
+        while(offset < length) {
+            let [chunkLength, chunkType] = new Int32Array(glb, offset, 2);
+            offset += 2*4;
+            let chunkData = glb.slice(offset, offset + chunkLength)
+            switch(chunkType) {
+                // JSON
+                case 0x4E4F534A:
+                    json = JSON.parse(this.decoder.decode(chunkData));
+                    break;
+                // BIN
+                case 0x004E4942:
+                    bin.push(chunkData);
+                    break;
+            }
+            offset += chunkLength;
+        }
+
+        return {
+            json: json,
+            bin: bin
+        }
+    }
 
     static async loadGLTF(path: string, screen: Screen, envmap?: Texture, shader = 'stylize') {
-
+        let gltf;
         // parse current path
         let root: any = path.split('/');
-        root.pop();
+        let [filename, format] = root.pop().split('.');
         root = root.join('/') + '/';
-        // Load gltf
-        let gltf: any = await (await fetch(path)).json();
 
-        // Download buffers
-        gltf.buffers = await Promise.all(gltf.buffers.map(({ uri }) => this.loadBuffer(root + uri)));
+        if(format == 'glb') {
 
-        // then download images
-        if(gltf.images) {
-            gltf.images = await Promise.all(gltf.images.map(({ uri }) => this.loadImage(root + uri)));
+            let glb = await this.glbParse(path);
+            gltf = glb.json;
+            gltf.buffers = glb.bin;
+
+            //  BufferViews
+            gltf.bufferViews = gltf.bufferViews.map(bv => new bufferView(gltf.buffers[bv.buffer], bv));
+
+            if (gltf.images) {
+                gltf.images = await Promise.all(gltf.images.map(i => this.loadBufferImage(gltf.bufferViews[i.bufferView].dataView, i.mimeType)));
+            }
+
+
+        } else if(format == 'gltf') {
+
+            // Load gltf
+            gltf = await (await fetch(path)).json();
+
+            // Download buffers
+            gltf.buffers = await Promise.all(gltf.buffers.map(({ uri }) => this.loadBuffer(root + uri)));
+
+            //  BufferViews
+            gltf.bufferViews = gltf.bufferViews.map(bv => new bufferView(gltf.buffers[bv.buffer], bv));
+
+            // then download images
+            if (gltf.images) {
+                gltf.images = await Promise.all(gltf.images.map(({ uri }) => this.loadImage(root + uri)));
+            }
+
+        } else {
+            console.error('Wrong file!');
+            return;
         }
 
         // Textures

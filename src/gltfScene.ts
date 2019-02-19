@@ -13,8 +13,6 @@ export class gltfScene {
     entities;
     constructor(gltf) {
         this.gltf = gltf;
-        //  BufferViews
-        gltf.bufferViews = gltf.bufferViews.map(bv => new bufferView(gltf.buffers[bv.buffer], bv));
 
         // Materials
         // set default material if materials does not exist
