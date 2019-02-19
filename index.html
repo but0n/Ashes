@@ -112,7 +112,7 @@
             scene.appendChild(gltfroot);
             progressBar.parentElement.style.display = 'none';
             let root = gltfroot.components.Transform;
-            root.translate[1] = yoffset || 0;
+            root.translate[1] = yoffset || -1;
             Ashes.vec3.scale(root.scale, root.scale, scale || 1)
 
             // scene.appendChild(await Ashes.Asset.loadGLTF('gltfsamples/police_drone/scene.gltf', screen, skybox));

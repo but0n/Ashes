@@ -72,32 +72,17 @@ export class Asset {
             gltf.images = await Promise.all(gltf.images.map(({ uri }) => this.loadImage(root + uri)));
         }
 
-        let waitTexture = (tex) => {
-            return new Promise((resolve: (e: Texture) => void, reject) => {
-                setTimeout(() => {
-                    let { source, sampler } = tex;
-                    let currentSampler;
-                    if (gltf.samplers != null)
-                        currentSampler = gltf.samplers[sampler];
-                    let texture = new Texture(gltf.images[source], currentSampler);
-                    resolve(texture);
-                }, 2);
-            })
-        }
-
         // Textures
         if (gltf.textures) {
-            gltf.textures = await Promise.all(gltf.textures.map(tex => waitTexture(tex)))
-            debugger
-            // gltf.textures = gltf.textures.map(tex => {
-            //     let { source, sampler } = tex;
-            //     let currentSampler;
-            //     if (gltf.samplers != null)
-            //         currentSampler = gltf.samplers[sampler];
-            //     let texture = new Texture(gltf.images[source], currentSampler);
-            //     Texture.createTexture(screen.gl, texture);
-            //     return texture;
-            // })
+            gltf.textures = gltf.textures.map(tex => {
+                let { source, sampler } = tex;
+                let currentSampler;
+                if (gltf.samplers != null)
+                    currentSampler = gltf.samplers[sampler];
+                let texture = new Texture(gltf.images[source], currentSampler);
+                Texture.createTexture(screen.gl, texture);
+                return texture;
+            })
         }
 
         // Load shader

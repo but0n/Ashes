@@ -155,7 +155,7 @@ export class MeshRendererSystem extends ComponentSystem {
         Mesh.drawElement(target.mesh, gl);
 
         // Clean texture channels
-        Material.unbindAllTextures(currentMat, gl);
+        // Material.unbindAllTextures(currentMat, gl);
     }
     // According those discussion below, having actors draw themselves is not a good design
     // https://gamedev.stackexchange.com/questions/50531/entity-component-based-engine-rendering-separation-from-logic
