@@ -41,7 +41,7 @@ export class OrbitControl {
         this.trans = target.components.Transform;
         this.distance = vec3.distance(this.trans.translate, this.camera.lookAt);
 
-        EntityMgr.addComponent(target, this);
+        // EntityMgr.addComponent(target, this);
 
         OrbitControl.bindEvents(screen.canvas, this);
         OrbitControlSystem.updatePosition(this);

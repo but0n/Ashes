@@ -13,7 +13,7 @@ export class Bloom {
             THRESHOLD: threshold
         };
 
-        let blurSize = 256;
+        let blurSize = 128;
         let thresholdFilter = new Filter(screen, new Shader(threshold_vs, threshold_fs, macro), blurSize, blurSize);
 
 
@@ -25,7 +25,7 @@ export class Bloom {
         macro = {
             OFFSET: `vec2(${radius / width}, 0)`
         };
-        let blur1 = new Filter(screen, new Shader(blurvs, blurfs, macro));
+        let blur1 = new Filter(screen, new Shader(blurvs, blurfs, macro), blurSize, blurSize);
 
         macro = {
             OFFSET: `vec2(0, ${radius / height})`

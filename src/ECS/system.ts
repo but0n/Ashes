@@ -4,7 +4,6 @@ import { ComponentSystem } from "./component";
 export class System {
     static lastTime: number = 0;
     static deltaTime: number = 0;
-    private static PID: number;
     private static isStoped = true;
     static loop() {
         for(let name in this.sysQueue) {
@@ -24,10 +23,9 @@ export class System {
         if(!this.isStoped)
             return;
         this.isStoped = false;
-        this.PID = requestAnimationFrame(this.loop.bind(this));
+        this.loop();
     }
     static stop() {
-        cancelAnimationFrame(this.PID);
         this.isStoped = true;
     }
 
