@@ -37,23 +37,24 @@ body {
 }
 body > ash-entity {
 	overflow: scroll;
-	z-index: 1;
-	position: fixed;
+	width: 240px!important;
+	max-height: 400px;
+	opacity: 0.4;
 	display: none;
 }
 ash-entity {
-	max-width: 300px;
 	display: block;
-	min-height: 10px;
+	width: 1000px;
+	min-height: 8px;
 	border-style: solid;
 	border-color: rgba(64, 195, 255, 0.5);
 	border-width: 1px 0 0 3px;
 	margin-left: 5px;
 	padding-left: 5px;
 	display: flex;
-	flex: 1 1 auto;
+	flex: 1 0 auto;
 	flex-direction: column;
-	color: rgb(0, 0, 0);
+	color: #fff;
 	text-shadow: 0 0 1px rgb(221, 238, 255);
 	font-size: 6px;
 	cursor: pointer;
