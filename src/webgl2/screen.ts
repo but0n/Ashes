@@ -88,13 +88,10 @@ export class Screen {
 
 }
 
-// https://bocoup.com/blog/find-the-closest-power-of-2-with-javascript#comment-351783898
-function nearestPow2(n) {
-    var m = n;
-    for (var i = 0; m > 1; i++) {
-        m = m >>> 1;
+function nearestPow2(s) {
+    let psize = 128;
+    while (s > psize) {
+        psize = psize<<1;
     }
-    // Round to nearest power
-    if (n & 1 << i - 1) { i++; }
-    return 1 << i;
+    return psize;
 }
