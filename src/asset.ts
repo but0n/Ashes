@@ -27,6 +27,8 @@ export class Asset {
     //     });
     // }
 
+    static CDN = '';
+
     // Analyze
     static totalTask: number = 0;
     static finishedTask: number = 0;
@@ -47,7 +49,7 @@ export class Asset {
             this.addTask();
             let image = new Image();
             image.crossOrigin = "anonymous";
-            image.src = url;
+            image.src = this.CDN + url;
             image.onload = () => {
                 resolve(image);
                 this.finishTask();
@@ -202,7 +204,7 @@ export class Asset {
     }
 
     static async LoadShaderProgram(url) {
-        url = Material.SHADER_PATH + url;
+        url = this.CDN + Material.SHADER_PATH + url;
         let vertPath = url + '.vs.glsl';
         let fragPath = url + '.fs.glsl';
         let [vert, frag] = await Promise.all([vertPath, fragPath].map(path => fetch(path).then(e=>e.text())));
