@@ -85,6 +85,26 @@ export class Screen {
         this.filters.push(ft);
         this.output = ft;
     }
+    deleteFilter(index) {
+        let target = this.filters[index];
+        if(!target) {
+            console.error('Filter does not exist!');
+            return;
+        }
+
+        let prev = this.filters[index-1] || this.capture;
+        let next = this.filters[index+1];
+
+        if(next) {
+            next.setInput(prev.output);
+        } else {
+            prev.renderToScreen = true;
+        }
+
+
+        this.filters.splice(index, 1);
+        this.output = this.filters[this.filters.length-1];
+    }
 
 }
 
