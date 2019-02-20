@@ -25,7 +25,7 @@ export class Bloom {
         macro = {
             OFFSET: `vec2(${radius / width}, 0)`
         };
-        let blur1 = new Filter(screen, new Shader(blurvs, blurfs, macro), blurSize, blurSize);
+        let blur1 = new Filter(screen, new Shader(blurvs, blurfs, macro));
 
         macro = {
             OFFSET: `vec2(0, ${radius / height})`

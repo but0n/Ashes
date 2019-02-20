@@ -11,33 +11,37 @@ import { Bloom } from "./filter/bloom";
 import { Filter } from "./filter";
 import { Shader } from "./shader";
 import { Material } from "./material";
+import { Vignetting } from "./filter/vignetting";
 
 
 
 // BoomBox
 let gltf = 'gltfsamples/BoomBox.glb';
-
+// gltf = 'res/project_polly.glb';
+gltf = 'res/sci_fi_environment_tile_set.glb';
 
 export class Example {
 
     static async run() {
-        let progressBar: any = document.querySelector('#progress');
 
 
         let screen = new Screen('#screen');
         screen.bgColor = [0.2, 0.2, 0.2, 1];
-        screen.bgColor = [1,1,1,1];
+        // screen.bgColor = [1,1,1,1];
 
 
         let load = new demoLoad(screen);
+        load.cb = () => {
+            screen.deleteFilter(0);
+            console.log('delete');
+        }
         screen.attachFilter(load);
         Asset.taskObserve = (finished, total) => {
             let p = finished / total;
-            // progressBar.value = p;
             load.cur = p;
         }
         // Filters
-        Bloom.initFilters(screen, 0.6, 80, 1.2);
+        // Bloom.initFilters(screen, 0.6, 80, 1.2);
         // screen.attachFilter(new Vignetting(screen));
 
 
@@ -62,18 +66,15 @@ export class Example {
         // Model
 
         let gltfroot = await Asset.loadGLTF(gltf, screen, skybox);
-        // scene.appendChild(gltfroot);
+        scene.appendChild(gltfroot);
 
 
 
 
         let root = gltfroot.components.Transform;
-        // root.translate[1] = yoffset || 0;
-        vec3.scale(root.scale, root.scale, 200)
+        root.translate[1] = -2;
+        vec3.scale(root.scale, root.scale, 0.01)
 
-
-
-        progressBar.parentElement.style.display = 'none';
 
     }
 }
@@ -83,6 +84,7 @@ export class Example {
 class demoLoad extends Filter {
     cur;
     stop;
+    cb;
     constructor(screen: Screen) {
         let macro = {
         }
@@ -90,13 +92,19 @@ class demoLoad extends Filter {
         super(screen, shader);
         this.cur = 0;
         this.stop = false;
+        let cur = 0;
         Material.setUniform(this.material, 'cur', this.cur);
-        let d = 0;
         let loop = () => {
-            d += (1 / 60 / 3);
-            Material.setUniform(this.material, 'cur', d);
-            if(!this.stop)
+            cur += (this.cur - cur) * 0.05;
+            Material.setUniform(this.material, 'cur', cur);
+            Material.setUniform(this.material, 'powcur', Math.pow(cur, 8));
+            if(cur < 0.999) {
                 requestAnimationFrame(loop);
+            } else {
+                Material.setUniform(this.material, 'cur', 1);
+                Material.setUniform(this.material, 'powcur', 1);
+                if(this.cb) this.cb();
+            }
         }
         loop();
     }
@@ -123,6 +131,7 @@ let loading_fs = `
 precision mediump float;
 uniform sampler2D base;
 uniform float cur;
+uniform float powcur;
 
 varying vec2 uv;
 varying vec4 pos;
@@ -135,9 +144,9 @@ void main() {
 
 
     if(cur < prog) {
-        gl_FragColor = vec4(vec3(0), 1);
+        gl_FragColor = vec4(1);
     } else {
-        gl_FragColor = base;
+        gl_FragColor = vec4(base.rgb * powcur, base.a);
     }
 }
 `;
