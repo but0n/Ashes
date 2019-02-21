@@ -28,6 +28,9 @@ export class OrbitControl {
     threshold = 0.001;
     damping: number;
 
+    lastalpha;
+    lastbeta;
+
 
     camera: Camera;
     trans: Transform;
@@ -103,10 +106,18 @@ export class OrbitControl {
         // }
         // this.ctr.x = e.gamma;
         // this.ctr.y = e.beta;
-        let deltaX = e.gamma * this.speed;
-        let deltaY = -e.beta * this.speed;
-        this.vpitch += deltaY;
-        this.vyaw += deltaX;
+        if(!this.lastalpha || !this.lastbeta) {
+            this.lastalpha = e.alpha;
+            this.lastbeta = e.beta;
+        }
+        let dalpha = e.alpha - this.lastalpha;
+        let dbeta = e.beta - this.lastbeta;
+        // this.vpitch += dbeta * this.speed;
+        // this.vyaw += dgamma * this.speed;
+        this.pitch = this.lastbeta + dbeta * 0.1;
+        this.yaw = this.lastalpha + dalpha * 0.1;
+        // this.pitch = e.beta;
+        // this.yaw = e.alpha;
 
     }
 
