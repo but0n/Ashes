@@ -142,11 +142,11 @@ export class OrbitControl {
         })
         screen.addEventListener('wheel', controler.scrollHandler);
 
-        try {
-            window.addEventListener("deviceorientation", controler.orientationHandler, false);
-        } catch (e) {
-            console.log(e);
-        }
+        // try {
+        //     window.addEventListener("deviceorientation", controler.orientationHandler, false);
+        // } catch (e) {
+        //     console.log(e);
+        // }
 
     }
 }

@@ -142,12 +142,10 @@ void main() {
 `;
 
 class loadingAnim extends Filter {
-    cur;
-    stop;
-    cb;
+
     constructor(screen) {
-        let macro = {
-        }
+        let macro = {};
+
         let shader = new Shader(loading_vs, loading_fs, macro);
         super(screen, shader);
         this.cur = 0;
@@ -165,7 +163,7 @@ class loadingAnim extends Filter {
                 Material.setUniform(this.material, 'powcur', 1);
                 if (this.cb) this.cb();
             }
-        }
+        };
         loop();
     }
 }
