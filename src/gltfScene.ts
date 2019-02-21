@@ -88,7 +88,7 @@ export class gltfScene {
                 let acc: Accessor = gltf.accessors[skin.inverseBindMatrices];
                 skinComp.ibm = Accessor.getFloat32Blocks(acc);
                 skinComp.outputMat = new Float32Array(acc.count * acc.size);
-                skinComp.jointMat = Accessor.getFloat32Blocks(acc, skinComp.outputMat);
+                skinComp.jointMat = Accessor.getSubChunks(acc, skinComp.outputMat);
                 // https://github.com/KhronosGroup/glTF/issues/1270
                 // https://github.com/KhronosGroup/glTF/pull/1195
                 // EntityMgr.addComponent(this.entities[skin.skeleton || 0], skinComp);

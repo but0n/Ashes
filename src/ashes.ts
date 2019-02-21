@@ -7,6 +7,7 @@ export { System } from "./ECS/system";
 export { vec3, vec4, mat4, quat } from "./math";
 
 export { Texture } from "./texture";
+export { Mesh, Accessor } from "./mesh/mesh";
 export { QuadMesh } from "./mesh/quadMesh";
 export { Filter } from "./filter";
 export { Shader, Uniform } from "./shader";

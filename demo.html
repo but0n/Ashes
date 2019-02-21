@@ -34,7 +34,7 @@ let gltf = assetRoot + 'gltfsamples/BoomBox.glb';
 // gltf = assetRoot + 'res/BrainStem.glb';
 // gltf = assetRoot + 'res/project_polly.glb';
 // gltf = assetRoot + 'gltfsamples/Suzanne/Suzanne.gltf';
-scale = 1;
+scale = 50;
 
 async function main() {
 
@@ -77,26 +77,26 @@ async function main() {
 
     // scene.appendChild(await Asset.loadGLTF(assetRoot + 'res/BrainStem.glb', screen, skybox));
 
-    // The original size of quad is 2x2
-    let quad = scene.appendChild(EntityMgr.create('quad'));
+    // // The original size of quad is 2x2
+    // let quad = scene.appendChild(EntityMgr.create('quad'));
 
-    let quadMat = await Asset.LoadMaterial('stylize');
-    // let floor = await Asset.loadTexture('res/textures/floor.png', { minFilter: screen.gl.NEAREST_MIPMAP_NEAREST });
-    // floor.flipY = true;
-    let floor = new Texture();
-    window['floor'] = floor;
-    // floor.data = new Uint8Array(4 * 256 * 256);
-    // for (let i = 0; i < 256 * 256; i++) {
-    //     floor.data.set([Math.random() * 256, Math.random() * 256, Math.random() * 256, 256], i * 4);
-    // }
-    floor.data = Texture.defaultData;
-    Material.setTexture(quadMat, 'emissiveTexture', floor);
-    quadMat.shader.macros['HAS_EMISSIVE_MAP'] = '';
+    // let quadMat = await Asset.LoadMaterial('stylize');
+    // // let floor = await Asset.loadTexture('res/textures/floor.png', { minFilter: screen.gl.NEAREST_MIPMAP_NEAREST });
+    // // floor.flipY = true;
+    // let floor = new Texture();
+    // window['floor'] = floor;
+    // // floor.data = new Uint8Array(4 * 256 * 256);
+    // // for (let i = 0; i < 256 * 256; i++) {
+    // //     floor.data.set([Math.random() * 256, Math.random() * 256, Math.random() * 256, 256], i * 4);
+    // // }
+    // floor.data = Texture.defaultData;
+    // Material.setTexture(quadMat, 'emissiveTexture', floor);
+    // quadMat.shader.macros['HAS_EMISSIVE_MAP'] = '';
 
-    let quadMR = new MeshRenderer(screen, new QuadMesh(), quadMat);
-    EntityMgr.addComponent(quad, quadMR);
-    quat.fromEuler(quad.components.Transform.quaternion, -90, 0, 0);
-    vec3.scale(quad.components.Transform.scale, quad.components.Transform.scale, 9);
+    // let quadMR = new MeshRenderer(screen, new QuadMesh(), quadMat);
+    // EntityMgr.addComponent(quad, quadMR);
+    // quat.fromEuler(quad.components.Transform.quaternion, -90, 0, 0);
+    // vec3.scale(quad.components.Transform.scale, quad.components.Transform.scale, 9);
 
 
 

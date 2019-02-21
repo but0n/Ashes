@@ -35,6 +35,22 @@ export class Mesh {
         gl.drawElements(target.mode, acc.count, acc.componentType, acc.byteOffset);
     }
 
+    static preComputeTangent(mesh: Mesh) {
+        // http://www.opengl-tutorial.org/cn/intermediate-tutorials/tutorial-13-normal-mapping/
+        // https://learnopengl-cn.readthedocs.io/zh/latest/05%20Advanced%20Lighting/04%20Normal%20Mapping/
+        let indices = mesh.indices;
+        let atts = {};
+        for(let acc of mesh.attributes) {
+            if(acc.attribute != 'POSITION' && acc.attribute != 'TEXCOORD_0')
+                continue;
+            let data = Accessor.newFloat32Array(acc);
+            let chunks = Accessor.getSubChunks(acc, data);
+            atts[acc.attribute] = chunks;
+        }
+        atts['i'] = Accessor.newUint16Array(indices);
+        return atts;
+    }
+
 }
 
 export class Accessor {
@@ -71,13 +87,22 @@ export class Accessor {
     static newFloat32Array(acc: Accessor) {
         return new Float32Array(acc.bufferView.rawBuffer, acc.byteOffset + acc.bufferView.byteOffset, acc.size * acc.count);
     }
-    static getFloat32Blocks(acc: Accessor, data = Accessor.newFloat32Array(acc)) {
+    static getSubChunks(acc, data) {
         let blocks = [];
         for (let i = 0; i < acc.count; i++) {
             let offset = i * acc.size;
             blocks.push(data.subarray(offset, offset + acc.size));
         }
         return blocks;
+    }
+    static getFloat32Blocks(acc: Accessor) {
+        return this.getSubChunks(acc, Accessor.newFloat32Array(acc));
+    }
+    static newUint16Array(acc: Accessor) {
+        return new Uint16Array(acc.bufferView.rawBuffer, acc.byteOffset + acc.bufferView.byteOffset, acc.size * acc.count);
+    }
+    static getUint16Blocks(acc: Accessor) {
+        return this.getSubChunks(acc, Accessor.newUint16Array(acc));
     }
 }
 
