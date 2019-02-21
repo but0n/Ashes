@@ -89,7 +89,10 @@ export class gltfScene {
                 skinComp.ibm = Accessor.getFloat32Blocks(acc);
                 skinComp.outputMat = new Float32Array(acc.count * acc.size);
                 skinComp.jointMat = Accessor.getFloat32Blocks(acc, skinComp.outputMat);
-                EntityMgr.addComponent(this.entities[skin.skeleton || 0], skinComp);
+                // https://github.com/KhronosGroup/glTF/issues/1270
+                // https://github.com/KhronosGroup/glTF/pull/1195
+                // EntityMgr.addComponent(this.entities[skin.skeleton || 0], skinComp);
+                EntityMgr.addComponent(skin.entity || this.entities[skin.skeleton || 0], skinComp);
                 return skinComp;
             });
         }
@@ -208,7 +211,7 @@ export class gltfScene {
     }
 
     createEntity(node) {
-        let { mesh, name, matrix, rotation, scale, translation } = node;
+        let { mesh, name, matrix, rotation, scale, translation, skin } = node;
         let entity = EntityMgr.create(name);
         let trans = entity.components.Transform as Transform;
         if (matrix != null) {
@@ -244,6 +247,9 @@ export class gltfScene {
                 EntityMgr.addComponent(entity, mf);
                 EntityMgr.addComponent(entity, mat);
             }
+        }
+        if (skin != null) {
+            this.gltf.skins[skin].entity = entity;
         }
         return entity;
     }

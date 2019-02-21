@@ -30,14 +30,17 @@ scale = 0.003;
 yoffset = 3;
 // threshold = 0.9;
 gltf = assetRoot + 'gltfsamples/kgirls01/scene.gltf';
+gltf = assetRoot + 'res/CesiumMan.glb';
+// gltf = assetRoot + 'res/BrainStem.glb';
+// gltf = assetRoot + 'res/project_polly.glb';
 // gltf = assetRoot + 'gltfsamples/Suzanne/Suzanne.gltf';
-// scale = 1;
-// yoffset = -10;
+scale = 1;
+yoffset = 0.1;
 
 async function main() {
 
     let screen = new Screen('#screen');
-    screen.bgColor = [0.2,0.2,0.2,1];
+    // screen.bgColor = [0.2,0.2,0.2,1];
     // Filters
     // Bloom.initFilters(screen, threshold || 0.6, radiu || 80, intensity || 1.2);
     // screen.attachFilter(new Vignetting(screen));
