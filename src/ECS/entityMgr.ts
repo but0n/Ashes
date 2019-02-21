@@ -1,5 +1,3 @@
-import { Transform } from "../transform";
-
 export interface Entity extends HTMLElement {
     components: any;
 }
@@ -38,6 +36,9 @@ export class EntityMgr {
             if(this.cloneMethods[comp]) {
                 this.addComponent(temp, this.cloneMethods[comp](entity.components[comp]));
             }
+        }
+        for(let i = 0; i < entity.childElementCount; i++) {
+            temp.appendChild(this.clone(entity.children[i] as Entity));
         }
         return temp;
     }
