@@ -7,7 +7,7 @@
 <body>
     <canvas id="screen"></canvas>
 </body>
-    <!-- <script src="https://cdn.jsdelivr.net/npm/ashes3d@0.0.43/build/ashes.main.js"></script> -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/ashes3d@0.0.44/build/ashes.main.js"></script> -->
     <script src="build/ashes.main.js"></script>
     <script>
 let { Asset, EntityMgr, Camera, vec3, Screen, OrbitControl, Filter, Shader, Material } = Ashes;
@@ -40,7 +40,7 @@ yoffset = 0.1;
 async function main() {
 
     let screen = new Screen('#screen');
-    // screen.bgColor = [0.2,0.2,0.2,1];
+    screen.bgColor = [0.2,0.2,0.2,1];
     // Filters
     // Bloom.initFilters(screen, threshold || 0.6, radiu || 80, intensity || 1.2);
     // screen.attachFilter(new Vignetting(screen));
@@ -77,6 +77,9 @@ async function main() {
     let root = gltfroot.components.Transform;
     root.translate[1] = yoffset || 0;
     vec3.scale(root.scale, root.scale, scale || 200)
+
+    // scene.appendChild(await Asset.loadGLTF(assetRoot + 'res/BrainStem.glb', screen, skybox));
+
 
 
 }
