@@ -1,14 +1,24 @@
 export { Screen } from "./webgl2/screen";
 export { Asset } from "./asset";
-export { Material } from "./material";
+// ECS
 export { EntityMgr } from "./ECS/entityMgr";
 export { System } from "./ECS/system";
-export { Camera } from "./camera";
-export { MeshRenderer, MeshRendererSystem } from "./meshRenderer";
+// Math
 export { vec3, vec4, mat4, quat } from "./math";
-export { OrbitControl } from "./component/orbitControl";
-export { QuadMesh } from "./mesh/quadMesh";
+
 export { Texture } from "./texture";
+export { QuadMesh } from "./mesh/quadMesh";
+export { Filter } from "./filter";
+export { Shader, Uniform } from "./shader";
 export { Bloom } from "./filter/bloom";
 export { Vignetting } from "./filter/vignetting";
+
+// Components
+export { OrbitControl } from "./component/orbitControl";
+export { Camera } from "./camera";
+export { Material } from "./material";
+export { MeshRenderer } from "./meshRenderer";
+export { Animation, AnimationChannel } from "./animation";
+export { Skin } from "./skin";
+
 // export { Example } from "./example";

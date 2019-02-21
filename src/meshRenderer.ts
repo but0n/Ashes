@@ -32,7 +32,7 @@ export class MeshRenderer {
 }
 EntityMgr.cloneMethods['MeshRenderer'] = MeshRenderer.clone;
 
-export class MeshRendererSystem extends ComponentSystem {
+class MeshRendererSystem extends ComponentSystem {
     group = [];
     depends = [
         MeshRenderer.name
