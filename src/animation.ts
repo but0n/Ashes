@@ -37,7 +37,7 @@ export class AnimationChannel {
         this.keyframe = Accessor.getFloat32Blocks(keyframe);
 
         if(this.timeline.length != 1) {
-            this.currentTime = this.startTime = this.timeline[0];
+            this.startTime = this.timeline[0];
         } else {
             this.currentTime = this.endTime;
         }
