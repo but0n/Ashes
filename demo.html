@@ -10,7 +10,7 @@
     <!-- <script src="https://cdn.jsdelivr.net/npm/ashes3d@0.0.44/build/ashes.main.js"></script> -->
     <script src="build/ashes.main.js"></script>
     <script>
-let { Asset, EntityMgr, Camera, vec3, Screen, OrbitControl, Filter, Shader, Material } = Ashes;
+let { Asset, EntityMgr, Camera, vec3, quat, Screen, OrbitControl, Filter, Shader, Material, QuadMesh, MeshRenderer, Texture } = Ashes;
 
 
 
@@ -26,16 +26,15 @@ let gltf = assetRoot + 'gltfsamples/BoomBox.glb';
 
 // kgirls01: Skin, Animation:
 // ----------------------------
-scale = 0.003;
-yoffset = 3;
+// scale = 0.003;
+// yoffset = 3;
 // threshold = 0.9;
-gltf = assetRoot + 'gltfsamples/kgirls01/scene.gltf';
-gltf = assetRoot + 'res/CesiumMan.glb';
+// gltf = assetRoot + 'gltfsamples/kgirls01/scene.gltf';
+// gltf = assetRoot + 'res/CesiumMan.glb';
 // gltf = assetRoot + 'res/BrainStem.glb';
 // gltf = assetRoot + 'res/project_polly.glb';
 // gltf = assetRoot + 'gltfsamples/Suzanne/Suzanne.gltf';
 scale = 1;
-yoffset = 0.1;
 
 async function main() {
 
@@ -62,23 +61,42 @@ async function main() {
     let scene = EntityMgr.create('root - (Click each bar which has yellow border to toggle visible)');
 
     // Camera and controls
-    let mainCamera = EntityMgr.create('camera');
+    let mainCamera = scene.appendChild(EntityMgr.create('camera'));
     let cameraTrans = mainCamera.components.Transform;
     let cam = EntityMgr.addComponent(mainCamera, new Camera(screen.width / screen.height));
     vec3.set(cameraTrans.translate, 0, 10, 10);
 
-    scene.appendChild(mainCamera);
     EntityMgr.addComponent(mainCamera, new OrbitControl(screen, mainCamera));
 
     document.querySelector('body').appendChild(scene);
 
-    let gltfroot = await Asset.loadGLTF(gltf, screen, skybox);
-    scene.appendChild(gltfroot);
+    let gltfroot = scene.appendChild(await Asset.loadGLTF(gltf, screen, skybox));
     let root = gltfroot.components.Transform;
     root.translate[1] = yoffset || 0;
     vec3.scale(root.scale, root.scale, scale || 200)
 
     // scene.appendChild(await Asset.loadGLTF(assetRoot + 'res/BrainStem.glb', screen, skybox));
+
+    // The original size of quad is 2x2
+    let quad = scene.appendChild(EntityMgr.create('quad'));
+
+    let quadMat = await Asset.LoadMaterial('stylize');
+    // let floor = await Asset.loadTexture('res/textures/floor.png', { minFilter: screen.gl.NEAREST_MIPMAP_NEAREST });
+    // floor.flipY = true;
+    let floor = new Texture();
+    window['floor'] = floor;
+    // floor.data = new Uint8Array(4 * 256 * 256);
+    // for (let i = 0; i < 256 * 256; i++) {
+    //     floor.data.set([Math.random() * 256, Math.random() * 256, Math.random() * 256, 256], i * 4);
+    // }
+    floor.data = Texture.defaultData;
+    Material.setTexture(quadMat, 'emissiveTexture', floor);
+    quadMat.shader.macros['HAS_EMISSIVE_MAP'] = '';
+
+    let quadMR = new MeshRenderer(screen, new QuadMesh(), quadMat);
+    EntityMgr.addComponent(quad, quadMR);
+    quat.fromEuler(quad.components.Transform.quaternion, -90, 0, 0);
+    vec3.scale(quad.components.Transform.scale, quad.components.Transform.scale, 9);
 
 
 

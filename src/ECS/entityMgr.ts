@@ -57,6 +57,7 @@ export class EntityMgr {
     }
 
     static addComponent(entity: Entity, component: any) {
+        this.hasNewMember = true;
         let componentName = component.constructor.name;
         entity.components[componentName] = component;
         entity.setAttribute(componentName, '');

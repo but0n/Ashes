@@ -1,4 +1,12 @@
 export class Texture {
+
+    static defaultData = new Uint8Array([
+        1, 1, 1, 1,
+        1, 0.5, 0.4, 1,
+        0.4, 0.5, 1, 1,
+        1, 1, 1, 1,
+    ].map(v=>v*255))
+
     image: HTMLImageElement;
     sampler: Sampler;
     channel: number = null;
@@ -17,7 +25,7 @@ export class Texture {
 
     flipY = false;
 
-    constructor(rawImage, sampler = undefined, width = 256, height = 256, border = 0) {
+    constructor(rawImage, sampler = undefined, width = 2, height = 2, border = 0) {
         this.sampler = new Sampler(sampler);
         this.image = rawImage;
 
@@ -64,6 +72,7 @@ export class Texture {
             if(tex.image) {
                 gl.texImage2D(tex.glType, tex.level, tex.internalformat, tex.format, tex.type, tex.image);
             } else { // Data texture
+                gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
                 gl.texImage2D(tex.glType, tex.level, tex.internalformat, tex.width, tex.height, tex.border, tex.format, tex.type, tex.data);
             }
         }
@@ -105,7 +114,8 @@ export class Texture {
         if(tex.channel != null) {
             gl.activeTexture(this.texChannels[tex.channel]);
         }
-        if(tex.sampler.texture == null) {
+        if(tex.sampler.texture == null || (tex.isDirty && (tex.data || tex.image))) {
+            // Ignore texture belongs to framebuffer after created once
             this.createTexture(gl, tex);
         }
         gl.bindTexture(tex.glType, tex.sampler.texture);
