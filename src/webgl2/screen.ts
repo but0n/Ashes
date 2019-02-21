@@ -15,7 +15,7 @@ export class Screen {
     public capture: Filter;
     public output: Filter = null;
     public ratio: number;
-    public bgColor = [0, 0, 0, 1];
+    public bgColor = [1, 1, 1, 1];
     constructor(selector) {
         // Detect device
         if(navigator.userAgent.indexOf('iPhone') != -1 || navigator.userAgent.indexOf('iPad') != -1) {
