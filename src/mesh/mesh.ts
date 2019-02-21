@@ -71,12 +71,11 @@ export class Accessor {
     static newFloat32Array(acc: Accessor) {
         return new Float32Array(acc.bufferView.rawBuffer, acc.byteOffset + acc.bufferView.byteOffset, acc.size * acc.count);
     }
-    static getFloat32Blocks(acc: Accessor) {
+    static getFloat32Blocks(acc: Accessor, data = Accessor.newFloat32Array(acc)) {
         let blocks = [];
-        let data = Accessor.newFloat32Array(acc);
         for (let i = 0; i < acc.count; i++) {
             let offset = i * acc.size;
-            blocks.push(data.slice(offset, offset + acc.size));
+            blocks.push(data.subarray(offset, offset + acc.size));
         }
         return blocks;
     }

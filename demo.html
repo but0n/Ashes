@@ -7,10 +7,12 @@
 <body>
     <canvas id="screen"></canvas>
 </body>
-<script src="https://cdn.jsdelivr.net/npm/ashes3d@0.0.43/build/ashes.main.js"></script>
-    <!-- <script src="build/ashes.main.js"></script> -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/ashes3d@0.0.43/build/ashes.main.js"></script> -->
+    <script src="build/ashes.main.js"></script>
     <script>
-let {Asset, EntityMgr, Camera, vec3, Screen, OrbitControl, Filter, Shader, Material} = Ashes;
+let { Asset, EntityMgr, Camera, vec3, Screen, OrbitControl, Filter, Shader, Material } = Ashes;
+
+
 
 
 // let assetRoot = 'https://but0n.github.io/Ashes/'
@@ -24,21 +26,33 @@ let gltf = assetRoot + 'gltfsamples/BoomBox.glb';
 
 // kgirls01: Skin, Animation:
 // ----------------------------
-// scale = 0.03;
-// yoffset = 3;
+scale = 0.003;
+yoffset = 3;
 // threshold = 0.9;
-// gltf = assetRoot + 'gltfsamples/kgirls01/scene.gltf';
+gltf = assetRoot + 'gltfsamples/kgirls01/scene.gltf';
 // gltf = assetRoot + 'gltfsamples/Suzanne/Suzanne.gltf';
 // scale = 1;
 // yoffset = -10;
 
-async function run() {
+async function main() {
 
     let screen = new Screen('#screen');
     screen.bgColor = [0.2,0.2,0.2,1];
     // Filters
     // Bloom.initFilters(screen, threshold || 0.6, radiu || 80, intensity || 1.2);
     // screen.attachFilter(new Vignetting(screen));
+
+    let loading = new loadingAnim(screen);
+    loading.cb = () => {
+        screen.deleteFilter(0);
+        console.log('delete');
+    }
+    screen.attachFilter(loading);
+    Asset.taskObserve = (finished, total) => {
+        let p = finished / total;
+        loading.cur = p;
+    }
+
 
     let skybox = await Asset.loadCubemap(assetRoot + 'res/envmap/GoldenGateBridge2/');
 
@@ -52,8 +66,6 @@ async function run() {
 
     scene.appendChild(mainCamera);
     EntityMgr.addComponent(mainCamera, new OrbitControl(screen, mainCamera));
-    // new OrbitControl(screen, mainCamera);
-
 
     document.querySelector('body').appendChild(scene);
 
@@ -64,39 +76,7 @@ async function run() {
     vec3.scale(root.scale, root.scale, scale || 200)
 
 
-    }
-
-run();
-
-// class demoLoad extends Filter {
-//     cur;
-//     stop;
-//     cb;
-//     constructor(screen) {
-//         let macro = {
-//         }
-//         let shader = new Shader(loading_vs, loading_fs, macro);
-//         super(screen, shader);
-//         this.cur = 0;
-//         this.stop = false;
-//         let cur = 0;
-//         Material.setUniform(this.material, 'cur', this.cur);
-//         let loop = () => {
-//             cur += (this.cur - cur) * 0.05;
-//             Material.setUniform(this.material, 'cur', cur);
-//             Material.setUniform(this.material, 'powcur', Math.pow(cur, 8));
-//             if(cur < 0.999) {
-//                 requestAnimationFrame(loop);
-//             } else {
-//                 Material.setUniform(this.material, 'cur', 1);
-//                 Material.setUniform(this.material, 'powcur', 1);
-//                 if(this.cb) this.cb();
-//             }
-//         }
-//         loop();
-//     }
-// }
-
+}
 
 let loading_vs = `
 attribute vec3 POSITION;
@@ -136,5 +116,41 @@ void main() {
     }
 }
 `;
+
+class loadingAnim extends Filter {
+    cur;
+    stop;
+    cb;
+    constructor(screen) {
+        let macro = {
+        }
+        let shader = new Shader(loading_vs, loading_fs, macro);
+        super(screen, shader);
+        this.cur = 0;
+        this.stop = false;
+        let cur = 0;
+        Material.setUniform(this.material, 'cur', this.cur);
+        let loop = () => {
+            cur += (this.cur - cur) * 0.05;
+            Material.setUniform(this.material, 'cur', cur);
+            Material.setUniform(this.material, 'powcur', Math.pow(cur, 8));
+            if (cur < 0.999) {
+                requestAnimationFrame(loop);
+            } else {
+                Material.setUniform(this.material, 'cur', 1);
+                Material.setUniform(this.material, 'powcur', 1);
+                if (this.cb) this.cb();
+            }
+        }
+        loop();
+    }
+}
+
+
+
+main();
+
+
+
     </script>
 </html>

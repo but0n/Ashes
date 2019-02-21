@@ -1,5 +1,5 @@
 import { EntityMgr, Entity } from "./ECS/entityMgr";
-import { Accessor, bufferView, Mesh } from "./mesh/mesh";
+import { Accessor, Mesh } from "./mesh/mesh";
 import { Texture } from "./texture";
 import { Material } from "./material";
 import { vec3, vec4, mat4 } from "./math";
@@ -87,10 +87,8 @@ export class gltfScene {
 
                 let acc: Accessor = gltf.accessors[skin.inverseBindMatrices];
                 skinComp.ibm = Accessor.getFloat32Blocks(acc);
-                for (let i = 0; i < acc.count; i++) {
-                    skinComp.jointMat.push(mat4.create());
-                }
                 skinComp.outputMat = new Float32Array(acc.count * acc.size);
+                skinComp.jointMat = Accessor.getFloat32Blocks(acc, skinComp.outputMat);
                 EntityMgr.addComponent(this.entities[skin.skeleton || 0], skinComp);
                 return skinComp;
             });

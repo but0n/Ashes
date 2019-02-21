@@ -7,6 +7,7 @@ import { Material } from "./material";
 
 export class Skin {
     inverseBindMatrices: Accessor;
+    // Inverse Bind pose Matrices
     ibm: Float32Array[] = [];
     jointMat: Float32Array[] = [];
     joints: Transform[];
@@ -27,7 +28,6 @@ class SkinSystem extends ComponentSystem {
             for(let [i, joint] of skin.joints.entries()) {
                 mat4.mul(skin.jointMat[i], joint.worldMatrix, skin.ibm[i]);
                 mat4.mul(skin.jointMat[i], trans.worldInverseMatrix, skin.jointMat[i]);
-                skin.outputMat.set(skin.jointMat[i], i * 16);
             }
             // update matrices
             for(let mat of skin.materials) {
