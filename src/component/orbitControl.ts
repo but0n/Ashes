@@ -92,6 +92,24 @@ export class OrbitControl {
         // OrbitControlSystem.updatePosition(this);
     }
 
+    orientationHandler = (e) => {
+        // if (this.ctr_initial_m) {
+        //     const delX = e.gamma - this.ctr.x;
+        //     const delY = e.beta - this.ctr.y;
+        //     vx -= delX * 0.09;
+        //     vy -= delY * 0.09;
+        // } else {
+        //     this.ctr_initial_m = true;
+        // }
+        // this.ctr.x = e.gamma;
+        // this.ctr.y = e.beta;
+        let deltaX = e.gamma * this.speed;
+        let deltaY = -e.beta * this.speed;
+        this.vpitch += deltaY;
+        this.vyaw += deltaX;
+
+    }
+
 
     static bindEvents(screen: HTMLElement, controler: OrbitControl) {
         screen.oncontextmenu = () => false;
@@ -112,6 +130,12 @@ export class OrbitControl {
             })
         })
         screen.addEventListener('wheel', controler.scrollHandler);
+
+        try {
+            window.addEventListener("deviceorientation", controler.orientationHandler, false);
+        } catch (e) {
+            console.log(e);
+        }
 
     }
 }
