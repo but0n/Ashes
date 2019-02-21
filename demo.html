@@ -7,6 +7,134 @@
 <body>
     <canvas id="screen"></canvas>
 </body>
-<!-- <script src="https://cdn.jsdelivr.net/npm/ashes3d@0.0.42/build/ashes.main.js"></script> -->
-    <script src="build/ashes.main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ashes3d@0.0.43/build/ashes.main.js"></script>
+    <!-- <script src="build/ashes.main.js"></script> -->
+    <script>
+let {Asset, EntityMgr, Camera, vec3, Screen, OrbitControl, Filter, Shader, Material} = Ashes;
+
+
+// let assetRoot = 'https://but0n.github.io/Ashes/'
+let assetRoot = ''
+Material.SHADER_PATH = assetRoot + Material.SHADER_PATH;
+
+let [,cuspath,scale, yoffset, threshold, radiu, intensity] = [,,,,];
+
+// BoomBox
+let gltf = assetRoot + 'gltfsamples/BoomBox.glb';
+
+// kgirls01: Skin, Animation:
+// ----------------------------
+// scale = 0.03;
+// yoffset = 3;
+// threshold = 0.9;
+// gltf = assetRoot + 'gltfsamples/kgirls01/scene.gltf';
+// gltf = assetRoot + 'gltfsamples/Suzanne/Suzanne.gltf';
+// scale = 1;
+// yoffset = -10;
+
+async function run() {
+
+    let screen = new Screen('#screen');
+    screen.bgColor = [0.2,0.2,0.2,1];
+    // Filters
+    // Bloom.initFilters(screen, threshold || 0.6, radiu || 80, intensity || 1.2);
+    // screen.attachFilter(new Vignetting(screen));
+
+    let skybox = await Asset.loadCubemap(assetRoot + 'res/envmap/GoldenGateBridge2/');
+
+    let scene = EntityMgr.create('root - (Click each bar which has yellow border to toggle visible)');
+
+    // Camera and controls
+    let mainCamera = EntityMgr.create('camera');
+    let cameraTrans = mainCamera.components.Transform;
+    let cam = EntityMgr.addComponent(mainCamera, new Camera(screen.width / screen.height));
+    vec3.set(cameraTrans.translate, 0, 10, 10);
+
+    scene.appendChild(mainCamera);
+    EntityMgr.addComponent(mainCamera, new OrbitControl(screen, mainCamera));
+    // new OrbitControl(screen, mainCamera);
+
+
+    document.querySelector('body').appendChild(scene);
+
+    let gltfroot = await Asset.loadGLTF(gltf, screen, skybox);
+    scene.appendChild(gltfroot);
+    let root = gltfroot.components.Transform;
+    root.translate[1] = yoffset || 0;
+    vec3.scale(root.scale, root.scale, scale || 200)
+
+
+    }
+
+run();
+
+// class demoLoad extends Filter {
+//     cur;
+//     stop;
+//     cb;
+//     constructor(screen) {
+//         let macro = {
+//         }
+//         let shader = new Shader(loading_vs, loading_fs, macro);
+//         super(screen, shader);
+//         this.cur = 0;
+//         this.stop = false;
+//         let cur = 0;
+//         Material.setUniform(this.material, 'cur', this.cur);
+//         let loop = () => {
+//             cur += (this.cur - cur) * 0.05;
+//             Material.setUniform(this.material, 'cur', cur);
+//             Material.setUniform(this.material, 'powcur', Math.pow(cur, 8));
+//             if(cur < 0.999) {
+//                 requestAnimationFrame(loop);
+//             } else {
+//                 Material.setUniform(this.material, 'cur', 1);
+//                 Material.setUniform(this.material, 'powcur', 1);
+//                 if(this.cb) this.cb();
+//             }
+//         }
+//         loop();
+//     }
+// }
+
+
+let loading_vs = `
+attribute vec3 POSITION;
+attribute vec2 TEXCOORD_0;
+
+varying vec2 uv;
+varying vec4 pos;
+
+void main() {
+  uv = TEXCOORD_0;
+  vec4 position = vec4(POSITION, 1);
+  pos = position;
+  gl_Position = position;
+}
+`;
+
+let loading_fs = `
+precision mediump float;
+uniform sampler2D base;
+uniform float cur;
+uniform float powcur;
+
+varying vec2 uv;
+varying vec4 pos;
+
+void main() {
+    vec4 base = texture2D(base, uv);
+    float prog = abs(uv.y - 0.5) * 2.;
+
+    // Middle out
+
+
+    if(cur < prog) {
+        gl_FragColor = vec4(1);
+    } else {
+        gl_FragColor = vec4(base.rgb * powcur, base.a);
+    }
+}
+`;
+    </script>
 </html>
