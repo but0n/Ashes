@@ -1,3 +1,4 @@
+import { vec2, vec3, mat4, vec4, quat } from "../math";
 export class Mesh {
     attributes: Accessor[]; // AKA Vertexes
     indices: Accessor;      // AKA Triangles
@@ -45,9 +46,65 @@ export class Mesh {
                 continue;
             let data = Accessor.newFloat32Array(acc);
             let chunks = Accessor.getSubChunks(acc, data);
+            atts['_'+acc.attribute] = data;
             atts[acc.attribute] = chunks;
+            if(acc.attribute == 'POSITION') {
+                atts['_TANGENT'] = new Float32Array(data.length);
+                atts['TANGENT'] = Accessor.getSubChunks(acc, atts['_TANGENT']);
+            }
         }
         atts['i'] = Accessor.newUint16Array(indices);
+        let pos: Float32Array[] = atts['POSITION'];
+        let uv = atts['TEXCOORD_0'];
+        let ind = atts['i'];
+        let tangent = atts['TANGENT'];
+        // Temp
+        let edge1 = vec3.create();
+        let edge2 = vec3.create();
+        let duv1 = vec2.create();
+        let duv2 = vec2.create();
+        for(let i = 0, l = ind.length; i < l; i+=3) {
+            let i0 = ind[i];
+            let i1 = ind[i+1];
+            let i2 = ind[i+2];
+            let p1 = pos[i0];
+            let p2 = pos[i1];
+            let p3 = pos[i2];
+            let uv1 = uv[i0];
+            let uv2 = uv[i1];
+            let uv3 = uv[i2];
+
+            vec3.sub(edge1, p2, p1);
+            vec3.sub(edge2, p3, p1);
+            vec3.sub(duv1, uv2, uv1);
+            vec3.sub(duv2, uv3, uv1);
+
+            let tan = tangent[i0];
+
+            let f = 1.0 / (duv1[0] * duv2[1] - duv2[0] * duv1[1]);
+
+            tan[0] = f * (duv2[1] * edge1[0] - duv1[1] * edge2[0]);
+            tan[1] = f * (duv2[1] * edge1[1] - duv1[1] * edge2[1]);
+            tan[2] = f * (duv2[1] * edge1[2] - duv1[1] * edge2[2]);
+
+            vec3.normalize(tan, tan);
+            vec3.copy(tangent[i1], tan);
+            vec3.copy(tangent[i2], tan);
+        }
+
+        let tangentBuffer = new bufferView();
+        tangentBuffer.dataView = atts['_TANGENT'];
+        mesh.attributes.push(new Accessor(
+            {
+                bufferView: tangentBuffer,
+                byteOffset: 0,
+                componentType: 5126,
+                count: tangent.length,
+                type: 'VEC3',
+            },
+            'TANGENT'
+        ))
+
         return atts;
     }
 
@@ -114,12 +171,13 @@ export class bufferView {
     byteStride: number;
     target: number;
     buffer: WebGLBuffer = null;
-    constructor(rawData: ArrayBuffer, {byteOffset = 0, byteLength, byteStride = 0, target = 34962}) {
+    constructor(rawData?: ArrayBuffer, {byteOffset = 0, byteLength = 0, byteStride = 0, target = 34962} = {}) {
         this.rawBuffer = rawData;
         this.byteOffset = byteOffset;
         this.byteLength = byteLength;
         this.byteStride = byteStride;
-        this.dataView = new DataView(rawData, this.byteOffset, this.byteLength);
+        if(rawData)
+            this.dataView = new DataView(rawData, this.byteOffset, this.byteLength);
         this.target = target;
     }
     static updateBuffer(bView: bufferView, gl: WebGL2RenderingContext, usage = WebGL2RenderingContext.STATIC_DRAW) {

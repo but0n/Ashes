@@ -59,7 +59,14 @@ export class gltfScene {
                 // Ensure current buffer type is exist, considering the target value is not required at glTF
                 ebo.bufferView.target = WebGL2RenderingContext.ELEMENT_ARRAY_BUFFER;
 
+
+
                 let mf = new Mesh(accessors, ebo, meshData.mode);
+
+                if (attributes['TANGENT'] == null) {
+                    Mesh.preComputeTangent(mf);
+                }
+
                 let mat = gltf.materials[meshData.material || 0];
                 return [mf, mat];
             })
