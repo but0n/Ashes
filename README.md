@@ -30,40 +30,87 @@ yarn
 yarn dev
 ```
 
-## Example
+## [Example](https://codepen.io/but0n/pen/daERdd)
 
 ```js
-async function example() {
 
-    // Get canvas
-    let screen = new Ashes.Screen('#screen');
+let { Asset, EntityMgr, Camera, vec3, quat, Screen, OrbitControl, MeshRenderer, Filter, Shader, Material, QuadMesh } = Ashes;
 
-    gltfpath = 'gltfsamples/police_drone/scene.gltf';
-    skymap = 'res/envmap/GoldenGateBridge2/';
-
-    let scene = Ashes.EntityMgr.create('root');
-
-    // Load gltf scene and append to the root
-    let gltfroot = await Ashes.Asset.loadGLTF(gltfpath, screen, skymap);
-    scene.appendChild(gltfroot);
+let CDN = 'https://but0n.github.io/Ashes/'
+Material.SHADER_PATH = CDN + Material.SHADER_PATH;
 
 
-    // Create camera
-    let mainCamera = Ashes.EntityMgr.create('camera');
-    Ashes.EntityMgr.addComponent(mainCamera, new Ashes.Camera(screen.width / screen.height));
+// DamagedHelmet
+let gltf = CDN + 'gltfsamples/DamagedHelmet.glb';
 
-    // Set camera position
+
+async function main() {
+
+    let screen = new Screen('#screen');
+
+    screen.bgColor = [0.2,0.2,0.2,1];
+
+
+    let skybox = await Asset.loadCubemap(CDN + 'res/envmap/GoldenGateBridge2/');
+
+    let scene = EntityMgr.create('root - (Click each bar which has yellow border to toggle visible)');
+
+    // Camera
+    let mainCamera = EntityMgr.create('camera');
+    let cam = EntityMgr.addComponent(mainCamera, new Camera(screen.width / screen.height));
+
+    // Set default position
     let cameraTrans = mainCamera.components.Transform;
-    Ashes.vec3.set(cameraTrans.translate, 0, 0, 10);
+    vec3.set(cameraTrans.translate, 0, 10, 10);
+
+    // Add it to scene
     scene.appendChild(mainCamera);
 
-    // Orbit control
-    new Ashes.OrbitControl(screen, mainCamera);
+    // Attach controler
+    EntityMgr.addComponent(mainCamera, new OrbitControl(screen, mainCamera));
 
     document.querySelector('body').appendChild(scene);
 
+    // Load a gltf model
+    let gltfroot = await Asset.loadGLTF(gltf, screen, skybox);
+    scene.appendChild(gltfroot);
+
 }
 
-example();
+main();
+
+```
+
+### Create a quad with texture
+
+```js
+    // Create an entity
+    let quad = scene.appendChild(EntityMgr.create('quad'));
+
+    // Load a material
+    let quadMat = await Asset.LoadMaterial('stylize'); // PBR material
+
+    // Load a texture
+    let floor = await Asset.loadTexture(CDN + 'res/textures/floor.png', { minFilter: screen.gl.NEAREST_MIPMAP_NEAREST });
+    floor.flipY = true;
+
+    // Attach texture to material we created
+    Material.setTexture(quadMat, 'baseColorTexture', floor);
+    quadMat.shader.macros['HAS_BASECOLOR_MAP'] = '';
+
+    // Create a renderer component
+    let quadMR = new MeshRenderer(screen, new QuadMesh(), quadMat);
+
+    // Attach renderer to entity
+    EntityMgr.addComponent(quad, quadMR);
+
+    // Set local translate [x, y, z]
+    quad.components.Transform.translate[1] = -1;
+
+    // Set euler angle x, y, z
+    quat.fromEuler(quad.components.Transform.quaternion, -90, 0, 0);
+
+    // The original size of quad is 2x2
+    vec3.scale(quad.components.Transform.scale, quad.components.Transform.scale, 9);
 
 ```
