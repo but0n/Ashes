@@ -44,7 +44,7 @@ export class gltfScene {
         // Create mesh
         gltf.meshes = gltf.meshes.map(mesh => {
             return mesh.primitives.map(meshData => {
-                let {attributes} = meshData;
+                let {attributes, targets} = meshData;
 
                 // Pick up attributes
                 let accessors: Accessor[] = [];
@@ -52,6 +52,17 @@ export class gltfScene {
                     let acc: Accessor = gltf.accessors[attributes[attr]];
                     acc.attribute = attr; // Set attribute name
                     accessors.push(acc);
+                }
+
+                if(targets) {
+                    for (let target of targets) {
+                        for (let tar in target) {
+                            let acc: Accessor = gltf.accessors[target[tar]];
+                            acc.attribute = '_' + tar;
+                            accessors.push(acc);
+                        }
+                        break;
+                    }
                 }
 
                 // Triangles
@@ -63,7 +74,7 @@ export class gltfScene {
 
                 let mf = new Mesh(accessors, ebo, meshData.mode);
 
-                if (attributes['TANGENT'] == null) {
+                if (attributes['TANGENT'] == null && attributes['TEXCOORD_0'] != null) {
                     Mesh.preComputeTangent(mf);
                 }
 
@@ -98,8 +109,8 @@ export class gltfScene {
                 skinComp.jointMat = Accessor.getSubChunks(acc, skinComp.outputMat);
                 // https://github.com/KhronosGroup/glTF/issues/1270
                 // https://github.com/KhronosGroup/glTF/pull/1195
-                // EntityMgr.addComponent(this.entities[skin.skeleton || 0], skinComp);
-                EntityMgr.addComponent(skin.entity || this.entities[skin.skeleton || 0], skinComp);
+                if(skin.entity)
+                    EntityMgr.addComponent(skin.entity, skinComp);
                 return skinComp;
             });
         }

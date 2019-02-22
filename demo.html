@@ -33,13 +33,16 @@ let gltf = assetRoot + 'gltfsamples/BoomBox.glb';
 // gltf = assetRoot + 'res/CesiumMan.glb';
 // gltf = assetRoot + 'res/BrainStem.glb';
 gltf = assetRoot + 'gltfsamples/DamagedHelmet.glb';
+gltf = assetRoot + 'res/MorphPrimitivesTest.glb';
+gltf = assetRoot + 'res/project_polly.glb';
 // gltf = assetRoot + 'gltfsamples/Suzanne/Suzanne.gltf';
 scale = 1;
 
 async function main() {
 
     let screen = new Screen('#screen');
-    screen.bgColor = [0.2,0.2,0.2,1];
+    screen.bgColor = [0.2,0.2,0.2, 1];
+    screen.bgColor = [0.9,0.9,0.9,1];
     // Filters
     // Bloom.initFilters(screen, threshold || 0.6, radiu || 80, intensity || 1.2);
     // screen.attachFilter(new Vignetting(screen));

@@ -105,7 +105,7 @@ export class Mesh {
             'TANGENT'
         ))
 
-        return atts;
+        // return atts;
     }
 
 }
