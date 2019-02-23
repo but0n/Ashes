@@ -29,9 +29,9 @@ export class gltfScene {
                 mat.shader.macros['HAS_ENV_MAP'] = '';
                 Material.setTexture(mat, 'env', Texture.clone(gltf.envmap));
             }
-            if(gltf.skins) {
-                mat.shader.macros['HAS_SKINS'] = '';
-            }
+            // if(gltf.skins) {
+            //     mat.shader.macros['HAS_SKINS'] = '';
+            // }
             return mat;
         });
 
@@ -54,16 +54,16 @@ export class gltfScene {
                     accessors.push(acc);
                 }
 
-                if(targets) {
-                    for (let target of targets) {
-                        for (let tar in target) {
-                            let acc: Accessor = gltf.accessors[target[tar]];
-                            acc.attribute = '_' + tar;
-                            accessors.push(acc);
-                        }
-                        break;
-                    }
-                }
+                // if(targets) {
+                //     for (let target of targets) {
+                //         for (let tar in target) {
+                //             let acc: Accessor = gltf.accessors[target[tar]];
+                //             acc.attribute = '_' + tar;
+                //             accessors.push(acc);
+                //         }
+                //         break;
+                //     }
+                // }
 
                 // Triangles
                 let ebo = gltf.accessors[meshData.indices];
@@ -74,11 +74,18 @@ export class gltfScene {
 
                 let mf = new Mesh(accessors, ebo, meshData.mode);
 
-                if (attributes['TANGENT'] == null && attributes['TEXCOORD_0'] != null) {
+                if (attributes.TANGENT == null && attributes.TEXCOORD_0 != null) {
+                    console.warn('Using computed tagent!');
                     Mesh.preComputeTangent(mf);
                 }
 
                 let mat = gltf.materials[meshData.material || 0];
+
+                if (attributes.JOINTS_0 != null) {
+                    mat.shader.macros['HAS_SKINS'] = '';
+                }
+
+
                 return [mf, mat];
             })
         });
@@ -94,12 +101,16 @@ export class gltfScene {
 
 
         if (skins) {
+            skins = [skins[0]];
             skins = skins.map(skin => {
                 skin.joints = skin.joints.map(jointIndex => this.entities[jointIndex].components.Transform);
                 let skinComp = new Skin();
-                skinComp.materials = gltf.materials;
+                // Set up releated materials
+                if(!skin.materials)
+                    return null;
+                skinComp.materials = skin.materials;
                 skinComp.joints = skin.joints;
-                for (let mat of skinComp.materials) {
+                for (let mat of skin.materials) {
                     mat.shader.macros['JOINT_AMOUNT'] = Math.min(skin.joints.length, 200);
                 }
 
@@ -247,27 +258,21 @@ export class gltfScene {
             }
         }
         TransformSystem.updateMatrix(trans);
+        let materialCollection = [];
         if (mesh != null) {
+            let renderTarget = entity;
             let meshChunk = this.gltf.meshes[mesh];
-            if (meshChunk.length > 1) {
-                // Contains multiple mesh data
-                // append as a group
-                for (let meshData of meshChunk) {
-                    let subMesh = EntityMgr.create(name);
-                    let [mf, mat] = meshData;
-                    EntityMgr.addComponent(subMesh, mf);
-                    EntityMgr.addComponent(subMesh, mat);
-                    entity.appendChild(subMesh);
-                }
-            } else {
-                // attach mesh directly
-                let [mf, mat] = meshChunk[0];
-                EntityMgr.addComponent(entity, mf);
-                EntityMgr.addComponent(entity, mat);
+            for(let meshData of meshChunk) {
+                let [mf, mat] = meshData;
+                renderTarget = entity.appendChild(EntityMgr.create(name));
+                EntityMgr.addComponent(renderTarget, mf);
+                EntityMgr.addComponent(renderTarget, mat);
+                materialCollection.push(mat);
             }
         }
         if (skin != null) {
             this.gltf.skins[skin].entity = entity;
+            this.gltf.skins[skin].materials = materialCollection;
         }
         return entity;
     }

@@ -63,3 +63,9 @@ ash-entity {
 ash-entity[meshrenderer] {
 	border-color: rgb(255, 171, 14, 0.5) !important;
 }
+ash-entity[animatons] {
+	border-color: rgba(14, 255, 54, 0.5) !important;
+}
+ash-entity[skin] {
+	border-color: rgba(14, 126, 255, 0.5) !important;
+}

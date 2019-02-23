@@ -1,5 +1,4 @@
 attribute vec3 POSITION;
-attribute vec3 _POSITION;
 attribute vec3 NORMAL;
 attribute vec2 TEXCOORD_0;
 attribute vec2 TEXCOORD_1;
@@ -7,6 +6,9 @@ attribute vec4 TANGENT;
 attribute vec3 COLOR_0;
 
 #ifdef HAS_SKINS
+#ifndef JOINT_AMOUNT
+#define JOINT_AMOUNT 200
+#endif
 attribute vec4 JOINTS_0;
 attribute vec4 WEIGHTS_0;
 uniform mat4 jointMat[JOINT_AMOUNT];
@@ -29,7 +31,7 @@ void main() {
     uv = TEXCOORD_0;
     uv1 = TEXCOORD_1;
     vec3 skinedNormal = NORMAL;
-    vec4 position = vec4(POSITION + _POSITION, 1);
+    vec4 position = vec4(POSITION, 1);
 #ifdef HAS_SKINS
     mat4 skinMat =
         WEIGHTS_0.x * jointMat[int(JOINTS_0.x)] +
