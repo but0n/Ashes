@@ -141,6 +141,9 @@ class MeshRendererSystem extends ComponentSystem {
             let trans: Transform = target.entity.components.Transform;
             Material.setUniform(currentMat, 'M', trans.worldMatrix);
             Material.setUniform(currentMat, 'nM', trans.worldNormalMatrix);
+            if(trans.jointsMatrices) {
+                Material.setUniform(currentMat, 'jointMat[0]', trans.jointsMatrices);
+            }
         }
 
         // Update uniforms of material

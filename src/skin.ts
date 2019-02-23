@@ -42,9 +42,9 @@ class SkinSystem extends ComponentSystem {
             // }
 
             // update matrices
-            for(let mat of skin.materials) {
-                Material.setUniform(mat, 'jointMat[0]', skin.outputMat);
-            }
+            // for(let mat of skin.materials) {
+            //     Material.setUniform(mat, 'jointMat[0]', skin.outputMat);
+            // }
             // let materials: any = trans.entity.querySelectorAll('Material');
             // for(let mat of materials) {
             //     Material.setUniform(mat, 'jointMat[0]', skin.outputMat);

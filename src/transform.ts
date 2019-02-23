@@ -11,12 +11,13 @@ export class Transform {
     scale: Float32Array = vec3.fromValues(1, 1, 1);
     quaternion: Float32Array = vec4.fromValues(0, 0, 0, 1);
     // RTS
-    localMatrix: Float32Array = mat4.create();;
-    worldMatrix: Float32Array = mat4.create();;
-    worldInverseMatrix: Float32Array = mat4.create();;
-    worldNormalMatrix: Float32Array = mat4.create();;
+    localMatrix: Float32Array = mat4.create();
+    worldMatrix: Float32Array = mat4.create();
+    worldInverseMatrix: Float32Array = mat4.create();
+    worldNormalMatrix: Float32Array = mat4.create();
     isVisible: boolean = true;
     isDirty: boolean = false;
+    jointsMatrices: Float32Array;
     constructor() {
         // RTS
         mat4.identity(this.localMatrix);
@@ -82,7 +83,7 @@ export class TransformSystem extends ComponentSystem {
         mat4.fromRotationTranslationScale(trans.localMatrix, trans.quaternion, trans.translate, trans.scale);
         mat4.invert(trans.worldInverseMatrix, trans.worldMatrix);
         mat4.transpose(trans.worldNormalMatrix, trans.worldInverseMatrix);
-// Calculate world matrix
+        // Calculate world matrix
         let parent = trans.entity.parentElement as Entity;
         if(parent != null && parent.components) {
             let world: Transform = parent.components.Transform;

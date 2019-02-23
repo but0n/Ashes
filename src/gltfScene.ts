@@ -101,18 +101,15 @@ export class gltfScene {
 
 
         if (skins) {
-            skins = [skins[0]];
             skins = skins.map(skin => {
                 skin.joints = skin.joints.map(jointIndex => this.entities[jointIndex].components.Transform);
+                if(skin.entity == null) {
+                    return;
+                }
                 let skinComp = new Skin();
                 // Set up releated materials
-                if(!skin.materials)
-                    return null;
                 skinComp.materials = skin.materials;
                 skinComp.joints = skin.joints;
-                for (let mat of skin.materials) {
-                    mat.shader.macros['JOINT_AMOUNT'] = Math.min(skin.joints.length, 200);
-                }
 
                 let acc: Accessor = gltf.accessors[skin.inverseBindMatrices];
                 skinComp.ibm = Accessor.getFloat32Blocks(acc);
@@ -120,6 +117,18 @@ export class gltfScene {
                 skinComp.jointMat = Accessor.getSubChunks(acc, skinComp.outputMat);
                 // https://github.com/KhronosGroup/glTF/issues/1270
                 // https://github.com/KhronosGroup/glTF/pull/1195
+
+                // for (let mat of skin.materials) {
+                //     mat.shader.macros['JOINT_AMOUNT'] = Math.min(skin.joints.length, 200);
+                //     mat.shader.isDirty = true;
+                // }
+
+                for (let trans of skin.transforms as Transform[]) {
+                    trans.jointsMatrices = skinComp.outputMat;
+                    let mat = trans.entity.components.Material as Material;
+                    mat.shader.macros['JOINT_AMOUNT'] = Math.min(skin.joints.length, 200);
+                }
+
                 if(skin.entity)
                     EntityMgr.addComponent(skin.entity, skinComp);
                 return skinComp;
@@ -258,21 +267,27 @@ export class gltfScene {
             }
         }
         TransformSystem.updateMatrix(trans);
-        let materialCollection = [];
+        let transCache = [];
+        // let matCache = [];
         if (mesh != null) {
             let renderTarget = entity;
             let meshChunk = this.gltf.meshes[mesh];
+            let hasSubnode = meshChunk.length - 1;
             for(let meshData of meshChunk) {
                 let [mf, mat] = meshData;
-                renderTarget = entity.appendChild(EntityMgr.create(name));
+                if (hasSubnode) {
+                    renderTarget = entity.appendChild(EntityMgr.create(name));
+                }
                 EntityMgr.addComponent(renderTarget, mf);
                 EntityMgr.addComponent(renderTarget, mat);
-                materialCollection.push(mat);
+                transCache.push(renderTarget.components.Transform);
+                // matCache.push(mat);
             }
         }
         if (skin != null) {
             this.gltf.skins[skin].entity = entity;
-            this.gltf.skins[skin].materials = materialCollection;
+            this.gltf.skins[skin].transforms = transCache;
+            // this.gltf.skins[skin].materials = matCache;
         }
         return entity;
     }
