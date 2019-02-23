@@ -12,25 +12,22 @@
 
 ## Getting Started
 
+- via CDN
+```html
+<script src="https://cdn.jsdelivr.net/npm/ashes3d@0.0.46/build/ashes.main.js"></script>
+```
+- via yarn
 ```sh
 yarn add ashes3d
 ```
-
-## Deployment
-
+- via npm
 ```sh
-git clone https://github.com/but0n/Ashes.git
-cd Ashes
-
-# if you don't have yarn installed
-npm install -g yarn
-
-yarn
-
-yarn dev
+npm -i ashes3d
 ```
 
-## [Example](https://codepen.io/but0n/pen/daERdd)
+## Usage
+
+[Try it](https://codepen.io/but0n/pen/daERdd)
 
 ```js
 
@@ -114,3 +111,18 @@ main();
     vec3.scale(quad.components.Transform.scale, quad.components.Transform.scale, 9);
 
 ```
+
+## Deployment
+
+```sh
+git clone https://github.com/but0n/Ashes.git
+cd Ashes
+
+# if you don't have yarn installed
+npm install -g yarn
+
+yarn
+
+yarn dev
+```
+
