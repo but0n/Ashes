@@ -123,7 +123,8 @@ class MeshRendererSystem extends ComponentSystem {
 
 
     static render(target: MeshRenderer) {
-        let gl = this.ctxCache[target.SID].gl;
+        let screen = this.ctxCache[target.SID];
+        let {gl, mainCamera} = screen;
         // Enable material
         let idShader = 0;
         let needsUpdateTexture = target.materials[idShader].shader.isDirty;
@@ -139,6 +140,12 @@ class MeshRendererSystem extends ComponentSystem {
             if(!target.entity.components.Transform.isVisible)
                 return;
             let trans: Transform = target.entity.components.Transform;
+            if(mainCamera) {
+                Material.setUniform(currentMat, 'P', mainCamera.projection);
+                Material.setUniform(currentMat, 'V', mainCamera.view);
+                Material.setUniform(currentMat, 'u_Camera', mainCamera.entity.components.Transform.worldPos);
+            }
+
             Material.setUniform(currentMat, 'M', trans.worldMatrix);
             Material.setUniform(currentMat, 'nM', trans.worldNormalMatrix);
             if(trans.jointsMatrices) {

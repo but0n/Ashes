@@ -46,6 +46,9 @@ export class OrbitControl {
 
         // EntityMgr.addComponent(target, this);
 
+        // Regist current camera as main camera (backward compatibility)
+        screen.mainCamera = this.camera;
+
         OrbitControl.bindEvents(screen.canvas, this);
         OrbitControlSystem.updatePosition(this);
     }
