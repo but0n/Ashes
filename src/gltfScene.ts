@@ -286,7 +286,10 @@ export class gltfScene {
         }
         if (skin != null) {
             this.gltf.skins[skin].entity = entity;
-            this.gltf.skins[skin].transforms = transCache;
+            if(!this.gltf.skins[skin].transforms) {
+                this.gltf.skins[skin].transforms = [];
+            }
+            this.gltf.skins[skin].transforms.push(...transCache);
             // this.gltf.skins[skin].materials = matCache;
         }
         return entity;
