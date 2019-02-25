@@ -1,5 +1,5 @@
 <h1 align="center">
-    <img src="https://user-images.githubusercontent.com/7625588/51424529-163f2b00-1c0a-11e9-84fe-0a83d0659a1a.png">
+    <img src="https://user-images.githubusercontent.com/7625588/53308816-3041ec80-38df-11e9-9c3a-fb515eb4d404.png">
 </h1>
 
 [![Build Status](https://travis-ci.org/but0n/Ashes.svg?branch=master)](https://travis-ci.org/but0n/Ashes)
@@ -14,14 +14,10 @@
 
 - via CDN
 ```html
-<script src="https://cdn.jsdelivr.net/npm/ashes3d@0.0.46/build/ashes.main.js"></script>
-```
-- via yarn
-```sh
-yarn add ashes3d
+<script src="https://cdn.jsdelivr.net/npm/ashes3d/build/ashes.main.js"></script>
 ```
 - via npm
-```sh
+```
 npm -i ashes3d
 ```
 
