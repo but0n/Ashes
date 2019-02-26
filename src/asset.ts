@@ -68,6 +68,10 @@ export class Asset {
 
     }
 
+    static adjustDataUri(root, uri) {
+        return uri.substr(0, 5) == "data:" ? uri : root + uri;
+    }
+
     static glbMagic = 0x46546C67;
     static decoder = new TextDecoder();
     static async glbParse(path: string) {
@@ -135,14 +139,14 @@ export class Asset {
             gltf = await (await fetch(path)).json();
 
             // Download buffers
-            gltf.buffers = await Promise.all(gltf.buffers.map(({ uri }) => this.loadBuffer(root + uri)));
+            gltf.buffers = await Promise.all(gltf.buffers.map(({ uri }) => this.loadBuffer(this.adjustDataUri(root, uri))));
 
             //  BufferViews
             gltf.bufferViews = gltf.bufferViews.map(bv => new bufferView(gltf.buffers[bv.buffer], bv));
 
             // then download images
             if (gltf.images) {
-                gltf.images = await Promise.all(gltf.images.map(({ uri }) => this.loadImage(root + uri)));
+                gltf.images = await Promise.all(gltf.images.map(({ uri }) => this.loadImage(this.adjustDataUri(root, uri))));
             }
 
         } else {
