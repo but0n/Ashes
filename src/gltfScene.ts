@@ -274,7 +274,7 @@ export class gltfScene {
             let renderTarget = entity;
             let meshChunk = this.gltf.meshes[mesh];
             let hasSubnode = meshChunk.length - 1;
-            for(let [i, meshData] of meshChunk.entities()) {
+            for(let [i, meshData] of meshChunk.entries()) {
                 let [mf, mat] = meshData;
                 if (hasSubnode) {
                     renderTarget = entity.appendChild(EntityMgr.create('subNode_' + i));
