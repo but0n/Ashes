@@ -97,7 +97,7 @@ export class gltfScene {
         // Create entity instance for each node
         let gltf = this.gltf;
         let { scene, scenes, nodes, skins, animations } = gltf;
-        this.entities = await Promise.all(gltf.nodes.map(node => this.waitEntity(node)));
+        this.entities = await Promise.all(gltf.nodes.map((node, index) => this.waitEntity(node, index)));
 
 
         if (skins) {
@@ -180,10 +180,10 @@ export class gltfScene {
         return this;
     }
 
-    waitEntity(node) {
+    waitEntity(node, index) {
         return new Promise((resolve: (e:Entity)=>void, reject) => {
             setTimeout(() => {
-                resolve(this.createEntity(node));
+                resolve(this.createEntity(node, index));
             }, 0);
         })
     }
@@ -248,8 +248,9 @@ export class gltfScene {
         }
     }
 
-    createEntity(node) {
+    createEntity(node, index) {
         let { mesh, name, matrix, rotation, scale, translation, skin } = node;
+        name = name || 'node_' + index;
         let entity = EntityMgr.create(name);
         let trans = entity.components.Transform as Transform;
         if (matrix != null) {
@@ -273,10 +274,10 @@ export class gltfScene {
             let renderTarget = entity;
             let meshChunk = this.gltf.meshes[mesh];
             let hasSubnode = meshChunk.length - 1;
-            for(let meshData of meshChunk) {
+            for(let [i, meshData] of meshChunk.entities()) {
                 let [mf, mat] = meshData;
                 if (hasSubnode) {
-                    renderTarget = entity.appendChild(EntityMgr.create(name));
+                    renderTarget = entity.appendChild(EntityMgr.create('subNode_' + i));
                 }
                 EntityMgr.addComponent(renderTarget, mf);
                 EntityMgr.addComponent(renderTarget, mat);
