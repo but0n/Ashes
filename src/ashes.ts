@@ -16,6 +16,7 @@ export { Bloom } from "./filter/bloom";
 export { Vignetting } from "./filter/vignetting";
 
 // Components
+export { Transform } from "./transform"; // All entities has transform as a default component
 export { OrbitControl } from "./component/orbitControl";
 export { Camera } from "./camera";
 export { Material } from "./material";
