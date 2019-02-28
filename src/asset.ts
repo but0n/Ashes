@@ -6,6 +6,7 @@ import { EntityMgr } from "./ECS/entityMgr";
 import { Shader } from "./shader";
 import { Mesh, bufferView, Accessor } from "./mesh/mesh";
 import { Texture } from "./texture";
+import { glsl } from "./glsl";
 
 export class Asset {
     // static load(url, type: XMLHttpRequestResponseType = 'json') {
@@ -112,7 +113,7 @@ export class Asset {
         }
     }
 
-    static async loadGLTF(path: string, screen: Screen, envmap?: Texture, shader = 'stylize') {
+    static async loadGLTF(path: string, screen: Screen, envmap?: Texture, shader = new Shader(glsl.sylize.vs, glsl.sylize.fs)) {
         let gltf;
         // parse current path
         let root: any = path.split('/');
@@ -168,7 +169,7 @@ export class Asset {
         }
 
         // Load shader
-        gltf.commonShader = await this.LoadShaderProgram(shader);
+        gltf.commonShader = shader;
 
         // Load brdfLUT
         gltf.brdfLUT = await this.loadTexture('https://raw.githubusercontent.com/KhronosGroup/glTF-WebGL-PBR/master/textures/brdfLUT.png', { minFilter: WebGL2RenderingContext.LINEAR });
