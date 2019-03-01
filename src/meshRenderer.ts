@@ -12,10 +12,10 @@ export class MeshRenderer {
     materials: Material[] = [];
     vao: WebGLVertexArrayObject;
     isDirty: boolean = true;
-    SID: number; // Screen ID
+    SID: string; // Screen ID
     constructor(screen: Screen, mesh: Mesh, material?: Material) {
         if(screen != null)
-            this.SID = MeshRendererSystem.regScreen(screen);
+            this.SID = screen.id;
         this.mesh = mesh;
         MeshRendererSystem.attachMaterial(this, material);
     }
@@ -39,7 +39,8 @@ class MeshRendererSystem extends ComponentSystem {
     ];
     onUpdate() {
         // Before render
-        for(let screen of MeshRendererSystem.ctxSet.values()) {
+        for (let id in Screen.list) {
+            let screen = Screen.list[id] as Screen;
             if(screen.filters.length) {
                 screen.capture.bind();
                 screen.setViewport(screen.capture.width, screen.capture.height);
@@ -50,7 +51,8 @@ class MeshRendererSystem extends ComponentSystem {
             MeshRendererSystem.render(components.MeshRenderer);
         }
         // After render
-        for (let screen of MeshRendererSystem.ctxSet.values()) {
+        for (let id in Screen.list) {
+            let screen = Screen.list[id] as Screen;
 
             // post effects
             for(let [i,ft] of screen.filters.entries()) {
@@ -75,55 +77,47 @@ class MeshRendererSystem extends ComponentSystem {
         }
     }
 
-    static ctxCache: Screen[] = [];
-    static ctxSet: Set<Screen> = new Set();
-    static regScreen(screen: Screen) {
-        if(!this.ctxSet.has(screen)) {
-            this.ctxSet.add(screen);
-        }
-        return this.ctxCache.push(screen)-1;
-    }
 
     static useMaterial(mr: MeshRenderer, index) {
-        Material.useMaterial(mr.materials[index], this.ctxCache[mr.SID].gl);
+        Material.useMaterial(mr.materials[index], Screen.list[mr.SID].gl);
         return mr.materials[index];
     }
 
     static attachMaterial(mr: MeshRenderer, mat: Material) {
         if(mr.SID == null) return;
         mr.materials.push(mat);
-        Material.updateUniform(mat, this.ctxCache[mr.SID].gl); // the first time this material get context
+        Material.updateUniform(mat, Screen.list[mr.SID].gl); // the first time this material get context
         this.useMaterial(mr, 0);
         this.updateVAO(mr);
     }
 
     static bindVAO(mr: MeshRenderer, vao) {
         if(Screen.platform == 'iOS') {
-            Mesh.bindAccessorsVBO(mr.mesh, this.ctxCache[mr.SID].gl, mr.materials[0].shader.attributes);
+            Mesh.bindAccessorsVBO(mr.mesh, Screen.list[mr.SID].gl, mr.materials[0].shader.attributes);
         } else {
-            this.ctxCache[mr.SID].gl.bindVertexArray(vao);
+            Screen.list[mr.SID].gl.bindVertexArray(vao);
         }
     }
 
     static updateVAO(mr: MeshRenderer) {
         if(mr.vao) {
-            this.ctxCache[mr.SID].gl.deleteVertexArray(mr.vao);
+            Screen.list[mr.SID].gl.deleteVertexArray(mr.vao);
         }
-        mr.vao = this.ctxCache[mr.SID].gl.createVertexArray();
+        mr.vao = Screen.list[mr.SID].gl.createVertexArray();
         this.bindVAO(mr, mr.vao);
-        Mesh.bindAccessorsVBO(mr.mesh, this.ctxCache[mr.SID].gl, mr.materials[0].shader.attributes);
+        Mesh.bindAccessorsVBO(mr.mesh, Screen.list[mr.SID].gl, mr.materials[0].shader.attributes);
         this.bindVAO(mr, null);
     }
 
     static updateMaterial(target: MeshRenderer) {
         if(target.materials[0].isDirty) {
-            Material.updateUniform(target.materials[0], this.ctxCache[target.SID].gl);
+            Material.updateUniform(target.materials[0], Screen.list[target.SID].gl);
         }
     }
 
 
     static render(target: MeshRenderer) {
-        let screen = this.ctxCache[target.SID];
+        let screen = Screen.list[target.SID];
         let {gl, mainCamera} = screen;
         // Enable material
         let idShader = 0;
@@ -172,14 +166,5 @@ class MeshRendererSystem extends ComponentSystem {
     // According those discussion below, having actors draw themselves is not a good design
     // https://gamedev.stackexchange.com/questions/50531/entity-component-based-engine-rendering-separation-from-logic
     // https://gamedev.stackexchange.com/questions/14133/should-actors-in-a-game-be-responsible-for-drawing-themselves/14138#14138
-
-
-    static beforeRender() {
-
-    }
-
-    static afterRender() {
-
-    }
 
 } System.registSystem(new MeshRendererSystem());

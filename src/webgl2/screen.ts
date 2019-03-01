@@ -5,18 +5,24 @@ import { Bloom } from "../filter/bloom";
 import { Vignetting } from "../filter/vignetting";
 
 export class Screen {
-    public canvas: HTMLCanvasElement;
-    public gl: WebGL2RenderingContext;
-    public mainCamera: Camera;
+    static list = {};
     static platform = 'unknown';
-    public filters: Filter[] = [];
-    public pow2width: number;
-    public pow2height: number;
-    public capture: Filter;
-    public output: Filter = null;
-    public ratio: number;
-    public bgColor = [1, 1, 1, 1];
+
+    id: string;
+    canvas: HTMLCanvasElement;
+    gl: WebGL2RenderingContext;
+    mainCamera: Camera;
+    filters: Filter[] = [];
+    pow2width: number;
+    pow2height: number;
+    capture: Filter;
+    output: Filter = null;
+    ratio: number;
+    bgColor = [1, 1, 1, 1];
     constructor(selector) {
+
+        this.id = selector;
+
         // Detect device
         if(navigator.userAgent.indexOf('iPhone') != -1 || navigator.userAgent.indexOf('iPad') != -1) {
             Screen.platform = 'iOS';
@@ -29,8 +35,13 @@ export class Screen {
         this.gl = this.canvas.getContext('webgl2') as WebGL2RenderingContext;
         if(!this.gl) {
             console.error('Get Context Failed');
+            alert('Your browser do not support WebGL2');
             return;
         }
+
+        // Regist current screen
+        Screen.list[selector] = this;
+
         this.gl.enable(this.gl.DEPTH_TEST);
         this.gl.enable(this.gl.BLEND);
         this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
