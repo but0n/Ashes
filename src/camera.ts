@@ -35,7 +35,8 @@ export class Camera {
     }
     static updateViewMatrix(cam: Camera) {
         let trans = cam.entity.components.Transform as Transform;
-        mat4.lookAt(cam.view, trans.worldPos, cam.lookAt, cam.up);
+        mat4.lookAt(cam.view, trans.translate, cam.lookAt, cam.up);
+        mat4.mul(cam.view, cam.view, trans.worldInverseMatrix);
     }
 }
 

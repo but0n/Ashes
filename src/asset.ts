@@ -7,6 +7,7 @@ import { Shader } from "./shader";
 import { Mesh, bufferView, Accessor } from "./mesh/mesh";
 import { Texture } from "./texture";
 import { glsl } from "./glsl";
+import { Camera } from "./camera";
 
 export class Asset {
     // static load(url, type: XMLHttpRequestResponseType = 'json') {
@@ -153,6 +154,19 @@ export class Asset {
         } else {
             console.error('Wrong file!');
             return;
+        }
+
+        // Camera components
+        if(gltf.cameras) {
+            gltf.cameras = gltf.cameras.map(cam => {
+                if(cam.perspective) {
+                    // NOTE: Infinite perspective camera is not support yet
+                    let { aspectRatio, yfov, znear, zfar } = cam.perspective;
+                    let camera = new Camera(screen.width/screen.height, yfov*180/Math.PI, znear, zfar);
+                    camera.name = cam.name;
+                    return camera;
+                }
+            });
         }
 
         // Textures

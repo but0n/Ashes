@@ -1,7 +1,7 @@
 import { Screen } from "../webgl2/screen";
 import { Entity, EntityMgr } from "../ECS/entityMgr";
 import { Camera, CameraSystem } from "../camera";
-import { Transform } from "../transform";
+import { Transform, TransformSystem } from "../transform";
 import { vec3, mat4 } from "../math";
 import { ComponentSystem } from "../ECS/component";
 import { System } from "../ECS/system";
@@ -189,5 +189,7 @@ export class OrbitControlSystem extends ComponentSystem {
         ctr.trans.translate[2] = ctr.camera.lookAt[2] + ctr.distance * Math.sin(ctr.pitch/180*Math.PI) * Math.sin(ctr.yaw/180*Math.PI);
 
         ctr.camera.isDirty = true;
+        // TODO: enhance
+        TransformSystem.updateMatrix(ctr.trans);
     }
 } System.registSystem(new OrbitControlSystem());

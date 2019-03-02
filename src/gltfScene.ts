@@ -91,20 +91,6 @@ export class gltfScene {
             })
         });
 
-        // Parse camera components
-        if(gltf.cameras) {
-            gltf.cameras = gltf.cameras.map(cam => {
-                if(cam.perspective) {
-                    // NOTE: Infinite perspective camera is not support yet
-                    let { aspectRatio, yfov, znear, zfar } = cam.perspective;
-                    let camera = new Camera(aspectRatio, yfov, znear, zfar);
-                    camera.name = cam.name;
-                    return camera;
-                }
-            });
-        }
-
-
     }
 
     async assemble() {
@@ -263,7 +249,7 @@ export class gltfScene {
     }
 
     createEntity(node, index) {
-        let { mesh, name, matrix, rotation, scale, translation, skin } = node;
+        let { mesh, name, matrix, rotation, scale, translation, skin, camera } = node;
         name = name || 'node_' + index;
         let entity = EntityMgr.create(name);
         let trans = entity.components.Transform as Transform;
@@ -306,6 +292,9 @@ export class gltfScene {
             }
             this.gltf.skins[skin].transforms.push(...transCache);
             // this.gltf.skins[skin].materials = matCache;
+        }
+        if (camera != null) {
+            EntityMgr.addComponent(entity, this.gltf.cameras[camera]);
         }
         return entity;
     }
