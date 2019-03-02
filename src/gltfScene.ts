@@ -6,6 +6,7 @@ import { vec3, vec4, mat4 } from "./math";
 import { TransformSystem, Transform } from "./transform";
 import { Skin } from "./skin";
 import { Animation, AnimationChannel } from "./animation";
+import { Camera } from "./camera";
 
 export class gltfScene {
     gltf;
@@ -89,6 +90,19 @@ export class gltfScene {
                 return [mf, mat];
             })
         });
+
+        // Parse camera components
+        if(gltf.cameras) {
+            gltf.cameras = gltf.cameras.map(cam => {
+                if(cam.perspective) {
+                    // NOTE: Infinite perspective camera is not support yet
+                    let { aspectRatio, yfov, znear, zfar } = cam.perspective;
+                    let camera = new Camera(aspectRatio, yfov, znear, zfar);
+                    camera.name = cam.name;
+                    return camera;
+                }
+            });
+        }
 
 
     }

@@ -8,6 +8,7 @@ import { System } from "./ECS/system";
 
 export class Camera {
     entity: Entity;
+    name: String;
     projection: Float32Array;
     view: Float32Array;
     fov: number;
