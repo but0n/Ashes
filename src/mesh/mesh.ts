@@ -27,13 +27,22 @@ export class Mesh {
         }
     }
 
-    static bindIndecesEBO(target: Mesh, gl: WebGL2RenderingContext) {
-        bufferView.bindBuffer(target.indices.bufferView, gl);
-    }
-
-    static drawElement(target: Mesh, gl: WebGL2RenderingContext) {
+    static drawElements(target: Mesh, gl: WebGL2RenderingContext) {
         let acc = target.indices;
         gl.drawElements(target.mode, acc.count, acc.componentType, acc.byteOffset);
+    }
+
+    static drawArrays(target: Mesh, gl: WebGL2RenderingContext) {
+        gl.drawArrays(target.mode, 0, target.attributes[0].count);
+    }
+
+    static drawcall(target: Mesh, gl: WebGL2RenderingContext) {
+        if(target.indices) {
+            bufferView.bindBuffer(target.indices.bufferView, gl);
+            this.drawElements(target, gl);
+        } else {
+            this.drawArrays(target, gl);
+        }
     }
 
     static preComputeTangent(mesh: Mesh) {

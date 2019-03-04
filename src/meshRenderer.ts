@@ -155,10 +155,9 @@ class MeshRendererSystem extends ComponentSystem {
 
         // Bind Mesh
         this.bindVAO(target, target.vao); // Bind VAO
-        Mesh.bindIndecesEBO(target.mesh, gl);
 
         // Drawcall
-        Mesh.drawElement(target.mesh, gl);
+        Mesh.drawcall(target.mesh, gl);
 
         // Clean texture channels
         // Material.unbindAllTextures(currentMat, gl);
