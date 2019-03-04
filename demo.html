@@ -11,7 +11,7 @@
     <script src="build/ashes.main.js"></script>
     <script>
 let { Asset, EntityMgr, Camera, vec3, quat, Screen, OrbitControl, Filter, Shader, Material, QuadMesh, MeshRenderer, Texture } = Ashes;
-
+let {Vignetting} = Ashes;
 
 
 
@@ -33,8 +33,8 @@ let gltf = assetRoot + 'gltfsamples/BoomBox.glb';
 // gltf = assetRoot + 'res/CesiumMan.glb';
 // gltf = assetRoot + 'res/BrainStem.glb';
 gltf = assetRoot + 'gltfsamples/DamagedHelmet.glb';
-gltf = assetRoot + 'res/MorphPrimitivesTest.glb';
-gltf = assetRoot + 'res/project_polly.glb';
+// gltf = assetRoot + 'res/MorphPrimitivesTest.glb';
+// gltf = assetRoot + 'res/project_polly.glb';
 // gltf = assetRoot + 'res/CesiumMan.gltf';
 // gltf = assetRoot + 'gltfsamples/Suzanne/Suzanne.gltf';
 scale = 1;
@@ -58,6 +58,8 @@ async function main() {
         let p = finished / total;
         loading.cur = p;
     }
+    screen.attachFilter(new Vignetting(screen));
+
 
 
     let skybox = await Asset.loadCubemap(assetRoot + 'res/envmap/GoldenGateBridge2/');

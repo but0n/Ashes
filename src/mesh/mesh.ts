@@ -6,7 +6,7 @@ export class Mesh {
     mode: number;
 
 
-    constructor(attributes: Accessor[], indices: Accessor, mode = WebGL2RenderingContext.TRIANGLES) {
+    constructor(attributes: Accessor[], indices?: Accessor, mode = WebGL2RenderingContext.TRIANGLES) {
         this.attributes = attributes;
         this.indices = indices;
         this.mode = mode;

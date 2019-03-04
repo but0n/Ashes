@@ -1,7 +1,7 @@
 import { Texture, Sampler } from "./texture";
 import { MeshRenderer } from "./meshRenderer";
 import { Material } from "./material";
-import { Mesh } from "./mesh/mesh";
+import { Mesh, Accessor, bufferView } from "./mesh/mesh";
 import { QuadMesh } from "./mesh/quadMesh";
 import { Shader } from "./shader";
 import { Screen } from "./webgl2/screen";
@@ -85,5 +85,28 @@ export class Filter {
         this.bind(null);
 
         return color;
+    }
+}
+
+class fill extends Mesh {
+    constructor() {
+        let vert = new Float32Array([
+            -1, 3, 0, -1, -1, 0, 3, -1, 0
+        ]);
+        let vbo = new bufferView(vert.buffer, {
+            byteOffset: vert.byteOffset,
+            byteLength: vert.byteLength,
+            byteStride: 3 * 4,
+            target: WebGL2RenderingContext.ARRAY_BUFFER
+        });
+        let position = new Accessor({
+            bufferView: vbo,
+            componentType: WebGL2RenderingContext.FLOAT,
+            byteOffset: 0,
+            type: "VEC3",
+            count: 3
+        }, 'POSITION');
+        super([position]);
+
     }
 }
