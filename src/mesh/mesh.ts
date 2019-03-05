@@ -8,9 +8,11 @@ export class Mesh {
 
     constructor(attributes: Accessor[], indices?: Accessor, mode = WebGL2RenderingContext.TRIANGLES) {
         this.attributes = attributes;
-        this.indices = indices;
-        // Ensure current buffer type is exist, considering the target value is not required at glTF
-        this.indices.bufferView.target = WebGL2RenderingContext.ELEMENT_ARRAY_BUFFER;
+        if(indices) {
+            this.indices = indices;
+            // Ensure current buffer type is exist, considering the target value is not required at glTF
+            this.indices.bufferView.target = WebGL2RenderingContext.ELEMENT_ARRAY_BUFFER;
+        }
         this.mode = mode;
     }
 
