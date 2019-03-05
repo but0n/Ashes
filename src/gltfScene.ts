@@ -68,10 +68,6 @@ export class gltfScene {
 
                 // Triangles
                 let ebo = gltf.accessors[meshData.indices];
-                // Ensure current buffer type is exist, considering the target value is not required at glTF
-                ebo.bufferView.target = WebGL2RenderingContext.ELEMENT_ARRAY_BUFFER;
-
-
 
                 let mf = new Mesh(accessors, ebo, meshData.mode);
 
