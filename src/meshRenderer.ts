@@ -17,6 +17,12 @@ export class MeshRenderer {
         if(screen != null)
             this.SID = screen.id;
         this.mesh = mesh;
+
+        // specify the length of each attribute, considering the vertices color could be vec3 or vec4
+        for(let att of mesh.attributes) {
+            material.shader.macros[`${att.attribute}_SIZE_${att.size}`] = '';
+        }
+
         MeshRendererSystem.attachMaterial(this, material);
     }
 
