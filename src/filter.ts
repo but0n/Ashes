@@ -2,7 +2,6 @@ import { Texture, Sampler } from "./texture";
 import { MeshRenderer } from "./meshRenderer";
 import { Material } from "./material";
 import { Mesh, Accessor, bufferView } from "./mesh/mesh";
-import { QuadMesh } from "./mesh/quadMesh";
 import { Shader } from "./shader";
 import { Screen } from "./webgl2/screen";
 
@@ -44,7 +43,7 @@ export class Filter {
 
         this.output = this.attachTexture();
 
-        this.mesh = new QuadMesh();
+        this.mesh = new fill();
         this.material = new Material(shader);
         this.meshRender = new MeshRenderer(screen, this.mesh, this.material);
     }
