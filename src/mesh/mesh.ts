@@ -26,7 +26,7 @@ export class Mesh {
                 let offset = acc.byteOffset;
                 gl.vertexAttribPointer(loc, acc.size, acc.componentType, acc.normalized, acc.bufferView.byteStride, offset);
             } else {
-                console.warn(`Attribute '${acc.attribute}' not found!`);
+                console.warn(`Attribute '${acc.attribute}' doesn't support in this material!`);
             }
         }
     }
@@ -66,7 +66,11 @@ export class Mesh {
                 atts['TANGENT'] = Accessor.getSubChunks(acc, atts['_TANGENT']);
             }
         }
-        atts['i'] = Accessor.newUint16Array(indices);
+        if(indices) {   // element
+            atts['i'] = Accessor.newUint16Array(indices);
+        } else {        // array
+            atts['i'] = atts['POSITION'].map((e,i) => i);
+        }
         let pos: Float32Array[] = atts['POSITION'];
         let uv = atts['TEXCOORD_0'];
         let ind = atts['i'];
