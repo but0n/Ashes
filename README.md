@@ -50,7 +50,7 @@ async function main() {
 
     // Camera
     let mainCamera = EntityMgr.create('camera');
-    let cam = EntityMgr.addComponent(mainCamera, new Camera(screen.width / screen.height));
+    let cam = mainCamera.addComponent(new Camera(screen.width / screen.height));
 
     // Set default position
     let cameraTrans = mainCamera.components.Transform;
@@ -60,7 +60,7 @@ async function main() {
     scene.appendChild(mainCamera);
 
     // Attach controler
-    EntityMgr.addComponent(mainCamera, new OrbitControl(screen, mainCamera));
+    mainCamera.addComponent(new OrbitControl(screen, mainCamera));
 
     document.querySelector('body').appendChild(scene);
 
@@ -95,7 +95,7 @@ main();
     let quadMR = new MeshRenderer(screen, new QuadMesh(), quadMat);
 
     // Attach renderer to entity
-    EntityMgr.addComponent(quad, quadMR);
+    quad.addComponent(quadMR);
 
     // Set local translate [x, y, z]
     quad.components.Transform.translate[1] = -1;

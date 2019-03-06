@@ -126,7 +126,7 @@ export class gltfScene {
                 }
 
                 if(skin.entity)
-                    EntityMgr.addComponent(skin.entity, skinComp);
+                    skin.entity.addComponent(skinComp);
                 return skinComp;
             });
         }
@@ -155,7 +155,7 @@ export class gltfScene {
                         let timeline = gltf.accessors[input];
                         let keyframe = gltf.accessors[output];
                         if (e.components.Animation == null) {
-                            EntityMgr.addComponent(e, new Animation());
+                            e.addComponent(new Animation());
                         }
                         let anim = e.components.Animation as Animation;
                         Animation.attachChannel(anim, new AnimationChannel(controlChannel, timeline, keyframe))
@@ -275,8 +275,8 @@ export class gltfScene {
                 if (hasSubnode) {
                     renderTarget = entity.appendChild(EntityMgr.create('subNode_' + i));
                 }
-                EntityMgr.addComponent(renderTarget, mf);
-                EntityMgr.addComponent(renderTarget, mat);
+                renderTarget.addComponent(mf);
+                renderTarget.addComponent(mat);
                 transCache.push(renderTarget.components.Transform);
                 // matCache.push(mat);
             }
@@ -290,7 +290,7 @@ export class gltfScene {
             // this.gltf.skins[skin].materials = matCache;
         }
         if (camera != null) {
-            EntityMgr.addComponent(entity, this.gltf.cameras[camera]);
+            entity.addComponent(this.gltf.cameras[camera]);
         }
         return entity;
     }

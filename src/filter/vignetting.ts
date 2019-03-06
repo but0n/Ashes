@@ -13,7 +13,7 @@ export class Vignetting extends Filter {
 
 
 }
-
+// FIXME: texcoords
 let vig_vs = glsl.vignetting.vs;
 
 let vig_fs = glsl.vignetting.fs;

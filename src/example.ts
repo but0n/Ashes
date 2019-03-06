@@ -56,11 +56,11 @@ export class Example {
         // Camera and controls
         let mainCamera = EntityMgr.create('camera');
         let cameraTrans = mainCamera.components.Transform;
-        let cam = EntityMgr.addComponent(mainCamera, new Camera(screen.width / screen.height));
+        let cam = mainCamera.addComponent(new Camera(screen.width / screen.height));
         vec3.set(cameraTrans.translate, 0, 10, 10);
 
         scene.appendChild(mainCamera);
-        EntityMgr.addComponent(mainCamera, new OrbitControl(screen, mainCamera));
+        mainCamera.addComponent(new OrbitControl(screen, mainCamera));
 
 
         // Model

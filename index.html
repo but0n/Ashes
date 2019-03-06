@@ -65,10 +65,10 @@
         // Camera and controls
         let mainCamera = scene.appendChild(EntityMgr.create('camera'));
         let cameraTrans = mainCamera.components.Transform;
-        let cam = EntityMgr.addComponent(mainCamera, new Camera(screen.width / screen.height));
+        let cam = mainCamera.addComponent(new Camera(screen.width / screen.height));
         vec3.set(cameraTrans.translate, 0, 10, 10);
 
-        EntityMgr.addComponent(mainCamera, new OrbitControl(screen, mainCamera));
+        mainCamera.addComponent(new OrbitControl(screen, mainCamera));
 
         document.querySelector('body').appendChild(scene);
 

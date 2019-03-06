@@ -57,7 +57,7 @@ async function main() {
         let p = finished / total;
         loading.cur = p;
     }
-    screen.attachFilter(new Vignetting(screen));
+    // screen.attachFilter(new Vignetting(screen));
 
 
 
@@ -68,10 +68,10 @@ async function main() {
     // Camera and controls
     let mainCamera = scene.appendChild(EntityMgr.create('camera'));
     let cameraTrans = mainCamera.components.Transform;
-    let cam = EntityMgr.addComponent(mainCamera, new Camera(screen.width / screen.height));
+    let cam = mainCamera.addComponent(new Camera(screen.width / screen.height));
     vec3.set(cameraTrans.translate, 0, 0, 0.1);
 
-    EntityMgr.addComponent(mainCamera, new OrbitControl(screen, mainCamera));
+    mainCamera.addComponent(new OrbitControl(screen, mainCamera));
     // screen.mainCamera = cam;
 
     document.querySelector('body').appendChild(scene);
@@ -100,7 +100,7 @@ async function main() {
     quadMat.shader.macros['HAS_BASECOLOR_MAP'] = '';
 
     let quadMR = new MeshRenderer(screen, new QuadMesh(), quadMat);
-    EntityMgr.addComponent(quad, quadMR);
+    quad.addComponent(quadMR);
     quat.fromEuler(quad.components.Transform.quaternion, -90, 0, 0);
     vec3.scale(quad.components.Transform.scale, quad.components.Transform.scale, 0.2);
 

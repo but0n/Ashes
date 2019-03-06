@@ -1,5 +1,6 @@
 export interface Entity extends HTMLElement {
     components: any;
+    addComponent: (component)=>{};
 }
 export class EntityMgr {
     static entityTag = 'ash-entity';
@@ -15,6 +16,9 @@ export class EntityMgr {
         gameObject.components = {};
         if(this.getDefaultComponent && !pure)
             this.addComponent(gameObject, this.getDefaultComponent());
+        // Alias
+        gameObject['addComponent'] = (comp) => this.addComponent(gameObject, comp);
+
         // Debug envent
         gameObject.addEventListener('pointerdown', e => {
             console.log('\t|-' + gameObject.dataset.name);

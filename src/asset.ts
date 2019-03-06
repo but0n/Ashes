@@ -204,11 +204,10 @@ export class Asset {
         for(let entity of renderTargets) {
             let mesh = entity.components.Mesh;
             let material = entity.components.Material;
-            let mr = new MeshRenderer(screen, mesh, material);
             if(material.name == 'outline') {
                 entity.components.Transform.isVisible = false;
             }
-            EntityMgr.addComponent(entity, mr);
+            entity.addComponent(new MeshRenderer(screen, mesh, material));
         }
         return scene;
     }
