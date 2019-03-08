@@ -18,7 +18,7 @@
 ```
 - via npm
 ```
-npm -i ashes3d
+npm i ashes3d
 ```
 
 ## Usage
