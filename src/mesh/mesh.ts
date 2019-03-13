@@ -147,6 +147,7 @@ export class Accessor {
     max: number[];
     min: number[];
     size: number;
+    data: any;
     constructor({bufferView, byteOffset = 0, componentType, normalized = false, count, type, max = [], min = []}, name = '') {
         this.attribute = name;
         this.bufferView = bufferView;
@@ -157,6 +158,7 @@ export class Accessor {
         this.max = max;
         this.min = min;
         this.size = Accessor.types[type];
+        this.data = Accessor.getData(this);
     }
     static newFloat32Array(acc: Accessor) {
         return new Float32Array(acc.bufferView.rawBuffer, acc.byteOffset + acc.bufferView.byteOffset, acc.size * acc.count);
@@ -177,6 +179,12 @@ export class Accessor {
     }
     static getUint16Blocks(acc: Accessor) {
         return this.getSubChunks(acc, Accessor.newUint16Array(acc));
+    }
+    static getData(acc: Accessor) {
+        if(acc.size > 1) {
+            return this.getFloat32Blocks(acc);
+        }
+        return this.newUint16Array(acc);
     }
 }
 
