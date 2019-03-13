@@ -1,7 +1,7 @@
 import { EntityMgr, Entity } from "./ECS/entityMgr";
 import { Accessor, Mesh } from "./mesh/mesh";
 import { Texture } from "./texture";
-import { Material } from "./material";
+import { Material, RenderQueue } from "./material";
 import { vec3, vec4, mat4 } from "./math";
 import { TransformSystem, Transform } from "./transform";
 import { Skin } from "./skin";
@@ -233,6 +233,9 @@ export class gltfScene {
                 // Alpha Blend Mode
                 case 'alphaMode':
                     shader.macros[value] = '';
+                    if(value != 'OPAQUE') {
+                        mat.queue = RenderQueue.Blend;
+                    }
                     break;
                 case 'alphaCutoff':
                     shader.macros['ALPHA_CUTOFF'] = `float(${value})`;

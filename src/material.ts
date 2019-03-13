@@ -1,6 +1,11 @@
 import { Shader } from "./shader";
 import { Texture } from "./texture";
 
+export enum RenderQueue {
+    Opaque,
+    Blend,
+}
+
 export class Material {
     name: string;
     shader: Shader;
@@ -8,6 +13,7 @@ export class Material {
     // textures: Texture[] = [];
     textures: Map<string, Texture> = new Map();
     doubleSided: boolean;
+    queue = RenderQueue.Opaque;
     constructor(shader: Shader, name = null, doubleSided = false) {
         this.shader = Shader.clone(shader);
         this.name = name;

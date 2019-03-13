@@ -1,5 +1,5 @@
 import { Mesh } from "./mesh/mesh";
-import { Material } from "./material";
+import { Material, RenderQueue } from "./material";
 import { Entity, EntityMgr } from "./ECS/entityMgr";
 import { Transform } from "./transform";
 import { Screen } from "./webgl2/screen";
@@ -54,7 +54,11 @@ class MeshRendererSystem extends ComponentSystem {
             screen.clear();
         }
         for(let {components} of this.group) {
-            MeshRendererSystem.render(components.MeshRenderer);
+            MeshRendererSystem.render(components.MeshRenderer, RenderQueue.Opaque);
+        }
+        for (let { components } of this.group) {
+            // TODO: handle multiple transparent objects
+            MeshRendererSystem.render(components.MeshRenderer, RenderQueue.Blend);
         }
         // After render
         for (let id in Screen.list) {
@@ -86,7 +90,6 @@ class MeshRendererSystem extends ComponentSystem {
 
     static useMaterial(mr: MeshRenderer, index) {
         Material.useMaterial(mr.materials[index], Screen.list[mr.SID].gl);
-        return mr.materials[index];
     }
 
     static attachMaterial(mr: MeshRenderer, mat: Material) {
@@ -122,13 +125,16 @@ class MeshRendererSystem extends ComponentSystem {
     }
 
 
-    static render(target: MeshRenderer) {
+    static render(target: MeshRenderer, queue = RenderQueue.Opaque) {
         let screen = Screen.list[target.SID];
         let {gl, mainCamera} = screen;
         // Enable material
         let idShader = 0;
-        let needsUpdateTexture = target.materials[idShader].shader.isDirty;
-        let currentMat = this.useMaterial(target, idShader);
+        const currentMat = target.materials[idShader];
+        if(currentMat.queue != queue)
+            return;
+        let needsUpdateTexture = currentMat.shader.isDirty;
+        this.useMaterial(target, idShader);
 
         if(currentMat.doubleSided) {
             gl.disable(gl.CULL_FACE);
