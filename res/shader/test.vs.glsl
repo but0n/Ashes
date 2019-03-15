@@ -7,8 +7,7 @@ in vec3 TANGENT;
 in vec3 COLOR_0;
 
 uniform mat4 M;
-uniform mat4 V;
-uniform mat4 P;
+uniform mat4 VP;
 uniform mat4 nM;
 
 out vec3 normal;
@@ -22,5 +21,5 @@ void main() {
   vec4 position = vec4(POSITION, 1);
   pos = position;
   normal = normalize((nM * vec4(NORMAL, 1)).xyz);
-  gl_Position = P * V * M * position;
+  gl_Position = VP * M * position;
 }

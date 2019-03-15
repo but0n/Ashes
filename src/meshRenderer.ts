@@ -5,6 +5,7 @@ import { Transform } from "./transform";
 import { Screen } from "./webgl2/screen";
 import { ComponentSystem } from "./ECS/component";
 import { System } from "./ECS/system";
+import { mat4 } from "./math";
 
 export class MeshRenderer {
     entity: Entity;
@@ -18,7 +19,8 @@ export class MeshRenderer {
             this.SID = screen.id;
         this.mesh = mesh;
 
-        // specify the length of each attribute, considering the vertices color could be vec3 or vec4
+        // specify the length of each attribute, considering the vertices color could be or vec4
+        // FIXME:
         for(let att of mesh.attributes) {
             material.shader.macros[`${att.attribute}_SIZE_${att.size}`] = '';
         }
@@ -124,9 +126,8 @@ class MeshRendererSystem extends ComponentSystem {
         }
     }
 
-
     static render(target: MeshRenderer, queue = RenderQueue.Opaque) {
-        let screen = Screen.list[target.SID];
+        let screen = Screen.list[target.SID] as Screen;
         let {gl, mainCamera} = screen;
         // Enable material
         let idShader = 0;
@@ -147,8 +148,7 @@ class MeshRendererSystem extends ComponentSystem {
                 return;
             let trans: Transform = target.entity.components.Transform;
             if(mainCamera) {
-                Material.setUniform(currentMat, 'P', mainCamera.projection);
-                Material.setUniform(currentMat, 'V', mainCamera.view);
+                Material.setUniform(currentMat, 'VP', mainCamera.vp);
                 Material.setUniform(currentMat, 'u_Camera', mainCamera.entity.components.Transform.worldPos);
             }
 

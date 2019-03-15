@@ -11,6 +11,7 @@ export class Camera {
     name: String;
     projection: Float32Array;
     view: Float32Array;
+    vp: Float32Array;
     fov: number;
     aspect: number;
     near: number;
@@ -25,6 +26,7 @@ export class Camera {
         this.far = far;
         this.projection = mat4.create();
         this.view = mat4.create();
+        this.vp = mat4.create();
         this.up = vec3.fromValues(0, 1, 0);
         this.lookAt = vec3.create();
         Camera.updateProjectionMatrix(this);
@@ -37,6 +39,7 @@ export class Camera {
         let trans = cam.entity.components.Transform as Transform;
         mat4.lookAt(cam.view, trans.translate, cam.lookAt, cam.up);
         mat4.mul(cam.view, cam.view, trans.worldInverseMatrix);
+        mat4.mul(cam.vp, cam.projection, cam.view);
     }
 }
 

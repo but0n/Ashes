@@ -20,8 +20,7 @@ uniform mat4 jointMat[JOINT_AMOUNT];
 #endif // HAS_SKINS
 
 uniform mat4 M;
-uniform mat4 V;
-uniform mat4 P;
+uniform mat4 VP;
 uniform mat4 nM;
 
 varying vec3 normal;
@@ -60,5 +59,5 @@ void main() {
     vColor = COLOR_0;
 #endif
     pos = position.xyz / position.w;
-    gl_Position = P * V * position;
+    gl_Position = VP * position;
 }
