@@ -4,7 +4,7 @@
 //  - https://learnopengl.com/PBR/IBL/Specular-IBL
 
 #define PI 3.14159265358979
-precision mediump float;
+precision highp float;
 
 varying vec2 uv;
 varying vec4 pos;

@@ -37,7 +37,7 @@ void main() {
 
 let blurfs = `
 #define PI 3.1415926535898
-precision mediump float;
+precision highp float;
 uniform sampler2D base;
 
 varying vec2 uv;

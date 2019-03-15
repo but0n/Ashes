@@ -1,4 +1,4 @@
-precision mediump float;
+precision highp float;
 #define PI 3.14159265358979
 #define GAMMA 2.2
 

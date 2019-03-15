@@ -48,16 +48,16 @@ async function main() {
     // Bloom.initFilters(screen, threshold || 0.6, radiu || 80, intensity || 1.2);
     // screen.attachFilter(new Vignetting(screen));
 
-    let loading = new loadingAnim(screen);
-    loading.cb = () => {
-        screen.deleteFilter(0);
-        console.log('delete');
-    }
-    screen.attachFilter(loading);
-    Asset.taskObserve = (finished, total) => {
-        let p = finished / total;
-        loading.cur = p;
-    }
+    // let loading = new loadingAnim(screen);
+    // loading.cb = () => {
+    //     screen.deleteFilter(0);
+    //     console.log('delete');
+    // }
+    // screen.attachFilter(loading);
+    // Asset.taskObserve = (finished, total) => {
+    //     let p = finished / total;
+    //     loading.cur = p;
+    // }
     // screen.attachFilter(new Vignetting(screen));
 
 
@@ -128,7 +128,7 @@ void main() {
 `;
 
 let loading_fs = `
-precision mediump float;
+precision highp float;
 uniform sampler2D base;
 uniform float cur;
 uniform float powcur;
