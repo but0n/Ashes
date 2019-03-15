@@ -46,7 +46,7 @@ async function main() {
     screen.bgColor = [0.9,0.9,0.9,1];
     // Filters
     // Bloom.initFilters(screen, threshold || 0.6, radiu || 80, intensity || 1.2);
-    // screen.attachFilter(new Vignetting(screen));
+    screen.attachFilter(new Vignetting(screen));
 
     // let loading = new loadingAnim(screen);
     // loading.cb = () => {
@@ -77,10 +77,10 @@ async function main() {
 
     document.querySelector('body').appendChild(scene);
 
-    let gltfroot = scene.appendChild(await Asset.loadGLTF(gltf, screen, skybox));
-    let root = gltfroot.components.Transform;
-    root.translate[1] = yoffset || 0;
-    vec3.scale(root.scale, root.scale, scale || 200)
+    // let gltfroot = scene.appendChild(await Asset.loadGLTF(gltf, screen, skybox));
+    // let root = gltfroot.components.Transform;
+    // root.translate[1] = yoffset || 0;
+    // vec3.scale(root.scale, root.scale, scale || 200)
 
     // scene.appendChild(await Asset.loadGLTF(assetRoot + 'res/BrainStem.glb', screen, skybox));
 
