@@ -4,7 +4,7 @@ import { Screen } from "../webgl2/screen";
 
 export class Bloom {
 
-    static initFilters(screen: Screen, threshold = 0.7, radius = 60, intensity = 1) {
+    static initFilters(screen: Screen, threshold = 0.7, radius = 1, intensity = 1) {
 
         let macro;
 
@@ -18,19 +18,44 @@ export class Bloom {
 
 
         // Two pass gaussian blur
-        let width = screen.width / screen.ratio;
-        let height = screen.height /screen.ratio;
+        // let width = screen.width / screen.ratio;
+        // let height = screen.height /screen.ratio;
 
         radius *= screen.ratio;
-        macro = {
-            OFFSET: `vec2(${radius / width}, 0)`
-        };
-        let blur1 = new Filter(screen, new Shader(blurvs, blurfs, macro));
+        // macro = {
+        //     OFFSET: `vec2(${radius / width}, 0)`,
+        //     // Addition macros:
+        //     screenSize:     `vec2(${screen.pow2width}, ${screen.pow2height})`,
+        //     iResolution:    `vec2(${screen.pow2width}, ${screen.pow2height})`,
+        //     oResolution:    `vec2(${screen.pow2width}, ${screen.pow2height})`,
 
-        macro = {
-            OFFSET: `vec2(0, ${radius / height})`
-        };
-        let blur2 = new Filter(screen, new Shader(blurvs, blurfs, macro));
+        // };
+        // let blur1 = new Filter(screen, new Shader(blurvs, blurfs, macro));
+
+        // macro = {
+        //     OFFSET: `vec2(0, ${radius / height})`,
+        //     // Addition macros:
+        //     screenSize:     `vec2(${screen.pow2width}, ${screen.pow2height})`,
+        //     iResolution:    `vec2(${screen.pow2width}, ${screen.pow2height})`,
+        //     oResolution:    `vec2(${screen.pow2width * 0.5}, ${screen.pow2height * 0.5})`,
+
+        // };
+        // let blur2 = new Filter(screen, new Shader(blurvs, blurfs, macro));
+
+        let width = screen.pow2width;
+        let height = screen.pow2height;
+
+        let pass = [];
+        while (width > 10 || height > 10) {
+            pass.push(new Filter(screen, new Shader(blurvs, blurfs, {
+                OFFSET: `vec2(${radius / width}, 0)`,
+                // OFFSET: `vec2(0, ${radius / height})`,
+                // Addition macros:
+                screenSize: `vec2(${screen.pow2width}, ${screen.pow2height})`,
+                iResolution: `vec2(${width}, ${height})`,
+                oResolution: `vec2(${width *= 0.5}, ${height *= 0.5})`,
+            }), width, height));
+        }
 
 
         // Combiand
@@ -46,11 +71,14 @@ export class Bloom {
 
         // Assemble
         // The first stage must be attach to screen
-        screen.attachFilter(thresholdFilter);
-        screen.attachFilter(blur1);
-        screen.attachFilter(blur2);
+        // screen.attachFilter(thresholdFilter);
+        // screen.attachFilter(blur1);
+        // screen.attachFilter(blur2);
+        for(let p of pass) {
+            screen.attachFilter(p);
+        }
 
-        screen.attachFilter(comb);
+        // screen.attachFilter(comb);
 
 
     }
@@ -93,16 +121,9 @@ void main() {
 
 let blurvs = `
 attribute vec3 POSITION;
-attribute vec2 TEXCOORD_0;
 
-varying vec2 uv;
-varying vec4 pos;
-
-void main() {
-  uv = TEXCOORD_0;
-  vec4 position = vec4(POSITION, 1);
-  pos = position;
-  gl_Position = position;
+void main(){
+    gl_Position=vec4(POSITION,1);
 }
 `;
 
@@ -111,8 +132,7 @@ let blurfs = `
 precision highp float;
 uniform sampler2D base;
 
-varying vec2 uv;
-varying vec4 pos;
+vec2 uv;
 
 vec4 blur9() {
     vec4 color = vec4(0);
@@ -167,9 +187,11 @@ vec4 noiseblur() {
 }
 
 void main() {
-    // gl_FragColor = gaussianBlur();
-    gl_FragColor = noiseblur();
+    uv = gl_FragCoord.xy / iResolution;
+    gl_FragColor = gaussianBlur();
+    // gl_FragColor = noiseblur();
     // gl_FragColor = blur9();
+    // gl_FragColor = vec4(mod(uv, 1.), 0, 1);
 }
 `;
 

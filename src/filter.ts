@@ -10,14 +10,14 @@ export class Filter {
     static sampleColor: Sampler = {
         magFilter: WebGL2RenderingContext.LINEAR,
         minFilter: WebGL2RenderingContext.LINEAR,
-        wrapS: WebGL2RenderingContext.CLAMP_TO_EDGE,
-        wrapT: WebGL2RenderingContext.CLAMP_TO_EDGE,
+        wrapS: WebGL2RenderingContext.REPEAT,
+        wrapT: WebGL2RenderingContext.REPEAT,
     };
     static sampleDepth: Sampler = {
         magFilter: WebGL2RenderingContext.NEAREST,
         minFilter: WebGL2RenderingContext.NEAREST,
-        wrapS: WebGL2RenderingContext.CLAMP_TO_EDGE,
-        wrapT: WebGL2RenderingContext.CLAMP_TO_EDGE,
+        wrapS: WebGL2RenderingContext.REPEAT,
+        wrapT: WebGL2RenderingContext.REPEAT,
     };
     ctx: WebGL2RenderingContext;
     width: number;
@@ -32,7 +32,7 @@ export class Filter {
     mesh: Mesh;
     renderToScreen = true;
     screen: Screen;
-    constructor(screen: Screen, shader: Shader, width: number = screen.pow2width, height: number = screen.pow2height) {
+    constructor(screen: Screen, shader: Shader, width: number = screen.width, height: number = screen.height) {
         this.ctx = screen.gl;
         this.screen = screen;
         this.width = width;
@@ -68,12 +68,12 @@ export class Filter {
     attachTexture() {
         this.bind();
 
-        let color = new Texture(null, Filter.sampleColor, this.width, this.height);
+        let color = new Texture(null, Filter.sampleColor, this.width*this.screen.ratio, this.height*this.screen.ratio);
         Texture.createTexture(this.ctx, color);
         this.ctx.framebufferTexture2D(Filter.FRAMEBUFFER, Filter.COLOR_ATTACH_BASE + this.color.length, color.glType, color.sampler.texture, color.level);
         this.color.push(color);
 
-        let depth = new Texture(null, Filter.sampleDepth, this.width, this.height);
+        let depth = new Texture(null, Filter.sampleDepth, this.width*this.screen.ratio, this.height*this.screen.ratio);
         depth.internalformat = WebGL2RenderingContext.DEPTH_COMPONENT24;
         depth.format = WebGL2RenderingContext.DEPTH_COMPONENT;
         depth.type = WebGL2RenderingContext.UNSIGNED_INT;

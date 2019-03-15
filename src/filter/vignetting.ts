@@ -9,9 +9,9 @@ export class Vignetting extends Filter {
             FACTOR:     `float(${factor})`,
             HARDNESS:   `float(${hardness})`,
             // Addition macros:
-            screenSize:     `vec2(${screen.pow2width}, ${screen.pow2height})`,
-            iResolution:    `vec2(${screen.pow2width}, ${screen.pow2height})`,
-            oResolution:    `vec2(${screen.pow2width}, ${screen.pow2height})`,
+            screenSize:     `vec2(${screen.width}, ${screen.height})`,
+            iResolution:    `vec2(${screen.width/screen.ratio}, ${screen.height/screen.ratio})`,
+            oResolution:    `vec2(${screen.width*screen.ratio}, ${screen.height*screen.ratio})`,
         }));
     }
 

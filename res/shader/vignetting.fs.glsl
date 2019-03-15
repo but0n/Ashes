@@ -2,7 +2,7 @@ precision highp float;
 uniform sampler2D base;
 
 void main(){
-    vec2 uv = gl_FragCoord.xy / oResolution;
+    vec2 uv = gl_FragCoord.xy / screenSize;
     vec2 pos = uv * 2. - 1.;
     float mask=1.-dot(pos,pos)*FACTOR;
     mask=clamp(.5+(mask-.5)*HARDNESS,0.,1.);

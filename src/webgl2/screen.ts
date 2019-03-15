@@ -52,7 +52,7 @@ export class Screen {
         // initial capture
         this.pow2width = nearestPow2(this.width);
         this.pow2height = nearestPow2(this.height);
-        this.capture = new Filter(this, new Shader(), this.pow2width, this.pow2height);
+        this.capture = new Filter(this, new Shader());
         this.capture.renderToScreen = false;
 
         // Bloom.initFilters(this)
@@ -75,7 +75,7 @@ export class Screen {
         this.setViewport();
     }
 
-    setViewport(width = this.width, height =this.height) {
+    setViewport(width = this.width, height = this.height) {
         this.gl.viewport(0, 0, width, height);
     }
 
