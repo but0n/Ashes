@@ -63,9 +63,9 @@ class MeshRendererSystem extends ComponentSystem {
             MeshRendererSystem.render(components.MeshRenderer, RenderQueue.Blend);
         }
         // After render
-        // TODO: depth func
         for (let id in Screen.list) {
             let screen = Screen.list[id] as Screen;
+            screen.gl.depthFunc(WebGL2RenderingContext.ALWAYS);
 
             // post effects
             for(let [i,ft] of screen.filters.entries()) {
@@ -80,6 +80,7 @@ class MeshRendererSystem extends ComponentSystem {
                 MeshRendererSystem.render(ft.meshRender);
             }
 
+            screen.gl.depthFunc(WebGL2RenderingContext.LESS);
             // // Render to screen
             // let lastft = screen.filters[screen.filters.length-1];
             // lastft.bind(null);
@@ -137,7 +138,6 @@ class MeshRendererSystem extends ComponentSystem {
         let needsUpdateTexture = currentMat.shader.isDirty;
         this.useMaterial(target, idShader);
 
-        // TODO: enhance
         if(currentMat.doubleSided) {
             gl.disable(gl.CULL_FACE);
         } else {
