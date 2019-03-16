@@ -17,7 +17,7 @@ export class Material {
     constructor(shader: Shader, name = null, doubleSided = false) {
         this.shader = Shader.clone(shader);
         this.name = name;
-        this.shader.macros['SHADER_NAME'] = name
+        this.shader.macros['SHADER_NAME'] = name;
         this.doubleSided = doubleSided;
     }
     static clone(mat: Material) {

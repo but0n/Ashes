@@ -36,7 +36,7 @@ gltf = assetRoot + 'gltfsamples/FlightHelmet/glTF/FlightHelmet.gltf';
 // gltf = assetRoot + 'res/BrainStem.glb';
 // gltf = assetRoot + 'gltfsamples/DamagedHelmet.glb';
 // gltf = assetRoot + 'res/MorphPrimitivesTest.glb';
-// gltf = assetRoot + 'res/project_polly.glb';
+// gltf = assetRoot + 'gltfsamples/project_polly.glb';
 // gltf = assetRoot + 'gltfsamples/Suzanne/Suzanne.gltf';
 scale = 1;
 
@@ -47,6 +47,7 @@ async function main() {
     screen.bgColor = [0.9,0.9,0.9,1];
     // Filters
     // Bloom.initFilters(screen, threshold || 0.6, radiu || 80, intensity || 1.2);
+    screen.attachFilter(new Vignetting(screen));
     screen.attachFilter(new Vignetting(screen));
 
     // let loading = new loadingAnim(screen);
@@ -71,7 +72,7 @@ async function main() {
     let mainCamera = scene.appendChild(EntityMgr.create('camera'));
     let cameraTrans = mainCamera.components.Transform;
     let cam = mainCamera.addComponent(new Camera(screen.width / screen.height));
-    vec3.set(cameraTrans.translate, 0, 0, 10);
+    vec3.set(cameraTrans.translate, 0, 0, 1);
 
     mainCamera.addComponent(new OrbitControl(screen, mainCamera));
     // screen.mainCamera = cam;
@@ -115,16 +116,9 @@ async function main() {
 // FIXME:
 let loading_vs = `
 attribute vec3 POSITION;
-attribute vec2 TEXCOORD_0;
-
-varying vec2 uv;
-varying vec4 pos;
 
 void main() {
-  uv = TEXCOORD_0;
-  vec4 position = vec4(POSITION, 1);
-  pos = position;
-  gl_Position = position;
+  gl_Position = vec4(POSITION, 1);
 }
 `;
 
@@ -134,12 +128,10 @@ uniform sampler2D base;
 uniform float cur;
 uniform float powcur;
 
-varying vec2 uv;
-varying vec4 pos;
-
 void main() {
+    vec2 uv = gl_FragCoord.xy * 2. / screenSize;
     vec4 base = texture2D(base, uv);
-    float prog = abs(uv.y - 0.5) * 2.;
+    float prog = abs(uv.y);
 
     // Middle out
 

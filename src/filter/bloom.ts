@@ -35,27 +35,28 @@ export class Bloom {
         // macro = {
         //     OFFSET: `vec2(0, ${radius / height})`,
         //     // Addition macros:
-        //     screenSize:     `vec2(${screen.pow2width}, ${screen.pow2height})`,
         //     iResolution:    `vec2(${screen.pow2width}, ${screen.pow2height})`,
         //     oResolution:    `vec2(${screen.pow2width * 0.5}, ${screen.pow2height * 0.5})`,
 
         // };
         // let blur2 = new Filter(screen, new Shader(blurvs, blurfs, macro));
 
-        let width = screen.pow2width;
-        let height = screen.pow2height;
+        let width = screen.width;
+        let height = screen.height;
 
         let pass = [];
-        while (width > 10 || height > 10) {
+        // while (width > 100 || height > 100) {
+            const nw = Math.floor(width * 0.5);
+            const nh = Math.floor(height * 0.5);
             pass.push(new Filter(screen, new Shader(blurvs, blurfs, {
-                OFFSET: `vec2(${radius / width}, 0)`,
+                OFFSET: `vec2(0, 0)`,
+                // OFFSET: `vec2(${radius / width}, 0)`,
                 // OFFSET: `vec2(0, ${radius / height})`,
                 // Addition macros:
-                screenSize: `vec2(${screen.pow2width}, ${screen.pow2height})`,
                 iResolution: `vec2(${width}, ${height})`,
-                oResolution: `vec2(${width *= 0.5}, ${height *= 0.5})`,
-            }), width, height));
-        }
+                oResolution: `vec2(${nw}, ${nh})`,
+            }), width = nw, height = nh));
+        // }
 
 
         // Combiand
@@ -76,6 +77,8 @@ export class Bloom {
         // screen.attachFilter(blur2);
         for(let p of pass) {
             screen.attachFilter(p);
+            // p.needsClear = false;
+            console.log(p.width, p.height);
         }
 
         // screen.attachFilter(comb);
@@ -187,7 +190,7 @@ vec4 noiseblur() {
 }
 
 void main() {
-    uv = gl_FragCoord.xy / iResolution;
+    uv = gl_FragCoord.xy / oResolution;
     gl_FragColor = gaussianBlur();
     // gl_FragColor = noiseblur();
     // gl_FragColor = blur9();
