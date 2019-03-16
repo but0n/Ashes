@@ -93,7 +93,7 @@ export class gltfScene {
         // Create entity instance for each node
         let gltf = this.gltf;
         let { scene, scenes, nodes, skins, animations } = gltf;
-        this.entities = await Promise.all(gltf.nodes.map((node, index) => this.waitEntity(node, index)));
+        this.entities = gltf.nodes.map((node, index) => this.createEntity(node, index));
 
 
         if (skins) {

@@ -50,8 +50,8 @@ export class Screen {
         this.setScreenSize(); // initial - full screen
 
         // initial capture
-        this.pow2width = nearestPow2(this.width);
-        this.pow2height = nearestPow2(this.height);
+        // this.pow2width = nearestPow2(this.width);
+        // this.pow2height = nearestPow2(this.height);
         this.capture = new Filter(this, new Shader());
         this.capture.renderToScreen = false;
 

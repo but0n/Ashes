@@ -13,50 +13,38 @@ export class Bloom {
             THRESHOLD: threshold
         };
 
-        let blurSize = 128;
-        let thresholdFilter = new Filter(screen, new Shader(threshold_vs, threshold_fs, macro), blurSize, blurSize);
+        let thresholdFilter = new Filter(screen, new Shader(threshold_vs, threshold_fs, macro));
 
 
         // Two pass gaussian blur
         // let width = screen.width / screen.ratio;
         // let height = screen.height /screen.ratio;
 
-        radius *= screen.ratio;
-        // macro = {
-        //     OFFSET: `vec2(${radius / width}, 0)`,
-        //     // Addition macros:
-        //     screenSize:     `vec2(${screen.pow2width}, ${screen.pow2height})`,
-        //     iResolution:    `vec2(${screen.pow2width}, ${screen.pow2height})`,
-        //     oResolution:    `vec2(${screen.pow2width}, ${screen.pow2height})`,
-
-        // };
-        // let blur1 = new Filter(screen, new Shader(blurvs, blurfs, macro));
-
-        // macro = {
-        //     OFFSET: `vec2(0, ${radius / height})`,
-        //     // Addition macros:
-        //     iResolution:    `vec2(${screen.pow2width}, ${screen.pow2height})`,
-        //     oResolution:    `vec2(${screen.pow2width * 0.5}, ${screen.pow2height * 0.5})`,
-
-        // };
-        // let blur2 = new Filter(screen, new Shader(blurvs, blurfs, macro));
 
         let width = screen.width;
         let height = screen.height;
 
         let pass = [];
-        // while (width > 100 || height > 100) {
+        radius = 1 * screen.ratio;
+        let core = 2;
+        intensity = 1.0;
+        // while (width > 60 || height > 60) {
+        while (core--) {
             const nw = Math.floor(width * 0.5);
             const nh = Math.floor(height * 0.5);
             pass.push(new Filter(screen, new Shader(blurvs, blurfs, {
-                OFFSET: `vec2(0, 0)`,
-                // OFFSET: `vec2(${radius / width}, 0)`,
-                // OFFSET: `vec2(0, ${radius / height})`,
+                OFFSET: `vec2(${radius/nw}, 0)`,
                 // Addition macros:
                 iResolution: `vec2(${width}, ${height})`,
                 oResolution: `vec2(${nw}, ${nh})`,
             }), width = nw, height = nh));
-        // }
+            pass.push(new Filter(screen, new Shader(blurvs, blurfs, {
+                OFFSET: `vec2(0, ${radius/nh})`,
+                // Addition macros:
+                iResolution: `vec2(${width}, ${height})`,
+                oResolution: `vec2(${nw}, ${nh})`,
+            }), width = nw, height = nh));
+        }
 
 
         // Combiand
@@ -72,16 +60,15 @@ export class Bloom {
 
         // Assemble
         // The first stage must be attach to screen
-        // screen.attachFilter(thresholdFilter);
+        screen.attachFilter(thresholdFilter);
         // screen.attachFilter(blur1);
         // screen.attachFilter(blur2);
         for(let p of pass) {
             screen.attachFilter(p);
-            // p.needsClear = false;
             console.log(p.width, p.height);
         }
 
-        // screen.attachFilter(comb);
+        screen.attachFilter(comb);
 
 
     }
@@ -90,16 +77,9 @@ export class Bloom {
 
 let threshold_vs = `
 attribute vec3 POSITION;
-attribute vec2 TEXCOORD_0;
-
-varying vec2 uv;
-varying vec4 pos;
 
 void main() {
-  uv = TEXCOORD_0;
-  vec4 position = vec4(POSITION, 1);
-  pos = position;
-  gl_Position = position;
+  gl_Position = vec4(POSITION, 1);
 }
 `;
 
@@ -107,15 +87,13 @@ let threshold_fs = `
 precision highp float;
 uniform sampler2D base;
 
-varying vec2 uv;
-varying vec4 pos;
-
-
 void main() {
+    vec2 uv = gl_FragCoord.xy / screenSize;
     vec4 color = texture2D(base, uv);
     float brightness = dot(color.rgb, vec3(0.2126, 0.7152, 0.0722));
     if(brightness < THRESHOLD) {
-        color.r = color.g = color.b = 0.0;
+        color.r = color.g = color.b = color.a = 0.0;
+        // discard;
     }
     gl_FragColor = color;
 }
@@ -191,25 +169,18 @@ vec4 noiseblur() {
 
 void main() {
     uv = gl_FragCoord.xy / oResolution;
-    gl_FragColor = gaussianBlur();
+    // gl_FragColor = gaussianBlur();
     // gl_FragColor = noiseblur();
-    // gl_FragColor = blur9();
+    gl_FragColor = blur9();
     // gl_FragColor = vec4(mod(uv, 1.), 0, 1);
 }
 `;
 
 let combine_vs = `
 attribute vec3 POSITION;
-attribute vec2 TEXCOORD_0;
-
-varying vec2 uv;
-varying vec4 pos;
 
 void main() {
-  uv = TEXCOORD_0;
-  vec4 position = vec4(POSITION, 1);
-  pos = position;
-  gl_Position = position;
+  gl_Position = vec4(POSITION, 1);
 }
 `;
 
@@ -218,13 +189,10 @@ precision highp float;
 uniform sampler2D base;
 uniform sampler2D originTex;
 
-varying vec2 uv;
-varying vec4 pos;
-
-
 void main() {
+    vec2 uv = gl_FragCoord.xy / screenSize;
     vec4 origin = texture2D(originTex, uv);
-    vec4 addition = texture2D(base, uv) * vec4(vec3(BLOOM_INTENSITY),1);
+    vec4 addition = texture2D(base, uv) * vec4(vec3(BLOOM_INTENSITY),0);
     gl_FragColor = origin + addition;
 }
 `;

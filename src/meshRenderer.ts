@@ -60,12 +60,14 @@ class MeshRendererSystem extends ComponentSystem {
         }
         for (let { components } of this.group) {
             // TODO: handle multiple transparent objects
+            const mr = components.MeshRenderer as MeshRenderer;
             MeshRendererSystem.render(components.MeshRenderer, RenderQueue.Blend);
         }
         // After render
         for (let id in Screen.list) {
             let screen = Screen.list[id] as Screen;
             screen.gl.depthFunc(WebGL2RenderingContext.ALWAYS);
+            screen.gl.disable(WebGL2RenderingContext.BLEND);
 
             // post effects
             for(let [i,ft] of screen.filters.entries()) {
@@ -79,7 +81,7 @@ class MeshRendererSystem extends ComponentSystem {
                 }
                 MeshRendererSystem.render(ft.meshRender);
             }
-
+            screen.gl.enable(WebGL2RenderingContext.BLEND);
             screen.gl.depthFunc(WebGL2RenderingContext.LESS);
             // // Render to screen
             // let lastft = screen.filters[screen.filters.length-1];
