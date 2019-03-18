@@ -25,9 +25,9 @@ export class Bloom {
         let height = screen.height;
 
         let pass = [];
-        radius = 1 * screen.ratio;
-        let core = 2;
-        intensity = 1.0;
+        radius = 1.0 * screen.ratio;
+        let core = 3;
+        intensity = 2.0;
         // while (width > 60 || height > 60) {
         while (core--) {
             const nw = Math.floor(width * 0.5);
