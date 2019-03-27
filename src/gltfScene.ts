@@ -55,21 +55,24 @@ export class gltfScene {
                     accessors.push(acc);
                 }
 
-                // if(targets) {
-                //     for (let target of targets) {
-                //         for (let tar in target) {
-                //             let acc: Accessor = gltf.accessors[target[tar]];
-                //             acc.attribute = '_' + tar;
-                //             accessors.push(acc);
-                //         }
-                //         break;
-                //     }
-                // }
 
                 // Triangles
                 let ebo = gltf.accessors[meshData.indices];
 
                 let mf = new Mesh(accessors, ebo, meshData.mode);
+
+                // Morph targets
+                if(targets) {
+                    mf.hasMorphTargets = true;
+                    for (let target of targets) {
+                        for (let tar in target) {
+                            let acc: Accessor = gltf.accessors[target[tar]];
+                            acc.attribute = tar;
+                            mf.targets[tar] = acc;
+                        }
+                        break;
+                    }
+                }
 
                 if (attributes.TANGENT == null && attributes.TEXCOORD_0 != null) {
                     console.warn('Using computed tagent!');

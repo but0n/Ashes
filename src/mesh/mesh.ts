@@ -5,6 +5,9 @@ export class Mesh {
     // Render mode
     mode: number;
 
+    data = {};  // Raw data
+    hasMorphTargets = false;
+    targets = {};
 
     constructor(attributes: Accessor[], indices?: Accessor, mode = WebGL2RenderingContext.TRIANGLES) {
         this.attributes = attributes;
@@ -14,6 +17,11 @@ export class Mesh {
             this.indices.bufferView.target = WebGL2RenderingContext.ELEMENT_ARRAY_BUFFER;
         }
         this.mode = mode;
+        // reference mesh data
+        for(let attr of attributes) {
+            const name = attr.attribute;
+            this.data[name] = attr.data;
+        }
     }
 
     static bindAccessorsVBO(target: Mesh, gl: WebGL2RenderingContext, locationList) {
