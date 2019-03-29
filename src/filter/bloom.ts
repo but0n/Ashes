@@ -2,6 +2,7 @@ import { Filter } from "../filter";
 import { Shader } from "../shader";
 import { Screen } from "../webgl2/screen";
 
+// Real-Time Glow: https://developer.nvidia.com/gpugems/GPUGems/gpugems_ch21.html
 export class Bloom {
 
     static initFilters(screen: Screen, threshold = 0.7, radius = 1, intensity = 1) {
@@ -29,7 +30,7 @@ export class Bloom {
         let core = 3;
         intensity = 2.0;
         // while (width > 60 || height > 60) {
-        while (core--) {
+        while (core-- && width > 32 && height > 32) {
             const nw = Math.floor(width * 0.5);
             const nh = Math.floor(height * 0.5);
             pass.push(new Filter(screen, new Shader(blurvs, blurfs, {
