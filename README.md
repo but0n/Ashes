@@ -8,9 +8,12 @@
 
 ![](https://user-images.githubusercontent.com/7625588/52896085-bbdfbd00-31fd-11e9-944d-cfed12c18cbd.png)
 
-### [glTF-test](https://cx20.github.io/gltf-test/?engines=Ashes) by [cx20](https://github.com/cx20)
+# Examples
+ - [glTF test](https://cx20.github.io/gltf-test/?engines=Ashes)
+ - [Examples](http://jsdo.it/tag/Ashes)
+ - [Examples](https://jsfiddle.net/user/cx20/fiddles/)
 
-## Getting Started
+# Getting Started
 
 - via CDN
 ```html
@@ -21,7 +24,7 @@
 npm i ashes3d
 ```
 
-## Usage
+# Usage
 
 [Try it](https://codepen.io/but0n/pen/daERdd)
 
@@ -74,7 +77,7 @@ main();
 
 ```
 
-### Create a quad with texture
+## Create a quad with texture
 
 ```js
     // Create an entity
@@ -108,7 +111,7 @@ main();
 
 ```
 
-## Deployment
+# Deployment
 
 ```sh
 git clone https://github.com/but0n/Ashes.git
