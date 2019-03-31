@@ -7,7 +7,7 @@ export enum RenderQueue {
 }
 
 export class Material {
-    static pool: Material[];
+    static pool: Material[] = [];
     name: string;
     shader: Shader;
     isDirty: boolean = true;

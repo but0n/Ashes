@@ -1,6 +1,6 @@
 import { Texture, Sampler } from "./texture";
 import { MeshRenderer } from "./meshRenderer";
-import { Material } from "./material";
+import { Material } from "./material/material";
 import { Mesh, Accessor, bufferView } from "./mesh/mesh";
 import { Shader } from "./shader";
 import { Screen } from "./webgl2/screen";
