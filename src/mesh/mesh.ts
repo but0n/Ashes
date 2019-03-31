@@ -6,8 +6,6 @@ export class Mesh {
     mode: number;
 
     data = {};  // Raw data
-    hasMorphTargets = false;
-    targets = {};
 
     constructor(attributes: Accessor[], indices?: Accessor, mode = WebGL2RenderingContext.TRIANGLES) {
         this.attributes = attributes;

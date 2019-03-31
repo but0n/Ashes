@@ -101,8 +101,8 @@ class MeshRendererSystem extends ComponentSystem {
         if(mr.SID == null || mat == null) return;
         mat.ref++;
         mr.materials.push(mat);
-        Material.updateUniform(mat, Screen.list[mr.SID].gl); // the first time this material get context
         this.useMaterial(mr, 0);
+        Material.updateUniform(mat); // the first time this material get context
         this.updateVAO(mr);
     }
 
@@ -126,7 +126,7 @@ class MeshRendererSystem extends ComponentSystem {
 
     static updateMaterial(target: MeshRenderer) {
         if(target.materials[0].isDirty) {
-            Material.updateUniform(target.materials[0], Screen.list[target.SID].gl);
+            Material.updateUniform(target.materials[0]);
         }
     }
 

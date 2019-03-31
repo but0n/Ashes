@@ -1,4 +1,4 @@
-import { Shader } from "../shader";
+import { Shader, UniformInfo } from "../shader";
 import { Texture } from "../texture";
 
 export enum RenderQueue {
@@ -15,6 +15,7 @@ export class Material {
     textures: Map<string, Texture> = new Map();
     doubleSided: boolean;
     queue = RenderQueue.Opaque;
+    uniforms = {};
     ref = 0;    // Reference counting
     constructor(shader: Shader, name = null, doubleSided = false) {
         this.shader = Shader.clone(shader);
@@ -36,22 +37,33 @@ export class Material {
     }
 
     static setUniform(mat: Material, key: string, value) {
-        if(mat.shader.uniforms[key] == null) {
-            // console.warn(`${key} doesn't found!`);
-            return;
+        if(mat.uniforms[key] == null) {
+            mat.uniforms[key] = new Uniform();
         }
-        mat.shader.uniforms[key].value = value;
-        mat.shader.uniforms[key].isDirty = true;
+        mat.uniforms[key].value = value;
+        mat.uniforms[key].isDirty = true;
         mat.isDirty = true;
     }
 
-    static updateUniform(mat: Material, ctx: WebGL2RenderingContext) {
-        if(mat.shader.isDirty) {
-            Shader.buildProgram(mat.shader, ctx);
-            this.useMaterial(mat, ctx);
+    static updateUniform(mat: Material) {
+        const {shader} = mat;
+        const gl = shader.ctx;
+        for(let k in mat.uniforms) {
+            const uni = mat.uniforms[k] as Uniform;
+            if(uni.value != null && uni.isDirty) {
+                uni.isDirty = false;
+                const info = shader.uniforms[k] as UniformInfo;
+                if(info == null) {
+                    console.warn(`'${k} doesn't exist!`);
+                } else {
+                    if(info.argLength == 3) {
+                        gl[info.setter](info.location, false, uni.value);
+                    } else {
+                        gl[info.setter](info.location, uni.value);
+                    }
+                }
+            }
         }
-
-        Shader.updateUniform(mat.shader);
         mat.isDirty = false;
     }
 
@@ -89,4 +101,9 @@ export class Material {
 
     static SHADER_PATH = 'res/shader/';
 
+}
+
+export class Uniform {
+    value = null; // empty texture channel must be null
+    isDirty = false;
 }

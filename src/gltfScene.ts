@@ -61,18 +61,6 @@ export class gltfScene {
 
                 let mf = new Mesh(accessors, ebo, meshData.mode);
 
-                // Morph targets
-                if(targets) {
-                    mf.hasMorphTargets = true;
-                    for (let target of targets) {
-                        for (let tar in target) {
-                            let acc: Accessor = gltf.accessors[target[tar]];
-                            acc.attribute = tar;
-                            mf.targets[tar] = acc;
-                        }
-                        break;
-                    }
-                }
 
                 if (attributes.TANGENT == null && attributes.TEXCOORD_0 != null) {
                     console.warn('Using computed tagent!');
@@ -84,7 +72,18 @@ export class gltfScene {
                 if (attributes.JOINTS_0 != null) {
                     mat.shader.macros['HAS_SKINS'] = '';
                 }
-
+                // Morph targets
+                if(targets) {
+                    mat.shader.macros['HAS_MORPH_TARGETS'] = '';
+                    Material.setUniform(mat, 'weights', new Float32Array([0.5]));
+                    for (let target of targets) {
+                        for (let tar in target) {
+                            let acc: Accessor = gltf.accessors[target[tar]];
+                            acc.attribute = 'TAR_' + tar;
+                            mf.attributes.push(acc);
+                        }
+                    }
+                }
 
                 return [mf, mat];
             })
@@ -139,6 +138,7 @@ export class gltfScene {
                 for (let { sampler, target } of channels) {
                     let e = this.entities[target.node];
                     let trans = e.components.Transform as Transform;
+                    let mat = e.components.Material as Material;
                     let controlChannel: Float32Array;
                     switch (target.path) {
                         case 'translation':
@@ -151,6 +151,7 @@ export class gltfScene {
                             controlChannel = trans.scale;
                             break;
                         case 'weights':
+                            // controlChannel = mat.uniforms['weights'];
                             break;
                     }
                     if (controlChannel != null) {

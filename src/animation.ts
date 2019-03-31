@@ -97,6 +97,8 @@ class AnimationSystem extends ComponentSystem {
             case 3:
                 vec3.lerp(anim.channel, prevFrame||this.defaultVec3, nextFrame, interpolationValue);
                 break;
+            default:
+                break;
         }
     }
     playStep(anim: AnimationChannel, dt: number) {

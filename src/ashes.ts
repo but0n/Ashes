@@ -11,7 +11,7 @@ export { Texture } from "./texture";
 export { Mesh, Accessor, bufferView } from "./mesh/mesh";
 export { QuadMesh } from "./mesh/quadMesh";
 export { Filter } from "./filter";
-export { Shader, Uniform } from "./shader";
+export { Shader, UniformInfo } from "./shader";
 export { Bloom } from "./filter/bloom";
 export { Vignetting } from "./filter/vignetting";
 

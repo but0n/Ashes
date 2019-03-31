@@ -67,21 +67,6 @@ export class Shader {
         shader.uniforms = Shader.pickupActiveUniforms(shader.ctx, shader.program);
     }
 
-    static updateUniform(shader: Shader) {
-        let gl = shader.ctx;
-        for(let k in shader.uniforms) {
-            let uni: Uniform = shader.uniforms[k];
-            if(uni.value != null && uni.isDirty) {
-                uni.isDirty = false;
-                if(uni.argLength == 3) {
-                    gl[uni.setter](uni.location, false, uni.value);
-                } else {
-                    gl[uni.setter](uni.location, uni.value);
-                }
-            }
-        }
-    }
-
     static pickupActiveAttributes(ctx: WebGL2RenderingContext, shader: WebGLProgram) {
         const amount = ctx.getProgramParameter(shader, ctx.ACTIVE_ATTRIBUTES);
         let attributes = {};
@@ -99,12 +84,12 @@ export class Shader {
         for(let i = 0; i < amount; i++) {
             const {name, type} = gl.getActiveUniform(shader, i);
             const location = gl.getUniformLocation(shader, name);
-            const setter = Uniform.getUnifSetter(type);
+            const setter = UniformInfo.getUnifSetter(type);
             let length = gl[setter].length;
             if(length == 0) {   // prototype was modified by debugging tools
-                length = Uniform.getUnifArgLenght(type);
+                length = UniformInfo.getUnifArgLenght(type);
             }
-            uniforms[name] = new Uniform(location, type, setter, length);
+            uniforms[name] = new UniformInfo(location, type, setter, length);
         }
         return uniforms;
     }
@@ -138,7 +123,7 @@ export class Shader {
     }
 }
 
-export class Uniform {
+export class UniformInfo {
     location: WebGLUniformLocation;
     type: GLenum;
     setter: string;
@@ -149,8 +134,7 @@ export class Uniform {
         this.setter = setter;
         this.argLength = argLength;
     }
-    value=null; // empty texture channel must be null
-    isDirty: boolean = false;
+
     static getUnifSetter(type: GLenum) {
         switch (type) {
             case WebGLRenderingContext.FLOAT:
