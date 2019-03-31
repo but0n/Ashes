@@ -7,6 +7,7 @@ export enum RenderQueue {
 }
 
 export class Material {
+    static pool: Material[];
     name: string;
     shader: Shader;
     isDirty: boolean = true;
@@ -19,6 +20,7 @@ export class Material {
         this.name = name;
         this.shader.macros['SHADER_NAME'] = name;
         this.doubleSided = doubleSided;
+        Material.pool.push(this);
     }
     static clone(mat: Material) {
         return new Material(mat.shader, mat.name, mat.doubleSided);
