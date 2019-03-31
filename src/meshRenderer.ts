@@ -98,7 +98,8 @@ class MeshRendererSystem extends ComponentSystem {
     }
 
     static attachMaterial(mr: MeshRenderer, mat: Material) {
-        if(mr.SID == null) return;
+        if(mr.SID == null || mat == null) return;
+        mat.ref++;
         mr.materials.push(mat);
         Material.updateUniform(mat, Screen.list[mr.SID].gl); // the first time this material get context
         this.useMaterial(mr, 0);

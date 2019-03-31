@@ -15,6 +15,7 @@ export class Material {
     textures: Map<string, Texture> = new Map();
     doubleSided: boolean;
     queue = RenderQueue.Opaque;
+    ref = 0;    // Reference counting
     constructor(shader: Shader, name = null, doubleSided = false) {
         this.shader = Shader.clone(shader);
         this.name = name;
