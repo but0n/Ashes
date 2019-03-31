@@ -1,5 +1,5 @@
 import { Mesh } from "./mesh/mesh";
-import { Material, RenderQueue } from "./material";
+import { Material, RenderQueue } from "./material/material";
 import { Entity, EntityMgr } from "./ECS/entityMgr";
 import { Transform } from "./transform";
 import { Screen } from "./webgl2/screen";

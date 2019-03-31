@@ -19,7 +19,7 @@ export { Vignetting } from "./filter/vignetting";
 export { Transform } from "./transform"; // All entities has transform as a default component
 export { Camera } from "./camera";
 export { OrbitControl } from "./component/orbitControl";
-export { Material } from "./material";
+export { Material } from "./material/material";
 export { MeshRenderer } from "./meshRenderer";
 export { Animation, AnimationChannel } from "./animation";
 export { Skin } from "./skin";

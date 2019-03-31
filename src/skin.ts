@@ -3,7 +3,7 @@ import { Accessor } from "./mesh/mesh";
 import { ComponentSystem } from "./ECS/component";
 import { System } from "./ECS/system";
 import { Transform } from "./transform";
-import { Material } from "./material";
+import { Material } from "./material/material";
 
 export class Skin {
     inverseBindMatrices: Accessor;

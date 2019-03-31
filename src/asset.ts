@@ -1,5 +1,5 @@
 import { MeshRenderer } from "./meshRenderer";
-import { Material } from "./material";
+import { Material } from "./material/material";
 import { Screen } from "./webgl2/screen";
 import { gltfScene } from "./gltfScene";
 import { EntityMgr } from "./ECS/entityMgr";

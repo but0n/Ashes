@@ -3,7 +3,7 @@ import { vec3, mat4 } from "./math";
 import { Transform } from "./transform";
 import { ComponentSystem } from "./ECS/component";
 import { MeshRenderer } from "./meshRenderer";
-import { Material } from "./material";
+import { Material } from "./material/material";
 import { System } from "./ECS/system";
 
 export class Camera {

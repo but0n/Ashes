@@ -10,7 +10,7 @@ import { OrbitControl } from "./component/orbitControl";
 import { Bloom } from "./filter/bloom";
 import { Filter } from "./filter";
 import { Shader } from "./shader";
-import { Material } from "./material";
+import { Material } from "./material/material";
 import { Vignetting } from "./filter/vignetting";
 
 

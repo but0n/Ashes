@@ -1,7 +1,7 @@
 import { EntityMgr, Entity } from "./ECS/entityMgr";
 import { Accessor, Mesh } from "./mesh/mesh";
 import { Texture } from "./texture";
-import { Material, RenderQueue } from "./material";
+import { Material, RenderQueue } from "./material/material";
 import { vec3, vec4, mat4 } from "./math";
 import { TransformSystem, Transform } from "./transform";
 import { Skin } from "./skin";

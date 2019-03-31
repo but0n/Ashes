@@ -1,5 +1,5 @@
-import { Shader } from "./shader";
-import { Texture } from "./texture";
+import { Shader } from "../shader";
+import { Texture } from "../texture";
 
 export enum RenderQueue {
     Opaque,
