@@ -24,4 +24,5 @@ export { MeshRenderer } from "./meshRenderer";
 export { Animation, AnimationChannel } from "./animation";
 export { Skin } from "./skin";
 
+export const version = 'VERSION';
 // export { Example } from "./example";
