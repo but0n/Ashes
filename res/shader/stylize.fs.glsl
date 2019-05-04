@@ -186,11 +186,11 @@ void main() {
     // float roughness = clamp((1.0-rm.g) * roughnessFactor, 0.0, 1.0);
     // float metallic = clamp(rm.b * metallicFactor, 0.0, 1.0);
     vec3 f0 = vec3(0.04);
-    f0 = mix(f0, base.xyz, metallic);
 
-    vec3 diffuse = base.rgb * (vec3(1) - f0);
-    diffuse *= 1.0 - metallic;
+    vec3 diffuse = base.rgb * (vec3(1) - f0) * (1.0 - metallic);
     diffuse /= PI;
+
+    f0 = mix(f0, base.xyz, metallic);
 
     coreData core = coreData(
         diffuse,
