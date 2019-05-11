@@ -114,6 +114,8 @@ export class Asset {
         }
     }
 
+    static brdfLUT: Texture;
+
     static async loadGLTF(path: string, screen: Screen, envmap?: Texture, shader = new Shader(glsl.sylize.vs, glsl.sylize.fs)) {
         let gltf;
         // parse current path
@@ -186,7 +188,12 @@ export class Asset {
         gltf.commonShader = shader;
 
         // Load brdfLUT
-        gltf.brdfLUT = await this.loadTexture('https://raw.githubusercontent.com/KhronosGroup/glTF-WebGL-PBR/master/textures/brdfLUT.png', { minFilter: WebGL2RenderingContext.LINEAR });
+        if(this.brdfLUT === undefined) {
+            const brdfurl = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Viewer/master/assets/images/brdfLUT.png'
+            this.brdfLUT = await this.loadTexture(brdfurl, { minFilter: WebGL2RenderingContext.LINEAR });
+        }
+
+        gltf.brdfLUT = this.brdfLUT;
 
         if(envmap != null) {
             gltf.hasEnvmap = true;
