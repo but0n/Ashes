@@ -67,6 +67,11 @@ export class gltfScene {
                     Mesh.preComputeTangent(mf);
                 }
 
+                if(attributes.NORMAL == null) {
+                    console.warn('Using computed normal!');
+                    Mesh.preComputeNormal(mf);
+                }
+
                 let mat = gltf.materials[meshData.material || 0];
 
                 if (attributes.JOINTS_0 != null) {

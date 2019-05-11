@@ -55,6 +55,79 @@ export class Mesh {
         }
     }
 
+    static preComputeNormal(mesh: Mesh) {
+        let {indices} = mesh
+        // Collect required data chunks
+        let atts = {};
+        for(let acc of mesh.attributes) {
+            if(acc.attribute != 'POSITION')
+                continue;
+            let data = Accessor.newFloat32Array(acc);
+            let chunks = Accessor.getSubChunks(acc, data);
+            atts['_'+acc.attribute] = data;
+            atts[acc.attribute] = chunks;
+            // normal data is vec3, same as position
+            if(acc.attribute == 'POSITION') {
+                // malloc space for normal buffer
+                atts['_NORMAL'] = new Float32Array(data.length);
+                atts['NORMAL'] = Accessor.getSubChunks(acc, atts['_NORMAL']);
+            }
+        }
+
+        if(indices) {   // element
+            atts['i'] = Accessor.newUint16Array(indices);
+        } else {        // array
+            atts['i'] = atts['POSITION'].map((e,i) => i);
+        }
+
+        let pos: Float32Array[] = atts['POSITION'];
+        let ind = atts['i'];
+        let normal = atts['NORMAL'];
+        // Temp
+        let edge1 = vec3.create();
+        let edge2 = vec3.create();
+        for(let i = 0, l = ind.length; i < l; i+=3) {
+            let i0 = ind[i];
+            let i1 = ind[i+1];
+            let i2 = ind[i+2];
+            let p1 = pos[i0];
+            let p2 = pos[i1];
+            let p3 = pos[i2];
+
+            vec3.sub(edge1, p2, p1);
+            vec3.sub(edge2, p3, p1);
+
+            let nor = normal[i0];
+
+            // let f = 1.0 / (duv1[0] * duv2[1] - duv2[0] * duv1[1]);
+
+            // nor[0] = f * (duv2[1] * edge1[0] - duv1[1] * edge2[0]);
+            // nor[1] = f * (duv2[1] * edge1[1] - duv1[1] * edge2[1]);
+            // nor[2] = f * (duv2[1] * edge1[2] - duv1[1] * edge2[2]);
+
+            vec3.cross(nor, edge1, edge2);
+
+            vec3.normalize(nor, nor);
+            // Sharing the same normal vector
+            vec3.copy(normal[i1], nor);
+            vec3.copy(normal[i2], nor);
+        }
+
+        let normalBuffer = new bufferView();
+        normalBuffer.dataView = atts['_NORMAL'];
+        mesh.attributes.push(new Accessor(
+            {
+                bufferView: normalBuffer,
+                byteOffset: 0,
+                componentType: 5126,
+                count: normal.length,
+                type: 'VEC3',
+            },
+            'NORMAL'
+        ))
+
+    }
+
     static preComputeTangent(mesh: Mesh) {
         // http://www.opengl-tutorial.org/cn/intermediate-tutorials/tutorial-13-normal-mapping/
         // https://learnopengl-cn.readthedocs.io/zh/latest/05%20Advanced%20Lighting/04%20Normal%20Mapping/
@@ -67,7 +140,9 @@ export class Mesh {
             let chunks = Accessor.getSubChunks(acc, data);
             atts['_'+acc.attribute] = data;
             atts[acc.attribute] = chunks;
+            // tagent data is vec3, same as position
             if(acc.attribute == 'POSITION') {
+                // malloc space for tangent buffer
                 atts['_TANGENT'] = new Float32Array(data.length);
                 atts['TANGENT'] = Accessor.getSubChunks(acc, atts['_TANGENT']);
             }
