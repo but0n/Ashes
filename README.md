@@ -21,7 +21,7 @@
  - glTF support
  - Physically based rendering (PBR)
  - Post effects (WIP)
- - Skeleton Animation:
+ - Skeleton Animation
 
 # Getting Started
 
