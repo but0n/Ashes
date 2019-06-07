@@ -52,8 +52,8 @@ export class EntityMgr {
         return nodes as Entity[];
     }
 
-    static getComponents<T>(componentName: string) {
-        return this.find(`${this.entityTag}[${componentName.toLowerCase()}]`).map(({components}) => components[componentName]) as T[];
+    static getComponents<T>(componentName: string, root: any = document) {
+        return this.find(`${this.entityTag}[${componentName.toLowerCase()}]`, root).map(({components}) => components[componentName]) as T[];
     }
 
     static getEntites(deps: string[], root:any = document) {
