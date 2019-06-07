@@ -38,8 +38,8 @@ export class gltfScene {
 
         // Set up all Vertexes
         gltf.accessors = gltf.accessors.map(acc => {
+            acc.bufferView = gltf.bufferViews[acc.bufferView];
             let attr = new Accessor(acc);
-            attr.bufferView = gltf.bufferViews[acc.bufferView];
             return attr;
         });
         // Create mesh
