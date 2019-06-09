@@ -7,6 +7,7 @@ export { System } from "./ECS/system";
 // Math
 export { vec3, vec4, mat4, quat } from "./math";
 
+export { glsl } from "./glsl";
 export { Texture } from "./texture";
 export { Mesh, Accessor, bufferView } from "./mesh/mesh";
 export { QuadMesh } from "./mesh/quadMesh";
@@ -23,6 +24,9 @@ export { Material } from "./material/material";
 export { MeshRenderer } from "./meshRenderer";
 export { Animation, AnimationChannel } from "./animation";
 export { Skin } from "./skin";
+
+export { aabb } from "./bounds/aabb";
+export { octree } from "./tree/octree";
 
 export const version = 'VERSION';
 // export { Example } from "./example";
