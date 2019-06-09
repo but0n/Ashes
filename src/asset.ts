@@ -256,7 +256,12 @@ export class Asset {
     }
     static async loadCubemap(folder, format = 'jpg') {
         let rawImages = await this.loadCubeimg(folder, format);
-        return new Texture(rawImages);
+        return new Texture(rawImages, {
+            magFilter: WebGL2RenderingContext.LINEAR,
+            minFilter: WebGL2RenderingContext.LINEAR_MIPMAP_LINEAR,
+            wrapS: WebGL2RenderingContext.CLAMP_TO_EDGE,
+            wrapT: WebGL2RenderingContext.CLAMP_TO_EDGE,
+        });
     }
     static async loadTexture(url: string, option) {
         let image = await this.loadImage(url);
