@@ -1,4 +1,5 @@
 precision highp float;
+#include <macros>
 uniform sampler2D base;
 
 void main(){

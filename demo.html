@@ -10,7 +10,7 @@
     <!-- <script src="https://cdn.jsdelivr.net/npm/ashes3d@0.0.46/build/ashes.main.js"></script> -->
     <script src="build/ashes.main.js"></script>
     <script>
-let { Asset, EntityMgr, Camera, vec3, quat, Screen, OrbitControl, Filter, Shader, Material, QuadMesh, MeshRenderer, Texture } = Ashes;
+let { Asset, EntityMgr, Camera, vec3, quat, Screen, OrbitControl, Filter, Shader, Material, QuadMesh, MeshRenderer, Texture, aabb, octree } = Ashes;
 let {Vignetting} = Ashes;
 let {Bloom} = Ashes;
 
@@ -28,13 +28,14 @@ let gltf = assetRoot + 'gltfsamples/BoomBox.glb';
 // kgirls01: Skin, Animation:
 // ----------------------------
 // scale = 0.003;
-// yoffset = 3;
+// yoffset = 2;
 // threshold = 0.9;
 // gltf = assetRoot + 'gltfsamples/kgirls01/scene.gltf';
-gltf = assetRoot + 'gltfsamples/FlightHelmet/glTF/FlightHelmet.gltf';
+gltf = assetRoot + 'gltfsamples/hylian_shield/scene.gltf';
+// gltf = assetRoot + 'gltfsamples/FlightHelmet/glTF/FlightHelmet.gltf';
 // gltf = assetRoot + 'res/CesiumMan.glb';
 // gltf = assetRoot + 'res/BrainStem.glb';
-gltf = assetRoot + 'gltfsamples/DamagedHelmet.glb';
+// gltf = assetRoot + 'gltfsamples/DamagedHelmet.glb';
 // gltf = assetRoot + 'res/MorphPrimitivesTest.glb';
 // gltf = assetRoot + 'gltfsamples/project_polly.glb';
 // gltf = assetRoot + 'gltfsamples/Suzanne/Suzanne.gltf';
@@ -45,7 +46,7 @@ scale = 2;
 async function main() {
 
     let screen = new Screen('#screen');
-    screen.bgColor = [0.2,0.2,0.2, 1];
+    screen.bgColor = [0.23,0.23,0.23, 1];
     // screen.bgColor = [0, 0, 0, 1];
     // screen.bgColor = [0.9,0.9,0.9,1];
     // Filters
@@ -84,30 +85,36 @@ async function main() {
     let gltfroot = scene.appendChild(await Asset.loadGLTF(gltf, screen, skybox));
     let root = gltfroot.components.Transform;
     root.translate[1] = yoffset || 0;
-    vec3.scale(root.scale, root.scale, scale || 200)
+    vec3.scale(root.scale, root.scale, scale || 200);
+
+    // meshes = EntityMgr.getComponents('Mesh', gltfroot);
+    // for(let m of meshes) {
+    //     o = new octree(m, screen);
+    //     o.visible()
+    // }
 
     // scene.appendChild(await Asset.loadGLTF(assetRoot + 'res/BrainStem.glb', screen, skybox));
 
-    // The original size of quad is 2x2
+    // // The original size of quad is 2x2
     // let quad = EntityMgr.create('quad');
+    // scene.appendChild(quad);
 
     // let quadMat = await Asset.LoadMaterial('stylize');
-    // let floor = await Asset.loadTexture('res/textures/floor.png', { minFilter: screen.gl.NEAREST_MIPMAP_NEAREST });
-    // floor.flipY = true;
+    // // let floor = await Asset.loadTexture('res/textures/floor.png', { minFilter: screen.gl.NEAREST_MIPMAP_NEAREST });
+    // // floor.flipY = true;
     // let floor = new Texture();
-    // window['floor'] = floor;
-    // floor.data = new Uint8Array(4 * 256 * 256);
-    // for (let i = 0; i < 256 * 256; i++) {
-    //     floor.data.set([Math.random() * 256, Math.random() * 256, Math.random() * 256, 256], i * 4);
-    // }
+    // // window['floor'] = floor;
+    // // floor.data = new Uint8Array(4 * 256 * 256);
+    // // for (let i = 0; i < 256 * 256; i++) {
+    // //     floor.data.set([Math.random() * 256, Math.random() * 256, Math.random() * 256, 256], i * 4);
+    // // }
     // floor.data = Texture.defaultData;
-    // Material.setTexture(quadMat, 'baseColorTexture', floor);
-    // quadMat.shader.macros['HAS_BASECOLOR_MAP'] = '';
+    // // Material.setTexture(quadMat, 'baseColorTexture', floor);
+    // // quadMat.shader.macros['HAS_BASECOLOR_MAP'] = '';
 
     // let quadMR = new MeshRenderer(screen, new QuadMesh(), quadMat);
     // quad.addComponent(quadMR);
     // quat.fromEuler(quad.components.Transform.quaternion, -90, 0, 0);
-    // vec3.scale(quad.components.Transform.scale, quad.components.Transform.scale, 0.2);
 
     // let target = document.querySelectorAll('[data-name=_MovingCamera]')[0];
     // mainCamera.remove();
@@ -126,6 +133,7 @@ void main() {
 
 let loading_fs = `
 precision highp float;
+#include <macros>
 uniform sampler2D base;
 uniform float cur;
 uniform float powcur;

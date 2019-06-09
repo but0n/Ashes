@@ -44,13 +44,13 @@ export class Shader {
         if(shader.vertex) {   // Vertex shader
             shader.ctx.deleteShader(shader.vertex);
         }
-        shader.vertex = Shader.compileShader(shader.ctx, shader.ctx.VERTEX_SHADER, this.macros + shader.vertexSource);
+        shader.vertex = Shader.compileShader(shader.ctx, shader.ctx.VERTEX_SHADER, shader.vertexSource.replace('#include <macros>', this.macros));
 
 
         if (shader.fragment) { // Fragment shader
             shader.ctx.deleteShader(shader.fragment);
         }
-        shader.fragment = Shader.compileShader(shader.ctx, shader.ctx.FRAGMENT_SHADER, this.macros + shader.fragmentSource);
+        shader.fragment = Shader.compileShader(shader.ctx, shader.ctx.FRAGMENT_SHADER, shader.fragmentSource.replace('#include <macros>', this.macros));
 
         if(!shader.vertex || !shader.fragment) {
             return;

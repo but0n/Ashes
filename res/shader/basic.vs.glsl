@@ -1,3 +1,5 @@
+#include <macros>
+
 attribute vec3 POSITION;
 
 void main(){

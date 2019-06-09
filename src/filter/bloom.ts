@@ -86,6 +86,7 @@ void main() {
 
 let threshold_fs = `
 precision highp float;
+#include <macros>
 uniform sampler2D base;
 
 void main() {
@@ -187,6 +188,7 @@ void main() {
 
 let combine_fs = `
 precision highp float;
+#include <macros>
 uniform sampler2D base;
 uniform sampler2D originTex;
 
