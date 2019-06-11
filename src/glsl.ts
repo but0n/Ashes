@@ -14,11 +14,11 @@ export let glsl = {
         vs: basic_vs,
         fs: basic_fs,
     },
-    sylize: {
+    stylize: {
         vs: stylize_vs,
         fs: stylize_fs,
     },
-    sylize2: {
+    stylize2: {
         vs: stylize2_vs,
         fs: stylize2_fs,
     },

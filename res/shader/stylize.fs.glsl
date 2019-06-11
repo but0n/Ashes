@@ -212,8 +212,7 @@ void main() {
     // IBL
 #ifdef HAS_ENV_MAP
     vec3 brdf = sRGBtoLINEAR(texture2D(brdfLUT, vec2(NoV, 1.0 - alphaRoughness))).rgb;
-    // vec3 IBLcolor = sRGBtoLINEAR(textureCube(env, R)).rgb;
-    vec3 IBLcolor = sRGBtoLINEAR(textureCubeLodEXT(env, R, 1.0)).rgb;
+    vec3 IBLcolor = sRGBtoLINEAR(textureCube(env, R)).rgb;
 
     vec3 IBLspecular = 1.0 * IBLcolor * (f0 * brdf.x + brdf.y);
     color += IBLspecular;

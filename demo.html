@@ -82,7 +82,7 @@ async function main() {
 
     document.querySelector('body').appendChild(scene);
 
-    let gltfroot = scene.appendChild(await Asset.loadGLTF(gltf, screen, skybox, new Shader(glsl.sylize2.vs, glsl.sylize2.fs)));
+    let gltfroot = scene.appendChild(await Asset.loadGLTF(gltf, screen, skybox));
     let root = gltfroot.components.Transform;
     root.translate[1] = yoffset || 0;
     vec3.scale(root.scale, root.scale, scale || 200);

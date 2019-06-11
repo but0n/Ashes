@@ -116,7 +116,7 @@ export class Asset {
 
     static brdfLUT: Texture;
 
-    static async loadGLTF(path: string, screen: Screen, envmap?: Texture, shader = new Shader(glsl.sylize.vs, glsl.sylize.fs)) {
+    static async loadGLTF(path: string, screen: Screen, envmap?: Texture, shader?) {
         let gltf;
         // parse current path
         let root: any = path.split('/');
@@ -185,7 +185,9 @@ export class Asset {
         }
 
         // Load shader
-        gltf.commonShader = shader;
+        gltf.commonShader = shader || Screen.platform == 'iOS'
+            ? new Shader(glsl.stylize.vs, glsl.stylize.fs)
+            : new Shader(glsl.stylize2.vs, glsl.stylize2.fs);
 
         // Load brdfLUT
         if(this.brdfLUT === undefined) {
