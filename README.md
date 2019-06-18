@@ -6,7 +6,7 @@
 [![](https://badgen.net/bundlephobia/minzip/ashes3d)](https://bundlephobia.com/result?p=ashes3d)
 [![](https://data.jsdelivr.com/v1/package/npm/ashes3d/badge)](https://www.jsdelivr.com/package/npm/ashes3d)
 
-![](https://user-images.githubusercontent.com/7625588/52896085-bbdfbd00-31fd-11e9-944d-cfed12c18cbd.png)
+![](https://user-images.githubusercontent.com/7625588/59654701-fc5e4000-91c9-11e9-82ad-d4e360091d93.png)
 
 # Examples
  - [glTF test](https://cx20.github.io/gltf-test/?engines=Ashes)
