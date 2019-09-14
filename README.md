@@ -10,7 +10,7 @@
 
 # Examples
  - [glTF test](https://cx20.github.io/gltf-test/?engines=Ashes)
- - [Examples](http://jsdo.it/tag/Ashes)
+ - [Examples](https://cx20.github.io/jsdo.it-archives/tag/ashes/)
  - [Examples](https://jsfiddle.net/user/cx20/fiddles/)
 
 
