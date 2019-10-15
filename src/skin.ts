@@ -26,8 +26,12 @@ class SkinSystem extends ComponentSystem {
             // global transform of node that the mesh ss attached to
             let trans = components.Transform as Transform;
             for(let [i, joint] of skin.joints.entries()) {
-                mat4.mul(skin.jointMat[i], joint.worldMatrix, skin.ibm[i]);
-                mat4.mul(skin.jointMat[i], trans.worldInverseMatrix, skin.jointMat[i]);
+                // A. Canceled root bone's world matrix, recalculate in vertex shader
+                mat4.mul(skin.jointMat[i], trans.worldInverseMatrix, joint.worldMatrix);
+                mat4.mul(skin.jointMat[i], skin.jointMat[i], skin.ibm[i]);
+
+                // B. Apply root bone's world matrix in it each bone matrix
+                // mat4.mul(skin.jointMat[i], joint.worldMatrix, skin.ibm[i]);
             }
             // if(!skin.materials) {
             //     skin.materials = [];

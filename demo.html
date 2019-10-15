@@ -28,14 +28,17 @@ let gltf = assetRoot + 'gltfsamples/BoomBox.glb';
 // kgirls01: Skin, Animation:
 // ----------------------------
 // scale = 0.003;
-// yoffset = 2;
+yoffset = -0.5;
 // threshold = 0.9;
 // gltf = assetRoot + 'gltfsamples/kgirls01/scene.gltf';
 gltf = assetRoot + 'gltfsamples/hylian_shield/scene.gltf';
 // gltf = assetRoot + 'gltfsamples/FlightHelmet/glTF/FlightHelmet.gltf';
 // gltf = assetRoot + 'res/CesiumMan.glb';
 // gltf = assetRoot + 'res/BrainStem.glb';
-gltf = assetRoot + 'gltfsamples/DamagedHelmet.glb';
+// gltf = 'https://github.com/KhronosGroup/glTF-Blender-Exporter/raw/master/polly/project_polly.glb';
+gltf = 'https://rawcdn.githack.com/KhronosGroup/glTF-Blender-Exporter/2bd852403600053dba95db78db3f21728b979a7c/polly/project_polly.glb'
+
+// gltf = assetRoot + 'gltfsamples/DamagedHelmet.glb';
 // gltf = assetRoot + 'res/MorphPrimitivesTest.glb';
 // gltf = assetRoot + 'gltfsamples/project_polly.glb';
 // gltf = assetRoot + 'gltfsamples/Suzanne/Suzanne.gltf';
@@ -157,27 +160,27 @@ void main() {
 class loadingAnim extends Filter {
 
     constructor(screen) {
-        let macro = {};
+        // let macro = {};
 
-        let shader = new Shader(loading_vs, loading_fs, macro);
-        super(screen, shader);
-        this.cur = 0;
-        this.stop = false;
-        let cur = 0;
-        Material.setUniform(this.material, 'cur', this.cur);
-        let loop = () => {
-            cur += (this.cur - cur) * 0.05;
-            Material.setUniform(this.material, 'cur', cur);
-            Material.setUniform(this.material, 'powcur', Math.pow(cur, 8));
-            if (cur < 0.999) {
-                requestAnimationFrame(loop);
-            } else {
-                Material.setUniform(this.material, 'cur', 1);
-                Material.setUniform(this.material, 'powcur', 1);
-                if (this.cb) this.cb();
-            }
-        };
-        loop();
+        // let shader = new Shader(loading_vs, loading_fs, macro);
+        // super(screen, shader);
+        // this.cur = 0;
+        // this.stop = false;
+        // let cur = 0;
+        // Material.setUniform(this.material, 'cur', this.cur);
+        // let loop = () => {
+        //     cur += (this.cur - cur) * 0.05;
+        //     Material.setUniform(this.material, 'cur', cur);
+        //     Material.setUniform(this.material, 'powcur', Math.pow(cur, 8));
+        //     if (cur < 0.999) {
+        //         requestAnimationFrame(loop);
+        //     } else {
+        //         Material.setUniform(this.material, 'cur', 1);
+        //         Material.setUniform(this.material, 'powcur', 1);
+        //         if (this.cb) this.cb();
+        //     }
+        // };
+        // loop();
     }
 }
 
