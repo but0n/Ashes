@@ -75,7 +75,7 @@ export class Mesh {
         }
 
         if(indices) {   // element
-            atts['i'] = Accessor.newUint16Array(indices);
+            atts['i'] = Accessor.newTypedArray(indices);
         } else {        // array
             atts['i'] = atts['POSITION'].map((e,i) => i);
         }
@@ -148,7 +148,7 @@ export class Mesh {
             }
         }
         if(indices) {   // element
-            atts['i'] = Accessor.newUint16Array(indices);
+            atts['i'] = Accessor.newTypedArray(indices);
         } else {        // array
             atts['i'] = atts['POSITION'].map((e,i) => i);
         }
@@ -228,7 +228,7 @@ export class Accessor {
     max: number[];
     min: number[];
     size: number;
-    data: any;
+    private _data: any;
     constructor({bufferView, byteOffset = 0, componentType, normalized = false, count, type, max = [], min = []}, name = '') {
         this.attribute = name;
         this.bufferView = bufferView;
@@ -239,7 +239,11 @@ export class Accessor {
         this.max = max;
         this.min = min;
         this.size = Accessor.types[type];
-        this.data = Accessor.getData(this);
+    }
+    get data() {
+        if(!this._data)
+            this._data = Accessor.getData(this);
+        return this._data;
     }
     static newFloat32Array(acc: Accessor) {
         return new Float32Array(acc.bufferView.rawBuffer, acc.byteOffset + acc.bufferView.byteOffset, acc.size * acc.count);
@@ -253,19 +257,34 @@ export class Accessor {
         return blocks;
     }
     static getFloat32Blocks(acc: Accessor) {
-        return this.getSubChunks(acc, Accessor.newFloat32Array(acc));
+        return this.getSubChunks(acc, Accessor.newTypedArray(acc));
     }
-    static newUint16Array(acc: Accessor) {
-        return new Uint16Array(acc.bufferView.rawBuffer, acc.byteOffset + acc.bufferView.byteOffset, acc.size * acc.count);
-    }
+
     static getUint16Blocks(acc: Accessor) {
-        return this.getSubChunks(acc, Accessor.newUint16Array(acc));
+        return this.getSubChunks(acc, Accessor.newTypedArray(acc));
+    }
+    static newTypedArray(acc: Accessor) {
+        switch(acc.componentType) {
+            case 5120:
+                return new Int8Array(acc.bufferView.rawBuffer, acc.byteOffset + acc.bufferView.byteOffset, acc.size * acc.count);
+            case 5121:
+                return new Uint8Array(acc.bufferView.rawBuffer, acc.byteOffset + acc.bufferView.byteOffset, acc.size * acc.count);
+            case 5122:
+                return new Int16Array(acc.bufferView.rawBuffer, acc.byteOffset + acc.bufferView.byteOffset, acc.size * acc.count);
+            case 5123:
+                return new Uint16Array(acc.bufferView.rawBuffer, acc.byteOffset + acc.bufferView.byteOffset, acc.size * acc.count);
+            case 5125:
+                return new Uint32Array(acc.bufferView.rawBuffer, acc.byteOffset + acc.bufferView.byteOffset, acc.size * acc.count);
+            case 5126:
+                return new Float32Array(acc.bufferView.rawBuffer, acc.byteOffset + acc.bufferView.byteOffset, acc.size * acc.count);
+        }
     }
     static getData(acc: Accessor) {
+
         if(acc.size > 1) {
             return this.getFloat32Blocks(acc);
         }
-        return this.newUint16Array(acc);
+        return this.newTypedArray(acc);
     }
 }
 
