@@ -245,6 +245,39 @@ export class Asset {
         return new Material(shader);
     }
 
+    static HDRParse(raw: ArrayBuffer) {
+        const data = new Uint8Array(raw);
+        let p = 0;
+        while (!(data[p] == 10 && data[p+1] == 10)) {
+            p++;
+        }
+        let info = this.decoder.decode(data.subarray(0, p)).split('\n');
+        if (info[0] != '#?RADIANCE') {
+            console.table(info);
+        }
+        p += 2;
+        const size_start = p;
+        while (data[++p] != 10) {
+        }
+        let size: any[] = this.decoder.decode(data.subarray(size_start, p)).split(' ');
+        // let buffer = raw.slice(p+1);
+        let rgbeData = data.subarray(p+1);
+        size[1] *= 1;
+        size[3] *= 1;
+        const total = size[1] * size[3];
+        let buffer = new Float32Array(total * 3);
+        for(let x = 0; x < total; x++) {
+            const [r, g, b, e] = rgbeData.subarray(x * 4, (x + 1) * 4);
+            const pixel = buffer.subarray(x * 3, (x + 1) * 3);
+            if(e != 0) {
+                pixel[0] = r * Math.pow(2, e - 128 - 8);
+                pixel[0] = g * Math.pow(2, e - 128 - 8);
+                pixel[0] = b * Math.pow(2, e - 128 - 8);
+            }
+        }
+        return {size, buffer};
+    }
+
     static cubemapOrder = [
         'posx.',
         'negx.',
@@ -257,13 +290,40 @@ export class Asset {
         return await Promise.all(this.cubemapOrder.map(name => this.loadImage(folder + name + format)));
     }
     static async loadCubemap(folder, format = 'jpg') {
-        let rawImages = await this.loadCubeimg(folder, format);
-        return new Texture(rawImages, {
+        let rawImages;
+        if(format == 'hdr') {
+            rawImages = await Promise.all(this.cubemapOrder.map(name => fetch(folder + name + format)));
+            rawImages = await Promise.all(rawImages.map(raw => raw.arrayBuffer()));
+        } else {
+            rawImages = await this.loadCubeimg(folder, format);
+        }
+        let tex = new Texture(rawImages, {
             magFilter: WebGL2RenderingContext.LINEAR,
             minFilter: WebGL2RenderingContext.LINEAR_MIPMAP_LINEAR,
             wrapS: WebGL2RenderingContext.CLAMP_TO_EDGE,
             wrapT: WebGL2RenderingContext.CLAMP_TO_EDGE,
         });
+        if(format == 'hdr') {
+            // Parse
+            let s;
+            tex.data = rawImages.map(raw => {
+                const {size, buffer} = this.HDRParse(raw);
+                s = size;
+                return buffer;
+            });
+
+            tex.height = s[1];
+            tex.width = s[3];
+            tex.format = WebGL2RenderingContext.RGB;
+            tex.internalformat = WebGL2RenderingContext.RGB32F;
+            tex.type = WebGL2RenderingContext.FLOAT;
+            tex.glType = WebGL2RenderingContext.TEXTURE_CUBE_MAP;
+
+            tex.image = null;
+            tex.isDirty = true;
+
+        }
+        return tex;
     }
     static async loadTexture(url: string, option) {
         let image = await this.loadImage(url);

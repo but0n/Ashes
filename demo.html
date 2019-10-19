@@ -36,9 +36,9 @@ gltf = assetRoot + 'gltfsamples/hylian_shield/scene.gltf';
 // gltf = assetRoot + 'res/CesiumMan.glb';
 // gltf = assetRoot + 'res/BrainStem.glb';
 // gltf = 'https://github.com/KhronosGroup/glTF-Blender-Exporter/raw/master/polly/project_polly.glb';
-gltf = 'https://rawcdn.githack.com/KhronosGroup/glTF-Blender-Exporter/2bd852403600053dba95db78db3f21728b979a7c/polly/project_polly.glb'
+// gltf = 'https://rawcdn.githack.com/KhronosGroup/glTF-Blender-Exporter/2bd852403600053dba95db78db3f21728b979a7c/polly/project_polly.glb'
 
-// gltf = assetRoot + 'gltfsamples/DamagedHelmet.glb';
+gltf = assetRoot + 'gltfsamples/DamagedHelmet.glb';
 // gltf = assetRoot + 'res/MorphPrimitivesTest.glb';
 // gltf = assetRoot + 'gltfsamples/project_polly.glb';
 // gltf = assetRoot + 'gltfsamples/Suzanne/Suzanne.gltf';
@@ -69,7 +69,7 @@ async function main() {
     // screen.attachFilter(new Vignetting(screen));
 
 
-
+    // let skybox = await Asset.loadCubemap('res/envmap/helipad2/', 'hdr');
     let skybox = await Asset.loadCubemap(assetRoot + 'res/envmap/GoldenGateBridge2/');
 
     let scene = EntityMgr.create('root - (Click each bar which has yellow border to toggle visible)');

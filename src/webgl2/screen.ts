@@ -46,6 +46,8 @@ export class Screen {
         this.gl.enable(this.gl.BLEND);
         this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
         // this.ext = this.gl.getExtension('WEBGL_draw_buffers');
+        this.gl.getExtension('OES_texture_float');
+        this.gl.getExtension('OES_texture_float_linear');
 
         this.setScreenSize(); // initial - full screen
 
