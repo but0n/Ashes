@@ -25,7 +25,7 @@ export class gltfScene {
             console.log(config);
             this.detectConfig(mat, config);
 
-            Material.setTexture(mat, 'brdfLUT', Texture.clone(gltf.brdfLUT));
+            Material.setTexture(mat, 'brdfLUT', gltf.brdfLUT);
             if(gltf.hasEnvmap) {
                 mat.shader.macros['HAS_ENV_MAP'] = '';
                 Material.setTexture(mat, 'env', Texture.clone(gltf.envmap));

@@ -9,7 +9,7 @@ export class Texture {
 
     image: HTMLImageElement;
     sampler: Sampler;
-    channel: number = null;
+    // channel: number = null;
     isDirty: boolean = true;
     glType = WebGL2RenderingContext.TEXTURE_2D;
     isCubetex = false;
@@ -41,8 +41,20 @@ export class Texture {
 
     static clone(origin: Texture) {
         let temp = new Texture(origin.image, origin.sampler);
-        temp.sampler = origin.sampler;
+        // temp.sampler = origin.sampler;
+        // temp.sampler = new Sampler(origin.sampler);
+        // temp.sampler.texture = null;
         temp.flipY = origin.flipY;
+        temp.data = origin.data;
+        temp.width = origin.width;
+        temp.height = origin.height;
+        temp.isCubetex = origin.isCubetex;
+        temp.glType = origin.glType;
+        temp.border = origin.border;
+        temp.level = origin.level;
+        temp.internalformat = origin.internalformat;
+        temp.format = origin.format;
+        temp.type = origin.type;
         return temp;
     }
 
@@ -66,7 +78,11 @@ export class Texture {
 
         if(tex.isCubetex) {
             for(let i in this.cubetexOrder) {
-                gl.texImage2D(this.cubetexOrder[i], tex.level, tex.internalformat, tex.format, tex.type, tex.image[i]);
+                if(tex.image) {
+                    gl.texImage2D(this.cubetexOrder[i], tex.level, tex.internalformat, tex.format, tex.type, tex.image[i]);
+                } else {
+                    gl.texImage2D(this.cubetexOrder[i], tex.level, tex.internalformat, tex.width, tex.height, 0, tex.format, tex.type, tex.data[0]);
+                }
             }
         } else {
             if(tex.image) {
@@ -91,30 +107,19 @@ export class Texture {
         gl.bindTexture(tex.glType, null);
     }
 
-    // Reduce GC
-    static texChannels = [
-        WebGL2RenderingContext.TEXTURE0,
-        WebGL2RenderingContext.TEXTURE1,
-        WebGL2RenderingContext.TEXTURE2,
-        WebGL2RenderingContext.TEXTURE3,
-        WebGL2RenderingContext.TEXTURE4,
-        WebGL2RenderingContext.TEXTURE5,
-        WebGL2RenderingContext.TEXTURE6,
-        WebGL2RenderingContext.TEXTURE7,
-    ];
-
-    static unbindTexture(gl: WebGL2RenderingContext, tex: Texture) {
-        if(tex.channel != null) {
-            gl.activeTexture(this.texChannels[tex.channel]);
+    static unbindTexture(gl: WebGL2RenderingContext, tex: Texture, channel: number) {
+        if(channel != null) {
+            gl.activeTexture(WebGL2RenderingContext.TEXTURE0 + channel);
         }
         gl.bindTexture(tex.glType, null);
     }
 
-    static bindTexture(gl: WebGL2RenderingContext, tex: Texture) {
-        if(tex.channel != null) {
-            gl.activeTexture(this.texChannels[tex.channel]);
+    static bindTexture(gl: WebGL2RenderingContext, tex: Texture, channel: number) {
+        if(channel != null) {
+            gl.activeTexture(WebGL2RenderingContext.TEXTURE0 + channel);
         }
         if(tex.sampler.texture == null || (tex.isDirty && (tex.data || tex.image))) {
+            console.log('Going to create a new Texture!');
             // Ignore texture belongs to framebuffer after created once
             this.createTexture(gl, tex);
         }
