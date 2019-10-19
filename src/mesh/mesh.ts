@@ -32,7 +32,7 @@ export class Mesh {
                 let offset = acc.byteOffset;
                 gl.vertexAttribPointer(loc, acc.size, acc.componentType, acc.normalized, acc.bufferView.byteStride, offset);
             } else {
-                console.warn(`Attribute '${acc.attribute}' doesn't support in this material!`);
+                // console.warn(`Attribute '${acc.attribute}' doesn't support in this material!`);
             }
         }
     }

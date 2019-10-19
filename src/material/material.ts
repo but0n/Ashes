@@ -12,7 +12,7 @@ export class Material {
     shader: Shader;
     isDirty: boolean = true;
     // textures: Texture[] = [];
-    textures: Map<string, Texture> = new Map();
+    textures: Map<string, [number, Texture]> = new Map();
     doubleSided: boolean;
     queue = RenderQueue.Opaque;
     uniforms = {};
@@ -68,35 +68,35 @@ export class Material {
     }
 
     static bindAllTextures(mat: Material, ctx: WebGL2RenderingContext, force = false) {
-        if(mat.textures.size == 0) {
-            // FIXME:
-        }
-        for (let [uniform, tex] of mat.textures) {
-            Texture.bindTexture(ctx, tex);
+        for (let [, [channel, tex]] of mat.textures) {
+            Texture.bindTexture(ctx, tex, channel);
+            // Material.setUniform(mat, uniform, channel);
             if(tex.isDirty || force) {
-                Material.setUniform(mat, uniform, tex.channel);
                 tex.isDirty = false;
             }
         }
     }
 
     static unbindAllTextures(mat: Material, ctx: WebGL2RenderingContext) {
-        for (let [,tex] of mat.textures) {
-            Texture.unbindTexture(ctx, tex);
+        for (let [,[channel, tex]] of mat.textures) {
+            Texture.unbindTexture(ctx, tex, channel);
         }
     }
 
     static setTexture(mat: Material, name: string, tex: Texture) {
+        let channel;
         if(mat.textures.has(name)) {
-            tex.channel = mat.textures.get(name).channel;
+            channel = mat.textures.get(name)[0];
         } else {
-            tex.channel = mat.textures.size;
+            channel = mat.textures.size;
         }
+        console.warn(`Set ${mat.name} texture '${name}' to ${channel}`);
 
-        mat.textures.set(name, tex);
+        mat.textures.set(name, [channel, tex]);
+        Material.setUniform(mat, name, channel);
 
         mat.isDirty = true;
-        tex.isDirty = true;
+        // tex.isDirty = true;
     }
 
     static SHADER_PATH = 'res/shader/';

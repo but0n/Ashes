@@ -1,4 +1,9 @@
 #version 300 es
+// #define USE_HDR
+#ifdef USE_HDR
+#extension GL_OES_texture_float : enable
+#extension GL_OES_texture_float_linear : enable
+#endif
 precision highp float;
 
 #include <macros>
@@ -59,6 +64,10 @@ uniform samplerCube env;
 
 uniform vec3 u_Camera;
 
+#ifdef USE_HDR
+uniform float u_Exposure;
+#endif
+
 // texture stuff
 vec4 sRGBtoLINEAR(vec4 color) {
     return vec4(pow(color.rgb, vec3(GAMMA)), color.a);
@@ -67,6 +76,15 @@ vec4 LINEARtoSRGB(vec4 color) {
     return vec4(pow(color.rgb, vec3(1.0/GAMMA)), color.a);
 }
 
+// Tone map
+vec3 toneMapACES(vec3 color) {
+    const float A = 2.51;
+    const float B = 0.03;
+    const float C = 2.43;
+    const float D = 0.59;
+    const float E = 0.14;
+    return pow(clamp((color * (A * color + B)) / (color * (C * color + D) + E), 0.0, 1.0), vec3(1.0/GAMMA));
+}
 
 // Fresnel - F0 = Metalness
 vec3 F_Schlick(float VoH, vec3 F0) {
@@ -217,10 +235,13 @@ void main() {
     vec3 brdf = sRGBtoLINEAR(texture(brdfLUT, vec2(NoV, 1.0 - alphaRoughness))).rgb;
     // vec3 IBLcolor = sRGBtoLINEAR(texture(env, R)).rgb;
     float lod = clamp(roughness * 11., 0.0, 11.);
+    #ifdef USE_HDR
+    vec3 IBLcolor = texture(env, R, lod).rgb;
+    #else
     vec3 IBLcolor = sRGBtoLINEAR(texture(env, R, lod)).rgb;
-
+    #endif
     vec3 IBLspecular = 5.0 * IBLcolor * (f0 * brdf.x + brdf.y);
-    color += IBLspecular;
+    color = IBLspecular;
 #endif
 
     color += lightContrib(vec3(2, 5, 2), core) * vec3(2);
@@ -233,6 +254,10 @@ void main() {
     color += em.rgb;
 #endif
 
+#ifdef USE_HDR
+    color.rgb *= u_Exposure;
+#endif
+
 #ifdef BLEND
     outColor = LINEARtoSRGB(vec4(color, base.a));
 
@@ -243,10 +268,10 @@ void main() {
 #endif
     if(base.a < ALPHA_CUTOFF)
         discard;
-    outColor = LINEARtoSRGB(vec4(color,1));
+    outColor = vec4(toneMapACES(color), 1);
 #else
     // Opaque
-    outColor = LINEARtoSRGB(vec4(color,1));
+    outColor = vec4(toneMapACES(color), 1);
 #endif
     // outColor = vec4(uv, 0, 1);
     // outColor = (base) * vec4(vec3(max(LoN, 0.0)), 1);
