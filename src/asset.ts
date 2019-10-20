@@ -179,7 +179,6 @@ export class Asset {
                 if (gltf.samplers != null)
                     currentSampler = gltf.samplers[sampler];
                 let texture = new Texture(gltf.images[source], currentSampler);
-                Texture.createTexture(screen.gl, texture);
                 return texture;
             })
         }
@@ -271,8 +270,8 @@ export class Asset {
             const pixel = buffer.subarray(x * 3, (x + 1) * 3);
             if(e != 0) {
                 pixel[0] = r * Math.pow(2, e - 128 - 8);
-                pixel[0] = g * Math.pow(2, e - 128 - 8);
-                pixel[0] = b * Math.pow(2, e - 128 - 8);
+                pixel[1] = g * Math.pow(2, e - 128 - 8);
+                pixel[2] = b * Math.pow(2, e - 128 - 8);
             }
         }
         return {size, buffer};
@@ -299,7 +298,7 @@ export class Asset {
         }
         let tex = new Texture(rawImages, {
             magFilter: WebGL2RenderingContext.LINEAR,
-            minFilter: WebGL2RenderingContext.LINEAR_MIPMAP_LINEAR,
+            minFilter: WebGL2RenderingContext.LINEAR,
             wrapS: WebGL2RenderingContext.CLAMP_TO_EDGE,
             wrapT: WebGL2RenderingContext.CLAMP_TO_EDGE,
         });
@@ -317,6 +316,8 @@ export class Asset {
             tex.format = WebGL2RenderingContext.RGB;
             tex.internalformat = WebGL2RenderingContext.RGB32F;
             tex.type = WebGL2RenderingContext.FLOAT;
+            // tex.internalformat = WebGL2RenderingContext.RGB16F;
+            // tex.type = WebGL2RenderingContext.HALF_FLOAT;
             tex.glType = WebGL2RenderingContext.TEXTURE_CUBE_MAP;
 
             tex.image = null;
