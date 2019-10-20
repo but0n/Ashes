@@ -116,7 +116,7 @@ export class Asset {
 
     static brdfLUT: Texture;
 
-    static async loadGLTF(path: string, screen: Screen, envmap?: Texture, shader?) {
+    static async loadGLTF(path: string, screen: Screen, envmap?: Texture, diffmap?: Texture, shader?) {
         let gltf;
         // parse current path
         let root: any = path.split('/');
@@ -199,6 +199,7 @@ export class Asset {
         if(envmap != null) {
             gltf.hasEnvmap = true;
             gltf.envmap = envmap;
+            gltf.diffmap = diffmap;
         } else {
             gltf.hasEnvmap = false;
         }

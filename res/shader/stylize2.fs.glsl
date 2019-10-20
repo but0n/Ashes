@@ -1,5 +1,5 @@
 #version 300 es
-// #define USE_HDR
+#define USE_HDR
 #ifdef USE_HDR
 #extension GL_OES_texture_float : enable
 #extension GL_OES_texture_float_linear : enable
@@ -62,10 +62,18 @@ uniform sampler2D occlusionTexture;
 uniform samplerCube env;
 #endif
 
+#ifdef HAS_DIFFENV_MAP
+uniform samplerCube diffenv;
+#endif
+
 uniform vec3 u_Camera;
 
 #ifdef USE_HDR
+#ifdef HAS_EXPUSRE
 uniform float u_Exposure;
+#else
+#define u_Exposure 2.5
+#endif
 #endif
 
 // texture stuff
@@ -148,7 +156,7 @@ vec3 lightContrib(vec3 lightDir, coreData core) {
     float D = D_GGX(core.alphaRoughness, NoH);
 
     vec3 specContrib = F * G * D / (4.0 * NoL * core.NoV);
-    vec3 diffuseContrib = (1.0 - F) * core.diffuse * (1.0 - core.metallic);
+    vec3 diffuseContrib = (1.0 - F) * core.diffuse / PI;
     vec3 color = NoL * (diffuseContrib + specContrib);
     return color;
 }
@@ -212,7 +220,7 @@ void main() {
     vec3 f0 = vec3(0.04);
 
     vec3 diffuse = base.rgb * (vec3(1) - f0) * (1.0 - metallic);
-    diffuse /= PI;
+    // diffuse /= PI;
 
     f0 = mix(f0, base.xyz, metallic);
 
@@ -230,23 +238,33 @@ void main() {
 
 
     vec3 color;
+    color += lightContrib(vec3(2, 5, 2), core) * vec3(1);
+    // color += lightContrib(vec3(1, 1, 5), core) * vec3(1.0, 0.8902, 0.6902) * 4.0;
+    // color += lightContrib(vec3(-5, 3, -5), core) * vec3(0.6431, 0.9176, 1.0);
+
     // IBL
+    float lod = clamp(roughness * 11., 0.0, 11.);
+#ifdef HAS_DIFFENV_MAP
+    #ifdef USE_HDR
+    vec3 diffSample = texture(diffenv, R, lod).rgb;
+    #else
+    vec3 diffSample = sRGBtoLINEAR(texture(diffenv, R, lod)).rgb;
+    #endif
+    color += diffSample * diffuse;
+#endif
+
 #ifdef HAS_ENV_MAP
     vec3 brdf = sRGBtoLINEAR(texture(brdfLUT, vec2(NoV, 1.0 - alphaRoughness))).rgb;
     // vec3 IBLcolor = sRGBtoLINEAR(texture(env, R)).rgb;
-    float lod = clamp(roughness * 11., 0.0, 11.);
     #ifdef USE_HDR
     vec3 IBLcolor = texture(env, R, lod).rgb;
     #else
     vec3 IBLcolor = sRGBtoLINEAR(texture(env, R, lod)).rgb;
     #endif
-    vec3 IBLspecular = 5.0 * IBLcolor * (f0 * brdf.x + brdf.y);
-    color = IBLspecular;
+    vec3 IBLspecular = IBLcolor * (f0 * brdf.x + brdf.y);
+    color += IBLspecular;
 #endif
 
-    color += lightContrib(vec3(2, 5, 2), core) * vec3(2);
-    color += lightContrib(vec3(1, 1, 5), core) * vec3(1.0, 0.8902, 0.6902) * 4.0;
-    color += lightContrib(vec3(-5, 3, -5), core) * vec3(0.6431, 0.9176, 1.0);
     // color += lightContrib(vec3(-5, 1, 5), core) * vec3(0.3515625, 0.796875, 0.95703125) * 4.;
     // color += lightContrib(vec3(5, 1, -5), core) * vec3(0.921875, 0.4375, 0.9609375) * 4.;
 
