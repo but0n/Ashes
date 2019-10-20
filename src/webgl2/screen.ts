@@ -48,6 +48,7 @@ export class Screen {
         // this.ext = this.gl.getExtension('WEBGL_draw_buffers');
         this.gl.getExtension('OES_texture_float');
         this.gl.getExtension('OES_texture_float_linear');
+        this.gl.getExtension('OES_texture_half_float');
 
         this.setScreenSize(); // initial - full screen
 

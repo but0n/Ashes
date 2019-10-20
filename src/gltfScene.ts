@@ -28,7 +28,7 @@ export class gltfScene {
             Material.setTexture(mat, 'brdfLUT', gltf.brdfLUT);
             if(gltf.hasEnvmap) {
                 mat.shader.macros['HAS_ENV_MAP'] = '';
-                Material.setTexture(mat, 'env', Texture.clone(gltf.envmap));
+                Material.setTexture(mat, 'env', gltf.envmap);
             }
             // if(gltf.skins) {
             //     mat.shader.macros['HAS_SKINS'] = '';
@@ -197,7 +197,7 @@ export class gltfScene {
         let { index, texCoord } = texInfo;
         let gltf = this.gltf;
         if (index != null) { // common texture
-            Material.setTexture(mat, texName, Texture.clone(gltf.textures[index]));
+            Material.setTexture(mat, texName, gltf.textures[index]);
             // Multi UV
             if(texCoord) { // > 0
                 mat.shader.macros[`${texName}_uv`] = `uv${texCoord}`;
