@@ -90,7 +90,7 @@ export class Material {
         } else {
             channel = mat.textures.size;
         }
-        console.warn(`Set ${mat.name} texture '${name}' to ${channel}`);
+        // console.warn(`Set ${mat.name} texture '${name}' to ${channel}`);
 
         mat.textures.set(name, [channel, tex]);
         Material.setUniform(mat, name, channel);
