@@ -125,7 +125,6 @@ export class Texture {
             gl.activeTexture(WebGL2RenderingContext.TEXTURE0 + channel);
         }
         if(tex.sampler.texture == null || (tex.isDirty && (tex.data || tex.image))) {
-            console.log('Going to create a new Texture!');
             // Ignore texture belongs to framebuffer after created once
             this.createTexture(gl, tex);
         }
