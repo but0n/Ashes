@@ -81,7 +81,7 @@ export class Texture {
                 if(tex.image) {
                     gl.texImage2D(this.cubetexOrder[i], tex.level, tex.internalformat, tex.format, tex.type, tex.image[i]);
                 } else {
-                    gl.texImage2D(this.cubetexOrder[i], tex.level, tex.internalformat, tex.width, tex.height, 0, tex.format, tex.type, tex.data[0]);
+                    gl.texImage2D(this.cubetexOrder[i], tex.level, tex.internalformat, tex.width, tex.height, 0, tex.format, tex.type, tex.data[i]);
                 }
             }
         } else {
@@ -95,14 +95,20 @@ export class Texture {
 
         gl.texParameterf(tex.glType, gl.TEXTURE_WRAP_S, tex.sampler.wrapS);
         gl.texParameterf(tex.glType, gl.TEXTURE_WRAP_T, tex.sampler.wrapT);
+        gl.texParameterf(tex.glType, gl.TEXTURE_MAG_FILTER, tex.sampler.magFilter);
+        gl.texParameterf(tex.glType, gl.TEXTURE_MIN_FILTER, tex.sampler.minFilter);
 
-        if(tex.sampler.minFilter == WebGL2RenderingContext.NEAREST_MIPMAP_NEAREST || tex.sampler.minFilter == WebGL2RenderingContext.NEAREST_MIPMAP_LINEAR || tex.sampler.minFilter == WebGL2RenderingContext.LINEAR_MIPMAP_NEAREST || tex.sampler.minFilter == WebGL2RenderingContext.LINEAR_MIPMAP_LINEAR) {
+        if(tex.sampler.minFilter == WebGL2RenderingContext.NEAREST_MIPMAP_NEAREST
+            || tex.sampler.minFilter == WebGL2RenderingContext.NEAREST_MIPMAP_LINEAR
+            || tex.sampler.minFilter == WebGL2RenderingContext.LINEAR_MIPMAP_NEAREST
+            || tex.sampler.minFilter == WebGL2RenderingContext.LINEAR_MIPMAP_LINEAR) {
             gl.generateMipmap(tex.glType);
 
         } else {
-            gl.texParameterf(tex.glType, gl.TEXTURE_MIN_FILTER, tex.sampler.minFilter);
-            gl.texParameterf(tex.glType, gl.TEXTURE_MAG_FILTER, tex.sampler.magFilter);
+            // gl.texParameterf(tex.glType, gl.TEXTURE_MIN_FILTER, tex.sampler.minFilter);
+            // gl.texParameterf(tex.glType, gl.TEXTURE_MAG_FILTER, tex.sampler.magFilter);
         }
+        // gl.texParameterf(tex.glType, gl.TEXTURE_MIN_FILTER, tex.sampler.minFilter);
 
         gl.bindTexture(tex.glType, null);
     }
