@@ -32,7 +32,7 @@ yoffset = -0.5;
 // threshold = 0.9;
 // gltf = assetRoot + 'gltfsamples/kgirls01/scene.gltf';
 gltf = assetRoot + 'gltfsamples/hylian_shield/scene.gltf';
-// gltf = assetRoot + 'gltfsamples/FlightHelmet/glTF/FlightHelmet.gltf';
+gltf = assetRoot + 'gltfsamples/FlightHelmet/glTF/FlightHelmet.gltf';
 // gltf = assetRoot + 'res/CesiumMan.glb';
 // gltf = assetRoot + 'res/BrainStem.glb';
 // gltf = 'https://github.com/KhronosGroup/glTF-Blender-Exporter/raw/master/polly/project_polly.glb';
@@ -70,6 +70,7 @@ async function main() {
 
 
     let skybox = await Asset.loadCubemap('res/envmap/helipad/', 'hdr');
+    let diffenv = await Asset.loadCubemap('res/envmap/helipad_diff/', 'hdr');
     // let skybox = await Asset.loadCubemap(assetRoot + 'res/envmap/GoldenGateBridge2/');
 
     let scene = EntityMgr.create('root - (Click each bar which has yellow border to toggle visible)');
@@ -85,7 +86,7 @@ async function main() {
 
     document.querySelector('body').appendChild(scene);
 
-    let gltfroot = scene.appendChild(await Asset.loadGLTF(gltf, screen, skybox));
+    let gltfroot = scene.appendChild(await Asset.loadGLTF(gltf, screen, skybox, diffenv));
     let root = gltfroot.components.Transform;
     root.translate[1] = yoffset || 0;
     vec3.scale(root.scale, root.scale, scale || 200);

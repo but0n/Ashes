@@ -29,6 +29,10 @@ export class gltfScene {
             if(gltf.hasEnvmap) {
                 mat.shader.macros['HAS_ENV_MAP'] = '';
                 Material.setTexture(mat, 'env', gltf.envmap);
+                if (gltf.diffmap) {
+                    mat.shader.macros['HAS_DIFFENV_MAP'] = '';
+                    Material.setTexture(mat, 'diffenv', gltf.diffmap);
+                }
             }
             // if(gltf.skins) {
             //     mat.shader.macros['HAS_SKINS'] = '';
