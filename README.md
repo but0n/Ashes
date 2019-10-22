@@ -23,6 +23,7 @@
  - Post effects (WIP)
  - Skeleton animation
  - Keyframe animation
+ - HDR
 
 # Getting Started
 
