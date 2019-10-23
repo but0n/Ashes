@@ -68,10 +68,10 @@ export class Texture {
     ];
 
     static createTexture(gl: WebGL2RenderingContext, tex: Texture) {
-        if(tex.sampler.texture) {   // if the texuter is already exist
-            gl.deleteTexture(tex.sampler.texture);
+        if(!tex.sampler.texture) {
+            // gl.deleteTexture(tex.sampler.texture);
+            tex.sampler.texture = gl.createTexture();
         }
-        tex.sampler.texture = gl.createTexture();
         gl.bindTexture(tex.glType, tex.sampler.texture);
 
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, tex.flipY ? 1 : 0);
