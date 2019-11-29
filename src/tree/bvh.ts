@@ -4,13 +4,20 @@ import { Mesh } from "../mesh/mesh";
 class AABB {
     max: Float32Array = vec3.create();
     min: Float32Array = vec3.create();
-    center: Float32Array = vec3.create();
-    constructor() {
+
+    private _center: Float32Array = vec3.create();
+    get center() {
+        if(this.isDirty)
+            this.updateCenter();
+        return this._center;
     }
-    updateCenter() {
-        this.center[0] = (this.max[0] - this.min[0]) * 0.5;
-        this.center[1] = (this.max[1] - this.min[1]) * 0.5;
-        this.center[2] = (this.max[2] - this.min[2]) * 0.5;
+
+    private isDirty = false;
+
+    private updateCenter() {
+        this._center[0] = (this.max[0] - this.min[0]) * 0.5;
+        this._center[1] = (this.max[1] - this.min[1]) * 0.5;
+        this._center[2] = (this.max[2] - this.min[2]) * 0.5;
     }
     update(p: Float32Array) {
         this.max[0] = Math.max(this.max[0], p[0]);
@@ -19,7 +26,7 @@ class AABB {
         this.min[0] = Math.min(this.min[0], p[0]);
         this.min[1] = Math.min(this.min[0], p[1]);
         this.min[2] = Math.min(this.min[0], p[2]);
-        this.updateCenter();
+        this.isDirty = true;
     }
 }
 
@@ -28,7 +35,7 @@ class BVHNode {
     right: BVHNode;
     left: BVHNode;
     isLeaf = false;
-    index: number;
+    index: number = -1;
     length: number;
 
     get raw() {
@@ -38,7 +45,12 @@ class BVHNode {
     }
 }
 
-class BVHManager {
+class trianglePrimitive {
+    bounds: AABB;
+    index: number;
+}
+
+export class BVHManager {
     nodeList: BVHNode[] = [];
     primitives: Float32Array;
     meshes: Mesh[];
@@ -47,23 +59,114 @@ class BVHManager {
     LBVH_nodes: Float32Array[];
 
     constructor(texSize = 2048) {
+        const LBVHTexture = BVHManager.createDataTex(texSize, 2);
+        this.LBVH = LBVHTexture.raw;
+        this.LBVH_nodes = LBVHTexture.chunks;
+        // R-G-B-A-R-G-B-A
+        // X-Y-Z-_-X-Y-Z-P
+    }
+
+    static createDataTex(texSize = 2048, chunkTexels = 1) {
         const totalTexel = texSize * texSize;
-        const totalBVH = totalTexel / 2;
-        this.LBVH = new Float32Array(totalTexel * 4);
-        this.LBVH_nodes = [];
-        for(let i = 0; i < totalBVH; i++) {
-            // R-G-B-A-R-G-B-A
-            // X-Y-Z-_-X-Y-Z-P
-            this.LBVH_nodes[i] = this.LBVH.subarray(i * 8, (i + 1) * 8);
+        const totalChunks = totalTexel / chunkTexels;
+        const chunkOffset = chunkTexels * 4;
+        const raw = new Float32Array(totalTexel * 4);
+        const chunks: Float32Array[] = [];
+        for(let i = 0; i < totalChunks; i++) {
+            chunks[i] = raw.subarray(i * chunkOffset, (i + 1) * chunkOffset);
         }
+        return {raw, chunks};
     }
 
-    getBounds(triangles: Float32Array, vertices: Float32Array) {
-
+    // Generate bounds of triangles, mind GC!
+    genBounds(triangles: Float32Array[]) {
+        const boxList: trianglePrimitive[] = [];
+        // [[x, y, z] * 3, ...]
+        for(let i = 0; i < triangles.length;) {
+            const box = new trianglePrimitive();
+            box.index = i;  // Offset of the first vertex
+            box.bounds.update(triangles[i++]);
+            box.bounds.update(triangles[i++]);
+            box.bounds.update(triangles[i++]);
+            boxList.push(box);
+        }
+        return boxList;
     }
 
-    build() {
+    buildBVH(meshes: Mesh[]) {
+        const d = Date.now();
+        // ? x-y-z-x y-z-x-y z-x
+        const triangleTexture = BVHManager.createDataTex(2048, 3);
+        let offset = 0;
+        for(let m of meshes) {
+            let data: any = m.data;
+            let pos: Float32Array[] = data.POSITION;
+            let face = m.indices.data;
 
+        }
+
+        const primitives = this.genBounds([]);
+        const root = this.splitBVH(primitives);
+        const LBVH = this.fillLBVH(root);
+        console.log(`Build BVH cost ${Date.now() - d}ms`);
+    }
+
+    private _size: Float32Array;
+    splitBVH(prim: trianglePrimitive[]) {
+        if(prim.length == 0) // Empty branch
+            return null;
+
+        const node = new BVHNode();
+
+        // TODO:
+        if(prim.length == 1) {
+            node.isLeaf = true;
+            node.index = prim[0].index;
+            return node;
+        }
+
+        // Calculate current AABB
+        for(let p of prim) {
+            node.bounds.update(p.bounds.max);
+            node.bounds.update(p.bounds.min);
+        }
+
+        // Compare and find the longest axis
+        const size = this._size;
+        vec3.sub(size, node.bounds.max, node.bounds.min);
+        const axis = size.indexOf(Math.max(size[0], size[1], size[2]));
+
+        // if(size[axis] > 0) {}
+
+        const middle = node.bounds.min[axis] + size[axis] / 2;
+
+        let left: trianglePrimitive[] = [];
+        let right: trianglePrimitive[] = [];
+
+        for(let p of prim) {
+            if(p.bounds.center[axis] < middle) {
+                left.push(p);
+            } else {
+                right.push(p);
+            }
+        }
+
+        if(left.length == 0 && right.length == 0) {
+            // Impossible, unless prim is empty
+            debugger
+        }
+
+        if(left.length == 0) {
+            // Make sure left branch is allways exist, even one of them is empty
+            const cache = left;
+            left = right;
+            right = cache;
+        }
+
+        node.left = this.splitBVH(left);
+        node.right = this.splitBVH(right);
+
+        return node;
     }
 
     // Test
@@ -86,7 +189,10 @@ class BVHManager {
 
     // Create LBVH
     static fillLinearNode(root: BVHNode, mem: Float32Array[], index = 0) {
-        let right = -1;
+        let right = root.right
+            ? index + 1 // (*)incase right branch is exist but left is null
+            : -1;       // right branch is empty
+
         if(root.left) {
             // Append left branch behind current node
             right = this.fillLinearNode(root.left, mem, index+1);
@@ -98,8 +204,8 @@ class BVHManager {
         mem[index].set(root.bounds.min);
         mem[index].set(root.bounds.max, 4);
         // TODO: Obj
-        // mem[index][3] = root.index;
-        // mem[index][7] = right;
+        mem[index][3] = right;
+        mem[index][7] = root.index;
         index++;
 
         if(root.right) {
