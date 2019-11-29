@@ -21,11 +21,11 @@ class AABB {
     }
     update(p: Float32Array) {
         this.max[0] = Math.max(this.max[0], p[0]);
-        this.max[1] = Math.max(this.max[0], p[1]);
-        this.max[2] = Math.max(this.max[0], p[2]);
+        this.max[1] = Math.max(this.max[1], p[1]);
+        this.max[2] = Math.max(this.max[2], p[2]);
         this.min[0] = Math.min(this.min[0], p[0]);
-        this.min[1] = Math.min(this.min[0], p[1]);
-        this.min[2] = Math.min(this.min[0], p[2]);
+        this.min[1] = Math.min(this.min[1], p[1]);
+        this.min[2] = Math.min(this.min[2], p[2]);
         this.isDirty = true;
     }
 }
