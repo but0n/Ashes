@@ -28,5 +28,7 @@ export { Skin } from "./skin";
 export { aabb } from "./bounds/aabb";
 export { octree } from "./tree/octree";
 
+export { BVHManager } from "./tree/bvh";
+
 export const version = 'VERSION';
 // export { Example } from "./example";
