@@ -4,7 +4,22 @@ import { Mesh } from "../mesh/mesh";
 class AABB {
     max: Float32Array = vec3.create();
     min: Float32Array = vec3.create();
+    center: Float32Array = vec3.create();
     constructor() {
+    }
+    updateCenter() {
+        this.center[0] = (this.max[0] - this.min[0]) * 0.5;
+        this.center[1] = (this.max[1] - this.min[1]) * 0.5;
+        this.center[2] = (this.max[2] - this.min[2]) * 0.5;
+    }
+    update(p: Float32Array) {
+        this.max[0] = Math.max(this.max[0], p[0]);
+        this.max[1] = Math.max(this.max[0], p[1]);
+        this.max[2] = Math.max(this.max[0], p[2]);
+        this.min[0] = Math.min(this.min[0], p[0]);
+        this.min[1] = Math.min(this.min[0], p[1]);
+        this.min[2] = Math.min(this.min[0], p[2]);
+        this.updateCenter();
     }
 }
 
