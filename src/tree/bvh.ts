@@ -43,6 +43,21 @@ class BVHManager {
     primitives: Float32Array;
     meshes: Mesh[];
 
+    LBVH: Float32Array;
+    LBVH_nodes: Float32Array[];
+
+    constructor(texSize = 2048) {
+        const totalTexel = texSize * texSize;
+        const totalBVH = totalTexel / 2;
+        this.LBVH = new Float32Array(totalTexel * 4);
+        this.LBVH_nodes = [];
+        for(let i = 0; i < totalBVH; i++) {
+            // R-G-B-A-R-G-B-A
+            // X-Y-Z-_-X-Y-Z-P
+            this.LBVH_nodes[i] = this.LBVH.subarray(i * 8, (i + 1) * 8);
+        }
+    }
+
     getBounds(triangles: Float32Array, vertices: Float32Array) {
 
     }
@@ -61,6 +76,12 @@ class BVHManager {
             root.isLeaf = true;
         }
         return root;
+    }
+
+    fillLBVH(root: BVHNode) {
+        this.LBVH.fill(0);
+        BVHManager.fillLinearNode(root, this.LBVH_nodes);
+        return this.LBVH;
     }
 
     // Create LBVH
