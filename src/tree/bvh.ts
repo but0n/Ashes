@@ -31,7 +31,7 @@ class AABB {
 }
 
 class BVHNode {
-    bounds: AABB;
+    bounds = new AABB();
     right: BVHNode;
     left: BVHNode;
     isLeaf = false;
@@ -46,7 +46,7 @@ class BVHNode {
 }
 
 class trianglePrimitive {
-    bounds: AABB;
+    bounds = new AABB();
     index: number;
 }
 
@@ -79,10 +79,10 @@ export class BVHManager {
     }
 
     // Generate bounds of triangles, mind GC!
-    genBounds(triangles: Float32Array[]) {
+    genBounds(triangles: Float32Array[], size = triangles.length) {
         const boxList: trianglePrimitive[] = [];
         // [[x, y, z] * 3, ...]
-        for(let i = 0; i < triangles.length;) {
+        for(let i = 0; i < size;) {
             const box = new trianglePrimitive();
             box.index = i;  // Offset of the first vertex
             box.bounds.update(triangles[i++]);
@@ -96,22 +96,26 @@ export class BVHManager {
     buildBVH(meshes: Mesh[]) {
         const d = Date.now();
         // ? x-y-z-x y-z-x-y z-x
-        const triangleTexture = BVHManager.createDataTex(2048, 3);
+        const triangleTexture = BVHManager.createDataTex();
         let offset = 0;
         for(let m of meshes) {
             let data: any = m.data;
             let pos: Float32Array[] = data.POSITION;
             let face = m.indices.data;
-
+            for(let i = 0; i < face.length; i++) {
+                const vertex = pos[face[i]];
+                triangleTexture.chunks[offset++].set(vertex);
+            }
         }
 
-        const primitives = this.genBounds([]);
+        const primitives = this.genBounds(triangleTexture.chunks, offset);
         const root = this.splitBVH(primitives);
         const LBVH = this.fillLBVH(root);
         console.log(`Build BVH cost ${Date.now() - d}ms`);
+        return LBVH;
     }
 
-    private _size: Float32Array;
+    private _size = vec3.create();
     splitBVH(prim: trianglePrimitive[]) {
         if(prim.length == 0) // Empty branch
             return null;
@@ -143,6 +147,7 @@ export class BVHManager {
         let left: trianglePrimitive[] = [];
         let right: trianglePrimitive[] = [];
 
+        // FIXME:
         for(let p of prim) {
             if(p.bounds.center[axis] < middle) {
                 left.push(p);
