@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" type="text/css" href="res/css/main.css" />
+    </head>
+
+<body>
+    <canvas id="screen"></canvas>
+</body>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/ashes3d@0.0.46/build/ashes.main.js"></script> -->
+    <script src="build/ashes.main.js"></script>
+    <script>
+let { Asset, EntityMgr, Camera, vec3, quat, Screen, OrbitControl, Filter, Shader, Material, QuadMesh, MeshRenderer, Texture, aabb, octree, glsl } = Ashes;
+let {Vignetting} = Ashes;
+let {Bloom} = Ashes;
+let {BVHManager} = Ashes;
+
+
+
+// let assetRoot = 'https://but0n.github.io/Ashes/'
+let assetRoot = ''
+Material.SHADER_PATH = assetRoot + Material.SHADER_PATH;
+
+let [,cuspath,scale, yoffset, threshold, radiu, intensity] = [,,,,];
+
+// BoomBox
+// let gltf = assetRoot + 'gltfsamples/BoomBox.glb';
+
+// kgirls01: Skin, Animation:
+// ----------------------------
+// scale = 0.003;
+yoffset = -0.5;
+// threshold = 0.9;
+// gltf = assetRoot + 'gltfsamples/kgirls01/scene.gltf';
+// gltf = assetRoot + 'gltfsamples/hylian_shield/scene.gltf';
+gltf = assetRoot + 'gltfsamples/FlightHelmet/glTF/FlightHelmet.gltf';
+// gltf = assetRoot + 'res/CesiumMan.glb';
+// gltf = assetRoot + 'res/BrainStem.glb';
+// gltf = 'https://github.com/KhronosGroup/glTF-Blender-Exporter/raw/master/polly/project_polly.glb';
+// gltf = 'https://rawcdn.githack.com/KhronosGroup/glTF-Blender-Exporter/2bd852403600053dba95db78db3f21728b979a7c/polly/project_polly.glb'
+
+gltf = assetRoot + 'gltfsamples/DamagedHelmet.glb';
+// gltf = assetRoot + 'res/MorphPrimitivesTest.glb';
+// gltf = assetRoot + 'gltfsamples/project_polly.glb';
+// gltf = assetRoot + 'gltfsamples/Suzanne/Suzanne.gltf';
+// gltf = assetRoot + 'res/MorphPrimitivesTest.glb';
+// gltf = assetRoot + 'res/Horse.glb';
+scale = 2;
+
+async function main() {
+
+    let screen = new Screen('#screen');
+    screen.bgColor = [0.23,0.23,0.23, 1];
+    // screen.bgColor = [0, 0, 0, 1];
+    // screen.bgColor = [0.9,0.9,0.9,1];
+    // Filters
+    // Bloom.initFilters(screen, threshold || 0.8, radiu || 80, intensity || 1.2);
+    // screen.attachFilter(new Vignetting(screen));
+
+    // let loading = new loadingAnim(screen);
+    // loading.cb = () => {
+    //     screen.deleteFilter(0);
+    //     console.log('delete');
+    // }
+    // screen.attachFilter(loading);
+    // Asset.taskObserve = (finished, total) => {
+    //     let p = finished / total;
+    //     loading.cur = p;
+    // }
+    // screen.attachFilter(new Vignetting(screen));
+
+
+    let skybox = await Asset.loadCubemap('res/envmap/helipad/', 'hdr');
+    let diffenv = await Asset.loadCubemap('res/envmap/helipad_diff/', 'hdr');
+    // let skybox = await Asset.loadCubemap(assetRoot + 'res/envmap/GoldenGateBridge2/');
+
+    let scene = EntityMgr.create('root - (Click each bar which has yellow border to toggle visible)');
+
+    // Camera and controls
+    let mainCamera = scene.appendChild(EntityMgr.create('camera'));
+    let cameraTrans = mainCamera.components.Transform;
+    let cam = mainCamera.addComponent(new Camera(screen.width / screen.height));
+    vec3.set(cameraTrans.translate, 0, 0, 10);
+
+    mainCamera.addComponent(new OrbitControl(screen, mainCamera));
+    // screen.mainCamera = cam;
+
+    document.querySelector('body').appendChild(scene);
+
+    let gltfroot = await Asset.loadGLTF(gltf, screen, skybox, diffenv)
+    scene.appendChild(gltfroot);
+    let root = gltfroot.components.Transform;
+    root.translate[1] = yoffset || 0;
+    vec3.scale(root.scale, root.scale, scale || 200);
+
+
+    meshes = EntityMgr.getComponents('Mesh', gltfroot);
+
+    console.log(meshes);
+    let bvhMgr = new BVHManager();
+    console.log(bvhMgr);
+    const {LBVH, triangleTexture} = bvhMgr.buildBVH(meshes);
+    console.log(LBVH)
+    for(let m of meshes) {
+        // o = new octree(m, screen);
+        // o.visible()
+    }
+
+
+
+
+
+    let commonShader = Screen.platform == 'iOS'
+            ? new Shader(glsl.stylize.vs, glsl.stylize.fs)
+            : new Shader(glsl.stylize2.vs, glsl.stylize2.fs);
+    // scene.appendChild(await Asset.loadGLTF(assetRoot + 'res/BrainStem.glb', screen, skybox));
+
+    // // The original size of quad is 2x2
+    const brdfurl = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Viewer/master/assets/images/brdfLUT.png';
+    let brdfLUT = await Asset.loadTexture(brdfurl, { minFilter: WebGL2RenderingContext.LINEAR });
+
+    let visual = (tex, x) => {
+        let quad = EntityMgr.create('quad');
+        scene.appendChild(quad);
+
+        let quadMat = new Material(commonShader, 'stylize', true);;
+
+
+        // Attach texture to material we created
+        Material.setTexture(quadMat, 'baseColorTexture', tex);
+        // Material.setTexture(quadMat, 'baseColorTexture', LBVH.tex);
+
+        quadMat.shader.macros['HAS_BASECOLOR_MAP'] = '';
+        // Material.setTexture(quadMat, 'metallicRoughnessTexture', floor);
+        // quadMat.shader.macros['HAS_METALLIC_ROUGHNESS_MAP'] = '';
+        // Material.setTexture(quadMat, 'env', skybox);
+        // quadMat.shader.macros['HAS_ENV_MAP'] = '';
+        // Material.setTexture(quadMat, 'diffenv', diffenv);
+        // quadMat.shader.macros['HAS_DIFFENV_MAP'] = '';
+        Material.setTexture(quadMat, 'brdfLUT', Texture.clone(brdfLUT));
+        quadMat.shader.macros['BASECOLOR_FACTOR'] = `float(1)`;
+        quadMat.shader.macros['METALLIC_FACTOR'] = `float(0)`;
+        quadMat.shader.macros['ROUGHNESS_FACTOR'] = `float(0.9)`;
+        quadMat.queue = 1;
+
+        // Create a renderer component
+        let quadMR = new MeshRenderer(screen, new QuadMesh(), quadMat);
+        // Attach renderer to entity
+        quad.addComponent(quadMR);
+
+        let quadtrans = quad.components.Transform;
+        quadtrans.translate[0] = -1;
+        quadtrans.translate[2] = x;
+    }
+
+    visual(LBVH.tex, 2.2);
+    visual(triangleTexture.tex, 2);
+}
+// FIXME:
+let loading_vs = `
+attribute vec3 POSITION;
+
+void main() {
+  gl_Position = vec4(POSITION, 1);
+}
+`;
+
+let loading_fs = `
+precision highp float;
+#include <macros>
+uniform sampler2D base;
+uniform float cur;
+uniform float powcur;
+
+void main() {
+    vec2 uv = gl_FragCoord.xy * 2. / screenSize;
+    vec4 base = texture2D(base, uv);
+    float prog = abs(uv.y);
+
+    // Middle out
+
+
+    if(cur < prog) {
+        gl_FragColor = vec4(1);
+    } else {
+        gl_FragColor = vec4(base.rgb * powcur, base.a);
+    }
+}
+`;
+
+class loadingAnim extends Filter {
+
+    constructor(screen) {
+        // let macro = {};
+
+        // let shader = new Shader(loading_vs, loading_fs, macro);
+        // super(screen, shader);
+        // this.cur = 0;
+        // this.stop = false;
+        // let cur = 0;
+        // Material.setUniform(this.material, 'cur', this.cur);
+        // let loop = () => {
+        //     cur += (this.cur - cur) * 0.05;
+        //     Material.setUniform(this.material, 'cur', cur);
+        //     Material.setUniform(this.material, 'powcur', Math.pow(cur, 8));
+        //     if (cur < 0.999) {
+        //         requestAnimationFrame(loop);
+        //     } else {
+        //         Material.setUniform(this.material, 'cur', 1);
+        //         Material.setUniform(this.material, 'powcur', 1);
+        //         if (this.cb) this.cb();
+        //     }
+        // };
+        // loop();
+    }
+}
+
+
+
+main();
+
+
+
+    </script>
+</html>
