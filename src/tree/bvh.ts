@@ -1,5 +1,6 @@
 import { vec3 } from "../math";
 import { Mesh } from "../mesh/mesh";
+import { Texture } from "../texture";
 
 class AABB {
     max: Float32Array = vec3.create();
@@ -51,23 +52,12 @@ class trianglePrimitive {
     index: number;
 }
 
-export class BVHManager {
-    nodeList: BVHNode[] = [];
-    primitives: Float32Array;
-    meshes: Mesh[];
+class DataTexture {
+    raw: Float32Array;
+    chunks: Float32Array[];
+    tex: Texture;
 
-    LBVH: Float32Array;
-    LBVH_nodes: Float32Array[];
-
-    constructor(texSize = 2048) {
-        const LBVHTexture = BVHManager.createDataTex(texSize, 2);
-        this.LBVH = LBVHTexture.raw;
-        this.LBVH_nodes = LBVHTexture.chunks;
-        // R-G-B-A-R-G-B-A
-        // X-Y-Z-_-X-Y-Z-P
-    }
-
-    static createDataTex(texSize = 2048, chunkTexels = 1) {
+    constructor(texSize = 2048, chunkTexels = 1) {
         const totalTexel = texSize * texSize;
         const totalChunks = totalTexel / chunkTexels;
         const chunkOffset = chunkTexels * 4;
@@ -76,9 +66,48 @@ export class BVHManager {
         for(let i = 0; i < totalChunks; i++) {
             chunks[i] = raw.subarray(i * chunkOffset, (i + 1) * chunkOffset);
         }
-        return {raw, chunks};
-    }
 
+        const tex = new Texture(null, {
+            magFilter: WebGL2RenderingContext.LINEAR,
+            minFilter: WebGL2RenderingContext.LINEAR,
+            wrapS: WebGL2RenderingContext.CLAMP_TO_EDGE,
+            wrapT: WebGL2RenderingContext.CLAMP_TO_EDGE,
+        });
+        tex.data = raw;
+        tex.height = texSize;
+        tex.width = texSize;
+        tex.format = WebGL2RenderingContext.RGBA;
+        tex.internalformat = WebGL2RenderingContext.RGBA32F;
+        tex.type = WebGL2RenderingContext.FLOAT;
+        tex.isDirty = true;
+
+        this.raw = raw;
+        this.chunks = chunks;
+        this.tex = tex;
+
+    }
+}
+
+export class BVHManager {
+    nodeList: BVHNode[] = [];
+    primitives: Float32Array;
+    meshes: Mesh[];
+    root: BVHNode;
+
+    LBVH: Float32Array;
+    LBVH_nodes: Float32Array[];
+
+    trianglesTex: DataTexture;
+    LBVHTexture: DataTexture;
+
+    constructor(texSize = 2048) {
+        // const LBVHTexture = BVHManager.createDataTex(texSize, 2);
+        this.LBVHTexture = new DataTexture(texSize, 2);
+        this.LBVH = this.LBVHTexture.raw;
+        this.LBVH_nodes = this.LBVHTexture.chunks;
+        // R-G-B-A-R-G-B-A
+        // X-Y-Z-_-X-Y-Z-P
+    }
     // Generate bounds of triangles, mind GC!
     genBounds(triangles: Float32Array[], size = triangles.length) {
         const boxList: trianglePrimitive[] = [];
@@ -97,7 +126,7 @@ export class BVHManager {
     buildBVH(meshes: Mesh[]) {
         const d = Date.now();
         // ? x-y-z-x y-z-x-y z-x
-        const triangleTexture = BVHManager.createDataTex();
+        const triangleTexture = new DataTexture();
         let offset = 0;
         for(let m of meshes) {
             let data: any = m.data;
@@ -106,14 +135,15 @@ export class BVHManager {
             for(let i = 0; i < face.length; i++) {
                 const vertex = pos[face[i]];
                 triangleTexture.chunks[offset++].set(vertex);
+                triangleTexture.chunks[offset++][3] = 1; // Visible
             }
         }
 
         const primitives = this.genBounds(triangleTexture.chunks, offset);
-        const root = this.splitBVH(primitives);
-        const LBVH = this.fillLBVH(root);
+        const root = this.root = this.splitBVH(primitives);
+        const LBVH = this.fillLBVH(root, this.LBVHTexture);
         console.log(`Build BVH cost ${Date.now() - d}ms`);
-        return LBVH;
+        return {LBVH, triangleTexture};
     }
 
     private _size = vec3.create();
@@ -149,7 +179,8 @@ export class BVHManager {
         let right: trianglePrimitive[] = [];
 
 
-        while(left.length == 0 || right.length == 0) {
+        let c = 3;
+        while(c-- && (left.length == 0 || right.length == 0)) {
             // const middle = node.bounds.min[axis] + size[axis] / 2;
             // const middle = node.bounds.min[axis%3] + size[axis%3] / 2;
             const middle = node.bounds.center[axis%3];
@@ -166,12 +197,14 @@ export class BVHManager {
                 }
             }
             axis++;
-            if(axis >= 5) {
+            if(c == 0) {
                 // FIXME:
-                left = [prim[0]];
-                right = [prim[1]];
+                const m = Math.ceil(prim.length / 2);
+                left = prim.slice(0, m);
+                right = prim.slice(m);
+                // left = [prim[0]];
+                // right = [prim[1]];
             }
-            // axis %= 3;
         }
 
         if(left.length == 0 && right.length == 0) {
@@ -204,10 +237,10 @@ export class BVHManager {
         return root;
     }
 
-    fillLBVH(root: BVHNode) {
-        this.LBVH.fill(0);
-        BVHManager.fillLinearNode(root, this.LBVH_nodes);
-        return this.LBVH;
+    fillLBVH(root: BVHNode, LBVH: DataTexture) {
+        LBVH.raw.fill(0);
+        BVHManager.fillLinearNode(root, LBVH.chunks);
+        return LBVH;
     }
 
     // Create LBVH
