@@ -32,7 +32,8 @@ export class Filter {
     mesh: Mesh;
     renderToScreen = true;
     screen: Screen;
-    constructor(screen: Screen, shader: Shader, width: number = screen.width, height: number = screen.height) {
+    onRender = null;
+    constructor(screen: Screen, shader: Shader, width: number = screen.width * screen.ratio, height: number = screen.height * screen.ratio) {
         this.ctx = screen.gl;
         this.screen = screen;
         this.width = width;

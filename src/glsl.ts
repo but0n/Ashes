@@ -8,6 +8,8 @@ import vignetting_vs from "../res/shader/vignetting.vs.glsl"
 import vignetting_fs from "../res/shader/vignetting.fs.glsl"
 import line_vs from "../res/shader/line.vs.glsl"
 import line_fs from "../res/shader/line.fs.glsl"
+import ray_vs from "../res/shader/ray.vs.glsl"
+import ray_fs from "../res/shader/ray.fs.glsl"
 
 export let glsl = {
     basic: {
@@ -29,5 +31,9 @@ export let glsl = {
     line: {
         vs: line_vs,
         fs: line_fs,
+    },
+    ray: {
+        vs: ray_vs,
+        fs: ray_fs,
     },
 };

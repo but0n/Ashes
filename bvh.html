@@ -88,7 +88,7 @@ async function main() {
     document.querySelector('body').appendChild(scene);
 
     let gltfroot = await Asset.loadGLTF(gltf, screen, skybox, diffenv)
-    scene.appendChild(gltfroot);
+    // scene.appendChild(gltfroot);
     let root = gltfroot.components.Transform;
     root.translate[1] = yoffset || 0;
     vec3.scale(root.scale, root.scale, scale || 200);
@@ -137,11 +137,10 @@ async function main() {
         // quadMat.shader.macros['HAS_ENV_MAP'] = '';
         // Material.setTexture(quadMat, 'diffenv', diffenv);
         // quadMat.shader.macros['HAS_DIFFENV_MAP'] = '';
-        Material.setTexture(quadMat, 'brdfLUT', Texture.clone(brdfLUT));
+        Material.setTexture(quadMat, 'brdfLUT', brdfLUT);
         quadMat.shader.macros['BASECOLOR_FACTOR'] = `float(1)`;
         quadMat.shader.macros['METALLIC_FACTOR'] = `float(0)`;
         quadMat.shader.macros['ROUGHNESS_FACTOR'] = `float(0.9)`;
-        quadMat.queue = 1;
 
         // Create a renderer component
         let quadMR = new MeshRenderer(screen, new QuadMesh(), quadMat);
@@ -153,40 +152,31 @@ async function main() {
         quadtrans.translate[2] = x;
     }
 
-    visual(LBVH.tex, 2.2);
-    visual(triangleTexture.tex, 2);
+    // visual(LBVH.tex, 2.2);
+    // visual(triangleTexture.tex, 2);
+
+    let rt = new rayTracing(screen);
+    Material.setTexture(rt.material, 'triangleTex', triangleTexture.tex);
+    Material.setTexture(rt.material, 'LBVHTex', LBVH.tex);
+
+    screen.attachFilter(rt);
 }
-// FIXME:
-let loading_vs = `
-attribute vec3 POSITION;
 
-void main() {
-  gl_Position = vec4(POSITION, 1);
-}
-`;
-
-let loading_fs = `
-precision highp float;
-#include <macros>
-uniform sampler2D base;
-uniform float cur;
-uniform float powcur;
-
-void main() {
-    vec2 uv = gl_FragCoord.xy * 2. / screenSize;
-    vec4 base = texture2D(base, uv);
-    float prog = abs(uv.y);
-
-    // Middle out
-
-
-    if(cur < prog) {
-        gl_FragColor = vec4(1);
-    } else {
-        gl_FragColor = vec4(base.rgb * powcur, base.a);
+class rayTracing extends Filter {
+    frame = 0;
+    constructor(screen) {
+        let shader = new Shader(glsl.ray.vs, glsl.ray.fs, {
+            iResolution: `vec2(${1/screen.width},${1/screen.height})`,
+            // iResolution: `vec2(${1/screen.width*screen.ratio},${1/screen.height*screen.ratio})`,
+            iTexel: `vec2(${1/2048})`,
+        });
+        super(screen, shader);
+        this.onRender = () => {
+            // console.log('testsetst');
+            Material.setUniform(this.material, 'Frame', this.frame++);
+        }
     }
 }
-`;
 
 class loadingAnim extends Filter {
 
