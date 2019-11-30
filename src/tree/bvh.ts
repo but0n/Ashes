@@ -151,7 +151,8 @@ export class BVHManager {
 
         while(left.length == 0 || right.length == 0) {
             // const middle = node.bounds.min[axis] + size[axis] / 2;
-            const middle = node.bounds.min[axis%3] + size[axis%3] / 2;
+            // const middle = node.bounds.min[axis%3] + size[axis%3] / 2;
+            const middle = node.bounds.center[axis%3];
             // Reset
             left = [];
             right = [];
@@ -166,7 +167,9 @@ export class BVHManager {
             }
             axis++;
             if(axis >= 5) {
-                debugger;
+                // FIXME:
+                left = [prim[0]];
+                right = [prim[1]];
             }
             // axis %= 3;
         }
