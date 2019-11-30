@@ -15,9 +15,10 @@ class AABB {
     private isDirty = false;
 
     private updateCenter() {
-        this._center[0] = (this.max[0] - this.min[0]) * 0.5;
-        this._center[1] = (this.max[1] - this.min[1]) * 0.5;
-        this._center[2] = (this.max[2] - this.min[2]) * 0.5;
+        this._center[0] = this.min[0] + (this.max[0] - this.min[0]) * 0.5;
+        this._center[1] = this.min[1] + (this.max[1] - this.min[1]) * 0.5;
+        this._center[2] = this.min[2] + (this.max[2] - this.min[2]) * 0.5;
+        this.isDirty = false;
     }
     update(p: Float32Array) {
         this.max[0] = Math.max(this.max[0], p[0]);
@@ -138,22 +139,36 @@ export class BVHManager {
         // Compare and find the longest axis
         const size = this._size;
         vec3.sub(size, node.bounds.max, node.bounds.min);
-        const axis = size.indexOf(Math.max(size[0], size[1], size[2]));
+
+
+        let axis = size.indexOf(Math.max(size[0], size[1], size[2]));
 
         // if(size[axis] > 0) {}
-
-        const middle = node.bounds.min[axis] + size[axis] / 2;
 
         let left: trianglePrimitive[] = [];
         let right: trianglePrimitive[] = [];
 
-        // FIXME:
-        for(let p of prim) {
-            if(p.bounds.center[axis] < middle) {
-                left.push(p);
-            } else {
-                right.push(p);
+
+        while(left.length == 0 || right.length == 0) {
+            // const middle = node.bounds.min[axis] + size[axis] / 2;
+            const middle = node.bounds.min[axis%3] + size[axis%3] / 2;
+            // Reset
+            left = [];
+            right = [];
+
+            // FIXME:
+            for(let p of prim) {
+                if(p.bounds.center[axis] < middle) {
+                    left.push(p);
+                } else {
+                    right.push(p);
+                }
             }
+            axis++;
+            if(axis >= 5) {
+                debugger;
+            }
+            // axis %= 3;
         }
 
         if(left.length == 0 && right.length == 0) {
