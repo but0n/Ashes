@@ -79,6 +79,8 @@ class MeshRendererSystem extends ComponentSystem {
                     ft.bind();
                     screen.setViewport(ft.width, ft.height);
                 }
+                if(ft.onRender)
+                    ft.onRender();
                 MeshRendererSystem.render(ft.meshRender);
             }
             screen.gl.enable(WebGL2RenderingContext.BLEND);
