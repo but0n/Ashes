@@ -45,7 +45,7 @@ class MeshRendererSystem extends ComponentSystem {
     depends = [
         MeshRenderer.name
     ];
-    onUpdate() {
+    onUpdate(deltaTime: number) {
         // Before render
         for (let id in Screen.list) {
             let screen = Screen.list[id] as Screen;
@@ -80,7 +80,7 @@ class MeshRendererSystem extends ComponentSystem {
                     screen.setViewport(ft.width, ft.height);
                 }
                 if(ft.onRender)
-                    ft.onRender();
+                    ft.onRender(deltaTime);
                 MeshRendererSystem.render(ft.meshRender);
             }
             screen.gl.enable(WebGL2RenderingContext.BLEND);

@@ -164,16 +164,20 @@ async function main() {
 
 class rayTracing extends Filter {
     frame = 0;
+    timer = 0;
     constructor(screen) {
         let shader = new Shader(glsl.ray.vs, glsl.ray.fs, {
             iResolution: `vec2(${1/screen.width},${1/screen.height})`,
+            Resolution: `vec2(${screen.width},${screen.height})`,
             // iResolution: `vec2(${1/screen.width*screen.ratio},${1/screen.height*screen.ratio})`,
             iTexel: `vec2(${1/2048})`,
         });
         super(screen, shader);
-        this.onRender = () => {
+        this.onRender = (dt) => {
             // console.log('testsetst');
-            Material.setUniform(this.material, 'Frame', this.frame++);
+            // Material.setUniform(this.material, 'iFrame', this.frame++);
+            Material.setUniform(this.material, 'iTime', this.timer);
+            this.timer += dt;
         }
     }
 }
