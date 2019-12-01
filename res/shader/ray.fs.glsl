@@ -69,34 +69,11 @@ vec2 hash2(inout float seed) {
 }
 
 #define MAX_DIST 1e10
-float iSphere( in vec3 ro, in vec3 rd, in vec2 distBound, inout vec3 normal, float sphereRadius ) {
-    float b = dot(ro, rd);
-    float c = dot(ro, ro) - sphereRadius*sphereRadius;
-    float h = b*b - c;
-    if (h < 0.) {
-        return MAX_DIST;
-    } else {
-	    h = sqrt(h);
-        float d1 = -b-h;
-        float d2 = -b+h;
-        if (d1 >= distBound.x && d1 <= distBound.y) {
-            normal = normalize(ro + rd*d1);
-            return d1;
-        } else if (d2 >= distBound.x && d2 <= distBound.y) {
-            normal = normalize(ro + rd*d2);
-            return d2;
-        } else {
-            return MAX_DIST;
-        }
-    }
-}
-
-float hitAABB(vec3 ro, vec3 rd, vec3 bmax, vec3 bmin) {
+float hitAABB(vec3 ro, vec3 ird, vec3 bmax, vec3 bmin) {
     // vec3 Tmax = vec3(0);
     // vec3 Tmin = vec3(0);
     // Tmax = (bmax - ro) / rd;
     // Tmin = (bmin - ro) / rd;
-    vec3 ird = 1. / rd;
     vec2 Tx, Ty, Tz = vec2(0); // (min, max)
     // X
     Tx.x = (bmin.x - ro.x) * ird.x;
@@ -114,9 +91,8 @@ float hitAABB(vec3 ro, vec3 rd, vec3 bmax, vec3 bmin) {
 
     // Check X-Y flat
     if(Tx.x > Ty.y || Ty.x > Tx.y) {
-        return -1.; // Missing
+        return MAX_DIST; // Missing
     }
-    // return 1.;
 
     // Z
     Tz.x = (bmin.z - ro.z) * ird.z;
@@ -131,20 +107,144 @@ float hitAABB(vec3 ro, vec3 rd, vec3 bmax, vec3 bmin) {
     T.y = min(Tx.y, Ty.y);
 
     if(T.x > Tz.y || Tz.x > T.y) {
-        return -1.; // Missing
+        return MAX_DIST; // Missing
     }
-    return 1.;
-    return min(T.x, Tz.x);
+    return max(T.x, Tz.x);
 }
 
-vec3 hit(vec3 d, float result, float mat) {
-    return (result < d.y) ? vec3(d.x, result, mat) : d;
+struct BVHNode {
+    vec3    bmin;
+    float   branch;
+    vec3    bmax;
+    float   index;
+};
+
+#define INV_TEXTURE_WIDTH 0.00048828125
+BVHNode getBVH(float i) {
+    float offset = (i * 2.);
+    ivec2 uv0 = ivec2( mod(offset + 0., 2048.), floor((offset + 0.) * INV_TEXTURE_WIDTH) );
+    ivec2 uv1 = ivec2( mod(offset + 1., 2048.), floor((offset + 1.) * INV_TEXTURE_WIDTH) );
+
+    vec4 bvh0 = texelFetch(LBVHTex, uv0, 0);
+    vec4 bvh1 = texelFetch(LBVHTex, uv1, 0);
+    return BVHNode(
+        bvh0.rgb,
+        bvh0.a,
+        bvh1.rgb,
+        bvh1.a
+    );
 }
 
-vec3 worldhit(in vec3 ro, in vec3 rd, in vec2 dist, out vec3 normal) {
+float hitLBVH(float i, vec3 ro, vec3 ird, inout vec3 normal) {
+
+    // Current bvh node
+    BVHNode cb = getBVH(i);
+    float t = hitAABB(ro, ird, cb.bmax, cb.bmin);
+    if(t == MAX_DIST)
+        return MAX_DIST;
+
+
+    int c = 128;
+    float cur = i;
+    float parent = i;
+    float right = 0.; // right branch
+    bool swize = false;
+    while(c-- > 0) {
+        if(cb.branch > 0.) {
+            BVHNode lb = getBVH(cur + 1.);
+            BVHNode rb = getBVH(cb.branch);
+            float lt = hitAABB(ro, ird, lb.bmax, lb.bmin);
+            float rt = hitAABB(ro, ird, rb.bmax, rb.bmin);
+
+            // if(lb.branch < 0.)
+            //     return lt;
+            // if(rb.branch < 0.)
+            //     return rt;
+
+            if(lt == MAX_DIST && rt == MAX_DIST) {
+                // if(parent == 0.) {
+                //     return MAX_DIST;
+                // }
+                // Give up
+                swize = true;
+                cb = getBVH(parent);
+            } else {
+                parent = cur;
+                t = min(lt, rt);
+                if(swize) {
+                    float cache = lt;
+                    lt = rt;
+                    rt = cache;
+                    // swize = false;
+                }
+                if(lt < rt) {
+                    cur += 1.;
+                    cb = lb;
+                } else {
+                    cur = cb.branch;
+                    cb = rb;
+                }
+
+            }
+
+        } else {
+            // leaf
+            // return MAX_DIST;
+            return t;
+
+        }
+
+        // if(bvh.branch < 0.) {
+        //     return newt;
+        //     // Leaf
+        //     // if(right < 0.) {
+        //     //     // Current in right leaf
+        //     //     return min(newt, t);
+        //     // } else {
+        //     //     // is left leaf
+        //     //     BVHNode rbvh = getBVH(right);
+        //     //     float rt = hitAABB(ro, ird, rbvh.bmax, rbvh.bmin);
+        //     //     return min(newt, rt);
+        //     // }
+        // }
+
+        //     // cur += 1.;
+        //     // t = newt;
+
+        // // Closer
+        // if(newt > 0.) {
+        //     // hit
+        //     if(newt < t) {
+
+        //     }
+        //     // update right branch
+        //     right = bvh.branch;
+        //     // left branch
+        //     cur += 1.;
+        //     t = min(newt, t);
+        // } else if(right > 0.){
+        //     // Intersection failed in left branch
+        //     cur = right;
+        //     right = -1.;
+        // } else {
+        //     return -1.;
+        // }
+    }
+    // return t;
+    return MAX_DIST;
+}
+
+float hitWorld(in vec3 ro, in vec3 rd, in vec2 dist, out vec3 normal) {
     vec3 d = vec3(dist, 0.);
-    d = hit(d, iSphere(ro-vec3( 0,.510, 0), rd, d.xy, normal, .5), 2.);
-    return d;
+    vec3 ird = 1. / rd;
+
+    // float right = 1.;
+    // while(right) {
+
+    // }
+    // float t = -1;
+    float t = hitLBVH(0., ro - vec3(cos(iTime), sin(iTime), 3), ird, normal);
+    return t;
 }
 
 #define PATH_LENGTH 12
@@ -155,15 +255,16 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
     // for (int i = 0; i < PATH_LENGTH; ++i) {
 
     // }
-    vec3 center = vec3(0, 0, 2. + abs(sin(iTime) * 10.));
-    // vec3 center = vec3(cos(iTime), 0, -5);
-    float t = hitAABB(ro, rd, center + vec3(1.), center - vec3(1.));
-    // float t = dot(rd, vec3(0,0,1));
-    // if(t > 0.) {
-    //     return vec3(1);
-    // }
+    vec3 center = vec3(cos(iTime)*1.2, sin(iTime), 15);
+    // float t = hitAABB(ro, 1./rd, center + vec3(1.), center - vec3(1.));
+    float t = hitWorld(ro, rd, vec2(0, 1000), normal);
 
-    return vec3(t);
+    if(t < MAX_DIST) {
+        return vec3(mod(t, 1.));
+        // return vec3(ro + rd * t);
+    }
+
+    return vec3(0);
 }
 
 
@@ -196,8 +297,9 @@ void main() {
 
     // outColor = vec4(gl_FragCoord.xy * iResolution, 0, 1);
     outColor = texture(triangleTex, uv);
-    outColor = texelFetch(LBVHTex, ivec2(gl_FragCoord.xy), 0);
-    outColor = vec4(vec3(seed), 1);
+    // outColor = texelFetch(LBVHTex, ivec2(p * 2048.), 0);
+    // outColor = vec4(vec3(seed), 1);
+    // outColor = vec4(p, 0, 1);
     outColor = vec4(col, 1);
     // outColor = vec4(rd.xy, 0, 1);
 }
