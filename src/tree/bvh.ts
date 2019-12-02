@@ -202,6 +202,8 @@ export class BVHManager {
                 const m = Math.ceil(prim.length / 2);
                 left = prim.slice(0, m);
                 right = prim.slice(m);
+                // left = prim.slice(0, 1);
+                // right = prim.slice(m, m+1);
                 // left = [prim[0]];
                 // right = [prim[1]];
             }
