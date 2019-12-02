@@ -175,7 +175,8 @@ class rayTracing extends Filter {
         super(screen, shader);
         this.onRender = (dt) => {
             // console.log('testsetst');
-            // Material.setUniform(this.material, 'iFrame', this.frame++);
+            Material.setUniform(this.material, 'iFrame', this.frame++);
+            document.title = 'F ' + this.frame;
             Material.setUniform(this.material, 'iTime', this.timer);
             this.timer += dt;
         }
