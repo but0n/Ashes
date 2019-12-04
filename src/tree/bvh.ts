@@ -153,17 +153,17 @@ export class BVHManager {
 
         const node = new BVHNode();
 
+        // Calculate current AABB
+        for(let p of prim) {
+            node.bounds.update(p.bounds.max);
+            node.bounds.update(p.bounds.min);
+        }
+
         // TODO:
         if(prim.length == 1) {
             node.isLeaf = true;
             node.index = prim[0].index;
             return node;
-        }
-
-        // Calculate current AABB
-        for(let p of prim) {
-            node.bounds.update(p.bounds.max);
-            node.bounds.update(p.bounds.min);
         }
 
         // Compare and find the longest axis
@@ -200,10 +200,13 @@ export class BVHManager {
             if(c == 0) {
                 // FIXME:
                 const m = Math.ceil(prim.length / 2);
-                left = prim.slice(0, m);
-                right = prim.slice(m);
-                // left = prim.slice(0, 1);
-                // right = prim.slice(m, m+1);
+                if(m < 6) {
+                    left = prim.slice(0, 1);
+                    right = prim.slice(m, m+1);
+                } else {
+                    left = prim.slice(0, m);
+                    right = prim.slice(m);
+                }
                 // left = [prim[0]];
                 // right = [prim[1]];
             }

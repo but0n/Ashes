@@ -135,7 +135,9 @@ BVHNode getBVH(float i) {
     );
 }
 
-#define SL 60
+#ifndef SL
+#define SL 64
+#endif
 float hitLBVH(float i, vec3 ro, vec3 ird, inout vec3 normal) {
 
     // Current bvh node
@@ -144,8 +146,9 @@ float hitLBVH(float i, vec3 ro, vec3 ird, inout vec3 normal) {
     // if(t == MAX_DIST)
     //     return MAX_DIST;
 
+    int c = 1024;
+
     float t = MAX_DIST; // Only for leaf
-    int c = 10;
     float cur = i;
     float parent = i;
     float right = 0.; // right branch
@@ -157,178 +160,59 @@ float hitLBVH(float i, vec3 ro, vec3 ird, inout vec3 normal) {
     while(c > 0) {
         bvh = getBVH(cur);
         float newt = hitAABB(ro, ird, bvh.bmax, bvh.bmin);
+        // return newt;
+            // if(c == (iFrame / 7)) {
+            //     // if(t > 0.)
+            //         return min(t, newt);
+            //     // return newt;
+            //     // return t;
+            // }
 
         if(newt == MAX_DIST) {
             // Missing
 
             // return prev leaf
-            // if(t != MAX_DIST) {
-            //     return t;
-            // }
+            if(t != MAX_DIST) {
+                return t;
+            }
 
-            // Compares to othre branch
+            // Compares to other branch
             if(op == 0)
                 return t;
             cur = offsetStack[--op];
         } else {
 
-            // if(op == (iFrame / 2 % 60)) {
-            //     return min(t, newt);
-            // }
-
-            if(newt < t) {
-                // Deep
-                if(op == SL)
-                    return t;
-                offsetStack[op++] = bvh.branch;
-                cur += 1.;
-            } else {
-                // Not worth to continue
-
-                if(bvh.index > 0.) {
-                    // Leaf
-                    if(t != MAX_DIST) {
-                        // Already got one leaf
-                        // Compares two leaf
-                        return min(t, newt);
-                        // t = min(t, newt);
-                    } else {
-                        // First leaf
-                        // Update t and continue
-                        t = newt;
-                    }
+            if(bvh.index < 0.) {
+                if(t != MAX_DIST && newt > t) {
+                    // Go back
+                    if(op == 0)
+                        return t;
+                    cur = offsetStack[--op];
+                } else {
+                    // Deep
+                    if(op == SL)
+                        return t;
+                    offsetStack[op++] = bvh.branch;
+                    cur += 1.;
                 }
-                // Go back
-                if(op == 0)
-                    return t;
-                cur = offsetStack[--op];
-
+            } else {
+                // Leaf
+                if(t != MAX_DIST) {
+                    // Already got one leaf
+                    // Compares two leaf
+                    return min(t, newt);
+                    // t = min(t, newt);
+                } else {
+                    // First leaf
+                    // Update t and continue
+                    t = newt;
+                    // Go back
+                    if(op == 0)
+                        return t;
+                    cur = offsetStack[--op];
+                }
             }
-
-            if(op == (iFrame / 2 % SL)) {
-                return min(t, newt);
-                // return t;
-            }
-
-
-            // // Replace t, closer to object
-            // if(bvh.index < 0. && newt < t) {
-            //     if(op == SL)
-            //         return t;
-            //     offsetStack[op++] = bvh.branch;
-            //     cur += 1.;
-            //     // // Claen leaf
-            //     // t = MAX_DIST;
-            //     // t = min(newt, t);
-            // } else {
-            //     // Leaf or not worth
-            //     if(t != MAX_DIST) {
-            //         // Already got one leaf
-            //         // Compares two leaf
-            //         return min(t, newt);
-            //     } else if(bvh.index > 0.) {
-            //         // First leaf
-            //         // Update t and continue
-            //         t = newt;
-            //         if(op == 0)
-            //             return t;
-            //         cur = offsetStack[--op];
-            //     }
-            //     // if(newt < t) {
-            //     //     return newt;
-            //     // } else {
-            //     //     t = newt;
-            //     //     cur = offsetStack[--op];
-            //     //     t = MAX_DIST;
-            //     // }
-            //     // return t;
-            // }
-
         }
-
-
-
-
-
-        // if(cb.branch > 0.) {
-        //     BVHNode lb = getBVH(cur + 1.);
-        //     BVHNode rb = getBVH(cb.branch);
-        //     float lt = hitAABB(ro, ird, lb.bmax, lb.bmin);
-        //     float rt = hitAABB(ro, ird, rb.bmax, rb.bmin);
-
-        //     // if(lb.branch < 0.)
-        //     //     return lt;
-        //     // if(rb.branch < 0.)
-        //     //     return rt;
-
-        //     if(lt == MAX_DIST && rt == MAX_DIST) {
-        //         // if(parent == 0.) {
-        //         //     return MAX_DIST;
-        //         // }
-        //         // Give up
-        //         swize = true;
-        //         cb = getBVH(parent);
-        //     } else {
-        //         parent = cur;
-        //         t = min(lt, rt);
-        //         if(swize) {
-        //             float cache = lt;
-        //             lt = rt;
-        //             rt = cache;
-        //             // swize = false;
-        //         }
-        //         if(lt < rt) {
-        //             cur += 1.;
-        //             cb = lb;
-        //         } else {
-        //             cur = cb.branch;
-        //             cb = rb;
-        //         }
-
-        //     }
-
-        // } else {
-        //     // leaf
-        //     // return MAX_DIST;
-        //     return t;
-
-        // }
-
-        // if(bvh.branch < 0.) {
-        //     return newt;
-        //     // Leaf
-        //     // if(right < 0.) {
-        //     //     // Current in right leaf
-        //     //     return min(newt, t);
-        //     // } else {
-        //     //     // is left leaf
-        //     //     BVHNode rbvh = getBVH(right);
-        //     //     float rt = hitAABB(ro, ird, rbvh.bmax, rbvh.bmin);
-        //     //     return min(newt, rt);
-        //     // }
-        // }
-
-        //     // cur += 1.;
-        //     // t = newt;
-
-        // // Closer
-        // if(newt > 0.) {
-        //     // hit
-        //     if(newt < t) {
-
-        //     }
-        //     // update right branch
-        //     right = bvh.branch;
-        //     // left branch
-        //     cur += 1.;
-        //     t = min(newt, t);
-        // } else if(right > 0.){
-        //     // Intersection failed in left branch
-        //     cur = right;
-        //     right = -1.;
-        // } else {
-        //     return -1.;
-        // }
     }
     return t;
     return MAX_DIST;
@@ -343,8 +227,9 @@ float hitWorld(in vec3 ro, in vec3 rd, in vec2 dist, out vec3 normal) {
 
     // }
     // float t = -1;
-    float t = hitLBVH(0., ro - vec3(-.6, 0, 3), ird, normal);
-    // float t = hitLBVH(0., ro - vec3(cos(iTime), sin(iTime), 3), ird, normal);
+    // float t = hitLBVH(0., ro - vec3(-.6, 0, 3), ird, normal);
+    // float t = hitLBVH(iTime * 100., ro - vec3(-.6, 0, 3), ird, normal);
+    float t = hitLBVH(0., ro - vec3(cos(iTime * .4)*1.5, sin(iTime * .4) * 1.2, 3), ird, normal);
     return t;
 }
 
@@ -365,7 +250,7 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
         // return vec3(ro + rd * t);
     }
 
-    return vec3(0);
+    return vec3(0.4);
 }
 
 

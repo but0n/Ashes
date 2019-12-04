@@ -54,7 +54,7 @@ export class Material {
                 uni.isDirty = false;
                 const info = shader.uniforms[k] as UniformInfo;
                 if(info == null) {
-                    console.warn(`'${k} doesn't exist!`);
+                    // console.warn(`'${k} doesn't exist!`);
                 } else {
                     if(info.argLength == 3) {
                         gl[info.setter](info.location, false, uni.value);

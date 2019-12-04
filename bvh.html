@@ -160,6 +160,12 @@ async function main() {
     Material.setTexture(rt.material, 'LBVHTex', LBVH.tex);
 
     screen.attachFilter(rt);
+    window['bvhUp'] = (v = 12) => {
+        const shader = rt.material.shader;
+        // FIXME: not working yet
+        shader.macros['SL'] = v;
+        shader.isDirty = true;
+    }
 }
 
 class rayTracing extends Filter {
