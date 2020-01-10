@@ -25,10 +25,10 @@ export { MeshRenderer } from "./meshRenderer";
 export { Animation, AnimationChannel } from "./animation";
 export { Skin } from "./skin";
 
-export { aabb } from "./bounds/aabb";
+// export { aabb } from "./bounds/aabb";
 export { octree } from "./tree/octree";
 
-export { BVHManager } from "./tree/bvh";
+export { BVHManager, AABB } from "./tree/bvh";
 
 export const version = 'VERSION';
 // export { Example } from "./example";

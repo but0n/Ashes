@@ -3,6 +3,13 @@
 
 in vec3 POSITION;
 
+
+
+// uniform mat4 M;
+
+// out mat4 camMat;
+
+
 // out vec3 normal;
 // out vec2 uv;
 // out vec2 uv1;

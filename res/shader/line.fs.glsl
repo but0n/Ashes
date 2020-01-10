@@ -65,5 +65,5 @@ vec4 LINEARtoSRGB(vec4 color) {
 }
 
 void main() {
-    gl_FragColor = vec4(0, 1, 0.2, 0.23);
+    gl_FragColor = vec4(0, 1, .4, 0.2);
 }

@@ -1,10 +1,19 @@
 import { vec3 } from "../math";
-import { Mesh } from "../mesh/mesh";
+import { Mesh, bufferView, Accessor } from "../mesh/mesh";
 import { Texture } from "../texture";
+import { Entity, EntityMgr } from "../ECS/entityMgr";
+import { Material } from "../material/material";
+import { Shader } from "../shader";
+import { glsl } from "../glsl";
+import { MeshRenderer } from "../meshRenderer";
+import { Screen } from "../webgl2/screen";
+import { Transform } from "../transform";
 
-class AABB {
+export class AABB {
     max: Float32Array = vec3.create();
     min: Float32Array = vec3.create();
+
+    isDefault = true;
 
     private _center: Float32Array = vec3.create();
     get center() {
@@ -16,19 +25,113 @@ class AABB {
     private isDirty = false;
 
     private updateCenter() {
+        if(this.isDefault)
+            return console.error('AABB is incorrect!');
         this._center[0] = this.min[0] + (this.max[0] - this.min[0]) * 0.5;
         this._center[1] = this.min[1] + (this.max[1] - this.min[1]) * 0.5;
         this._center[2] = this.min[2] + (this.max[2] - this.min[2]) * 0.5;
         this.isDirty = false;
     }
     update(p: Float32Array) {
+        this.isDirty = true;
+
+        if(this.isDefault) {
+            this.max[0] = p[0];
+            this.max[1] = p[1];
+            this.max[2] = p[2];
+            this.min[0] = p[0];
+            this.min[1] = p[1];
+            this.min[2] = p[2];
+            this.isDefault = false;
+            return;
+        }
         this.max[0] = Math.max(this.max[0], p[0]);
         this.max[1] = Math.max(this.max[1], p[1]);
         this.max[2] = Math.max(this.max[2], p[2]);
         this.min[0] = Math.min(this.min[0], p[0]);
         this.min[1] = Math.min(this.min[1], p[1]);
         this.min[2] = Math.min(this.min[2], p[2]);
-        this.isDirty = true;
+    }
+
+    private _isVisible = false;
+    root: Entity;
+    agent: Entity;
+    screen: Screen;
+    get visible() {
+        return this._isVisible;
+    }
+    static mat = new Material(new Shader(glsl.line.vs, glsl.line.fs));
+    set visible(status) {
+        this._isVisible = status;
+
+        if(status) {
+            if(!this.agent) {
+                this.agent = this.root.appendChild(EntityMgr.create('aabb'));
+                const mesh = this.createMesh();
+                const mr = new MeshRenderer(this.screen, mesh, AABB.mat);
+                this.agent.addComponent(mr);
+            }
+        }
+    }
+
+
+    createMesh() {
+        const x = this.max[0];
+        const y = this.max[1];
+        const z = this.max[2];
+        const x2 = this.min[0];
+        const y2 = this.min[1];
+        const z2 = this.min[2];
+        let meshVBO = new Float32Array([
+            //x x
+            // \/\
+            //  x x
+            x, y, z,    // 0
+            x, y2, z,   // 1
+            x, y, z2,   // 2
+            x, y2, z2,  // 3
+
+            x2, y, z,   // 4
+            x2, y2, z,  // 5
+            x2, y, z2,  // 6
+            x2, y2, z2, // 7
+
+        ]);
+        let meshEBO = new Uint16Array([
+            0, 1, 5, 4,
+            0, 2, 6, 4,
+            4, 5, 7, 6,
+            7, 3, 1, 3, 2
+        ]);
+        let vbo = new bufferView(meshVBO.buffer, {
+            byteOffset: meshVBO.byteOffset,
+            byteLength: meshVBO.byteLength,
+            byteStride: 3*4,
+            target: WebGL2RenderingContext.ARRAY_BUFFER
+        });
+        let ebo = new bufferView(meshEBO.buffer, {
+            byteOffset: meshEBO.byteOffset,
+            byteLength: meshEBO.byteLength,
+            byteStride: 0,
+            target: WebGL2RenderingContext.ELEMENT_ARRAY_BUFFER
+        });
+
+        let position = new Accessor({
+            bufferView: vbo,
+            componentType: WebGL2RenderingContext.FLOAT,
+            byteOffset: 0,
+            type: "VEC3",
+            count: 8
+        }, 'POSITION');
+        let indices = new Accessor({
+            bufferView: ebo,
+            componentType: WebGL2RenderingContext.UNSIGNED_SHORT,
+            byteOffset: 0,
+            type: "SCALAR",
+            count: meshEBO.length
+        });
+        // return new Mesh([position], indices);
+        return new Mesh([position], indices, WebGL2RenderingContext.LINE_LOOP);
     }
 }
 
@@ -129,13 +232,16 @@ export class BVHManager {
         const triangleTexture = new DataTexture();
         let offset = 0;
         for(let m of meshes) {
+            let trans = m['entity'].components.Transform as Transform;
             let data: any = m.data;
             let pos: Float32Array[] = data.POSITION;
             let face = m.indices.data;
             for(let i = 0; i < face.length; i++) {
                 const vertex = pos[face[i]];
-                triangleTexture.chunks[offset++].set(vertex);
-                triangleTexture.chunks[offset++][3] = 1; // Visible
+                const wpos = vec3.create(); // World position
+                vec3.transformMat4(wpos, vertex, trans.worldMatrix);
+                triangleTexture.chunks[offset++].set(wpos);
+                triangleTexture.chunks[offset][3] = 1; // Visible
             }
         }
 
@@ -143,7 +249,7 @@ export class BVHManager {
         const root = this.root = this.splitBVH(primitives);
         const LBVH = this.fillLBVH(root, this.LBVHTexture);
         console.log(`Build BVH cost ${Date.now() - d}ms`);
-        return {LBVH, triangleTexture};
+        return {LBVH, triangleTexture, primitives};
     }
 
     private _size = vec3.create();
@@ -160,7 +266,7 @@ export class BVHManager {
         }
 
         // TODO:
-        if(prim.length == 1) {
+        if(prim.length < 2) {
             node.isLeaf = true;
             node.index = prim[0].index;
             return node;
@@ -200,13 +306,13 @@ export class BVHManager {
             if(c == 0) {
                 // FIXME:
                 const m = Math.ceil(prim.length / 2);
-                if(m < 6) {
-                    left = prim.slice(0, 1);
-                    right = prim.slice(m, m+1);
-                } else {
+                // if(m < 6) {
+                    // left = prim.slice(0, 1);
+                    // right = prim.slice(m, m+1);
+                // } else {
                     left = prim.slice(0, m);
                     right = prim.slice(m);
-                }
+                // }
                 // left = [prim[0]];
                 // right = [prim[1]];
             }
@@ -219,7 +325,7 @@ export class BVHManager {
 
         if(left.length == 0) {
             // Make sure left branch is allways exist, even one of them is empty
-            const cache = left;
+            const cache = left; // []
             left = right;
             right = cache;
         }

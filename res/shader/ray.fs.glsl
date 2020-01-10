@@ -10,6 +10,8 @@ uniform sampler2D base;
 uniform sampler2D triangleTex;
 uniform sampler2D LBVHTex;
 
+// in mat4 camMat;
+uniform mat4 M;
 
 #include <macros>
 
@@ -93,6 +95,10 @@ float hitAABB(vec3 ro, vec3 ird, vec3 bmax, vec3 bmin) {
     if(Tx.x > Ty.y || Ty.x > Tx.y) {
         return MAX_DIST; // Missing
     }
+    // Getting close
+    vec2 T = vec2(0);
+    T.x = max(Tx.x, Ty.x);
+    T.y = min(Tx.y, Ty.y);
 
     // Z
     Tz.x = (bmin.z - ro.z) * ird.z;
@@ -101,10 +107,6 @@ float hitAABB(vec3 ro, vec3 ird, vec3 bmax, vec3 bmin) {
         Tz = Tz.yx;
     }
 
-    // Getting close
-    vec2 T = vec2(0);
-    T.x = max(Tx.x, Ty.x);
-    T.y = min(Tx.y, Ty.y);
 
     if(T.x > Tz.y || Tz.x > T.y) {
         return MAX_DIST; // Missing
@@ -136,7 +138,7 @@ BVHNode getBVH(float i) {
 }
 
 #ifndef SL
-#define SL 64
+#define SL 128
 #endif
 float hitLBVH(float i, vec3 ro, vec3 ird, inout vec3 normal) {
 
@@ -157,7 +159,7 @@ float hitLBVH(float i, vec3 ro, vec3 ird, inout vec3 normal) {
     int op = 0;
     BVHNode bvh;
     // while(c++ > min(100, iFrame/2)) {
-    while(c > 0) {
+    while(c-- > 0) {
         bvh = getBVH(cur);
         float newt = hitAABB(ro, ird, bvh.bmax, bvh.bmin);
         // return newt;
@@ -200,17 +202,18 @@ float hitLBVH(float i, vec3 ro, vec3 ird, inout vec3 normal) {
                 if(t != MAX_DIST) {
                     // Already got one leaf
                     // Compares two leaf
-                    return min(t, newt);
-                    // t = min(t, newt);
+                    normal = bvh.bmin + (bvh.bmax - bvh.bmin) * .5;//center
+                    // return min(t, newt);
+                    t = min(t, newt);
                 } else {
                     // First leaf
                     // Update t and continue
                     t = newt;
                     // Go back
-                    if(op == 0)
-                        return t;
-                    cur = offsetStack[--op];
                 }
+                if(op == 0)
+                    return t;
+                cur = offsetStack[--op];
             }
         }
     }
@@ -227,9 +230,9 @@ float hitWorld(in vec3 ro, in vec3 rd, in vec2 dist, out vec3 normal) {
 
     // }
     // float t = -1;
-    // float t = hitLBVH(0., ro - vec3(-.6, 0, 3), ird, normal);
+    float t = hitLBVH(0., ro - vec3(0, 0, 0), ird, normal);
     // float t = hitLBVH(iTime * 100., ro - vec3(-.6, 0, 3), ird, normal);
-    float t = hitLBVH(0., ro - vec3(cos(iTime * .4)*1.5, sin(iTime * .4) * 1.2, 3), ird, normal);
+    // float t = hitLBVH(0., ro - vec3(cos(iTime * .4)*1.5, sin(iTime * .4) * 1.2, 3), ird, normal);
     return t;
 }
 
@@ -246,8 +249,11 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
     float t = hitWorld(ro, rd, vec2(0, 1000), normal);
 
     if(t < MAX_DIST) {
+        // vec3 n = normalize(ro + rd * t - normal);
+        // return abs(n);
+        // return abs(n) * max(dot(n, normalize(vec3(1, 1, -1))), .13);
         return vec3(mod(1. - (t-2.)/3., 1.));
-        // return vec3(ro + rd * t);
+        // return normalize(vec3(ro + rd * t).zzz);
     }
 
     return vec3(0.4);
@@ -267,7 +273,8 @@ void main() {
     vec3 col = vec3(1);
 
     // Ray Origin Position
-    vec3 ro = vec3(0, 0, 0);
+    vec3 ro = vec3(0, 0, -10);
+
     // Ray Direction
     vec3 rd = normalize(vec3(p,1.6));
 
@@ -282,7 +289,7 @@ void main() {
 
 
     // outColor = vec4(gl_FragCoord.xy * iResolution, 0, 1);
-    outColor = texture(triangleTex, uv);
+    // outColor = texture(triangleTex, uv);
     // outColor = texelFetch(LBVHTex, ivec2(p * 2048.), 0);
     // outColor = vec4(vec3(seed), 1);
     // outColor = vec4(p, 0, 1);

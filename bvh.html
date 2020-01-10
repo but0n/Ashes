@@ -10,10 +10,10 @@
     <!-- <script src="https://cdn.jsdelivr.net/npm/ashes3d@0.0.46/build/ashes.main.js"></script> -->
     <script src="build/ashes.main.js"></script>
     <script>
-let { Asset, EntityMgr, Camera, vec3, quat, Screen, OrbitControl, Filter, Shader, Material, QuadMesh, MeshRenderer, Texture, aabb, octree, glsl } = Ashes;
+let { Asset, EntityMgr, Camera, vec3, quat, Screen, OrbitControl, Filter, Shader, Material, QuadMesh, MeshRenderer, Texture, glsl } = Ashes;
 let {Vignetting} = Ashes;
 let {Bloom} = Ashes;
-let {BVHManager} = Ashes;
+let {BVHManager, AABB} = Ashes;
 
 
 
@@ -30,6 +30,8 @@ let [,cuspath,scale, yoffset, threshold, radiu, intensity] = [,,,,];
 // ----------------------------
 // scale = 0.003;
 yoffset = -0.5;
+yoffset = -0.0;
+yoffset = -3.6;
 // threshold = 0.9;
 // gltf = assetRoot + 'gltfsamples/kgirls01/scene.gltf';
 // gltf = assetRoot + 'gltfsamples/hylian_shield/scene.gltf';
@@ -40,6 +42,8 @@ gltf = assetRoot + 'gltfsamples/FlightHelmet/glTF/FlightHelmet.gltf';
 // gltf = 'https://rawcdn.githack.com/KhronosGroup/glTF-Blender-Exporter/2bd852403600053dba95db78db3f21728b979a7c/polly/project_polly.glb'
 
 gltf = assetRoot + 'gltfsamples/DamagedHelmet.glb';
+gltf = assetRoot + 'gltfsamples/police_drone/scene.gltf';
+
 // gltf = assetRoot + 'res/MorphPrimitivesTest.glb';
 // gltf = assetRoot + 'gltfsamples/project_polly.glb';
 // gltf = assetRoot + 'gltfsamples/Suzanne/Suzanne.gltf';
@@ -81,43 +85,80 @@ async function main() {
     let cameraTrans = mainCamera.components.Transform;
     let cam = mainCamera.addComponent(new Camera(screen.width / screen.height));
     vec3.set(cameraTrans.translate, 0, 0, 10);
+    // vec3.set(cameraTrans.translate, 0, 0, -3);
 
     mainCamera.addComponent(new OrbitControl(screen, mainCamera));
-    // screen.mainCamera = cam;
+    screen.mainCamera = cam;
 
     document.querySelector('body').appendChild(scene);
 
     let gltfroot = await Asset.loadGLTF(gltf, screen, skybox, diffenv)
-    // scene.appendChild(gltfroot);
+    scene.appendChild(gltfroot);
     let root = gltfroot.components.Transform;
+    root.isVisible = false;
+
     root.translate[1] = yoffset || 0;
     vec3.scale(root.scale, root.scale, scale || 200);
 
 
     meshes = EntityMgr.getComponents('Mesh', gltfroot);
 
+    // waiting for world matrices update
+    await new Promise((res, rej) => {
+        setTimeout(() => res(), 1000);
+    })
+
     console.log(meshes);
     let bvhMgr = new BVHManager();
     console.log(bvhMgr);
-    const {LBVH, triangleTexture} = bvhMgr.buildBVH(meshes);
+    const {LBVH, triangleTexture, primitives} = bvhMgr.buildBVH(meshes);
     console.log(LBVH)
-    for(let m of meshes) {
-        // o = new octree(m, screen);
-        // o.visible()
-    }
-
-
 
 
 
     let commonShader = Screen.platform == 'iOS'
             ? new Shader(glsl.stylize.vs, glsl.stylize.fs)
             : new Shader(glsl.stylize2.vs, glsl.stylize2.fs);
-    // scene.appendChild(await Asset.loadGLTF(assetRoot + 'res/BrainStem.glb', screen, skybox));
 
     // // The original size of quad is 2x2
     const brdfurl = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Viewer/master/assets/images/brdfLUT.png';
     let brdfLUT = await Asset.loadTexture(brdfurl, { minFilter: WebGL2RenderingContext.LINEAR });
+
+
+    // Debug BVH nodes
+    const aabbMat = AABB.mat;
+    Material.setTexture(aabbMat, 'brdfLUT', brdfLUT);
+    aabbMat.shader.macros['METALLIC_FACTOR'] = `float(0)`;
+    aabbMat.shader.macros['ROUGHNESS_FACTOR'] = `float(0.9)`;
+
+
+    let visAABB = node => {
+        if(!node)
+            return;
+        if(node.bounds && node.isLeaf) {
+            const b = node.bounds;
+            b.root = scene;
+            b.screen = screen;
+            b.visible = true;
+        }
+        if(node.right)
+            visAABB(node.right)
+        if(node.left)
+            visAABB(node.left)
+    }
+
+    // debug bound of triangles
+    // for(let p of primitives) {
+    //     const b = p.bounds;
+    //     b.root = gltfroot;
+    //     b.screen = screen;
+    //     b.visible = true;
+    // }
+
+    // debug bvh bounds
+    // visAABB(bvhMgr.root);
+    // return ; // forward renderring
+
 
     let visual = (tex, x) => {
         let quad = EntityMgr.create('quad');
@@ -155,7 +196,7 @@ async function main() {
     // visual(LBVH.tex, 2.2);
     // visual(triangleTexture.tex, 2);
 
-    let rt = new rayTracing(screen);
+    let rt = new rayTracing(screen, cam);
     Material.setTexture(rt.material, 'triangleTex', triangleTexture.tex);
     Material.setTexture(rt.material, 'LBVHTex', LBVH.tex);
 
@@ -166,12 +207,70 @@ async function main() {
         shader.macros['SL'] = v;
         shader.isDirty = true;
     }
+
+
+    // let vp = mainCamera.appendChild(EntityMgr.create('vp')).components.Transform;;
+    // vec3.set(vp.translate, 0, 0, 1);
+
+    let updateCam = () => {
+        Material.setUniform(rt.material, 'M', cameraTrans.localMatrix);
+    }
+    updateCam();
+
+
+
+    // Control
+    // let tempV3 = vec3.create();
+    // let euler = [0,0,0];
+    // document.addEventListener('keypress', (e) => {
+    //     switch(e.key) {
+    //         case 'q':
+    //             euler[1] += 1;
+    //             quat.fromEuler(cameraTrans.quaternion, ...euler);
+    //             break;
+    //         case 'e':
+    //             euler[1] -= 1;
+    //             quat.fromEuler(cameraTrans.quaternion, ...euler);
+    //             break;
+    //         case 'w':
+    //             vec3.set(tempV3, 0, 0, 0.1);
+    //             vec3.transformQuat(tempV3, tempV3, cameraTrans.quaternion);
+    //             vec3.add(cameraTrans.translate, cameraTrans.translate, tempV3);
+    //             // cameraTrans.translate[2] += 0.1;
+    //             break;
+    //         case 's':
+    //             vec3.set(tempV3, 0, 0, -0.1);
+    //             vec3.transformQuat(tempV3, tempV3, cameraTrans.quaternion);
+    //             vec3.add(cameraTrans.translate, cameraTrans.translate, tempV3);
+    //             // cameraTrans.translate[2] -= 0.1;
+    //             break;
+    //         case 'a':
+    //             vec3.set(tempV3, -0.1, 0, 0);
+    //             vec3.transformQuat(tempV3, tempV3, cameraTrans.quaternion);
+    //             vec3.add(cameraTrans.translate, cameraTrans.translate, tempV3);
+    //             break;
+    //         case 'd':
+    //             vec3.set(tempV3, 0.1, 0, 0);
+    //             vec3.transformQuat(tempV3, tempV3, cameraTrans.quaternion);
+    //             vec3.add(cameraTrans.translate, cameraTrans.translate, tempV3);
+    //             break;
+    //         case ' ':
+    //             vec3.set(tempV3, 0, 0.1, 0);
+    //             vec3.transformQuat(tempV3, tempV3, cameraTrans.quaternion);
+    //             vec3.add(cameraTrans.translate, cameraTrans.translate, tempV3);
+    //             break;
+    //     };
+        // cameraTrans.isDirty = true;
+        // updateCam();
+
+    // })
+
 }
 
 class rayTracing extends Filter {
     frame = 0;
     timer = 0;
-    constructor(screen) {
+    constructor(screen, cam) {
         let shader = new Shader(glsl.ray.vs, glsl.ray.fs, {
             iResolution: `vec2(${1/screen.width},${1/screen.height})`,
             Resolution: `vec2(${screen.width},${screen.height})`,
@@ -184,6 +283,7 @@ class rayTracing extends Filter {
             Material.setUniform(this.material, 'iFrame', this.frame++);
             document.title = 'F ' + this.frame;
             Material.setUniform(this.material, 'iTime', this.timer);
+            Material.setUniform(this.material, 'M', cam.view);
             this.timer += dt;
         }
     }
