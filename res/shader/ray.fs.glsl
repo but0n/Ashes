@@ -10,8 +10,8 @@ uniform sampler2D base;
 uniform sampler2D triangleTex;
 uniform sampler2D LBVHTex;
 
-// in mat4 camMat;
-uniform mat4 M;
+uniform mat3 TBN;
+uniform vec3 vp;
 
 #include <macros>
 
@@ -273,13 +273,13 @@ void main() {
     vec3 col = vec3(1);
 
     // Ray Origin Position
-    vec3 ro = vec3(0, 0, -10);
-
+    vec3 ro = vec3(0, 0, 10);
+    ro = vp;
     // Ray Direction
     vec3 rd = normalize(vec3(p,1.6));
+    rd = TBN * rd;
 
-    // Target TODO: LookAt
-    vec3 ta = vec3(0,.2,0);
+
 
     col = render(ro, rd, seed);
 
