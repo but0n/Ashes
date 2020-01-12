@@ -138,20 +138,14 @@ BVHNode getBVH(float i) {
 }
 
 #ifndef SL
-#define SL 128
+#define SL 64
 #endif
 float hitLBVH(float i, vec3 ro, vec3 ird, inout vec3 normal) {
-
-    // Current bvh node
-    // BVHNode cb = getBVH(i);
-    // float t = hitAABB(ro, ird, cb.bmax, cb.bmin);
-    // if(t == MAX_DIST)
-    //     return MAX_DIST;
 
     int c = 1024;
 
     float t = MAX_DIST; // Only for leaf
-    float cur = i;
+    float pNode = i;
     float parent = i;
     float right = 0.; // right branch
     bool swize = false;
@@ -159,61 +153,55 @@ float hitLBVH(float i, vec3 ro, vec3 ird, inout vec3 normal) {
     int op = 0;
     BVHNode bvh;
     // while(c++ > min(100, iFrame/2)) {
-    while(c-- > 0) {
-        bvh = getBVH(cur);
-        float newt = hitAABB(ro, ird, bvh.bmax, bvh.bmin);
-        // return newt;
+    while(c > 0) {
+        bvh = getBVH(pNode);
+        float current = hitAABB(ro, ird, bvh.bmax, bvh.bmin);
+        // return current;
             // if(c == (iFrame / 7)) {
             //     // if(t > 0.)
-            //         return min(t, newt);
-            //     // return newt;
+            //         return min(t, current);
+            //     // return current;
             //     // return t;
             // }
 
-        if(newt == MAX_DIST) {
+        if(current == MAX_DIST) {
             // Missing
-
-            // return prev leaf
-            if(t != MAX_DIST) {
-                return t;
-            }
 
             // Compares to other branch
             if(op == 0)
                 return t;
-            cur = offsetStack[--op];
-        } else {
+            pNode = offsetStack[--op];
+        } else {    // Hit something
 
             if(bvh.index < 0.) {
-                if(t != MAX_DIST && newt > t) {
+                if(t != MAX_DIST && current > t) {
                     // Go back
                     if(op == 0)
                         return t;
-                    cur = offsetStack[--op];
+                    pNode = offsetStack[--op];
                 } else {
                     // Deep
                     if(op == SL)
                         return t;
                     offsetStack[op++] = bvh.branch;
-                    cur += 1.;
+                    pNode += 1.;
                 }
             } else {
                 // Leaf
                 if(t != MAX_DIST) {
                     // Already got one leaf
                     // Compares two leaf
-                    normal = bvh.bmin + (bvh.bmax - bvh.bmin) * .5;//center
-                    // return min(t, newt);
-                    t = min(t, newt);
+                    // return min(t, current);
+                    t = min(t, current);
                 } else {
                     // First leaf
                     // Update t and continue
-                    t = newt;
+                    t = current;
                     // Go back
                 }
                 if(op == 0)
                     return t;
-                cur = offsetStack[--op];
+                pNode = offsetStack[--op];
             }
         }
     }
