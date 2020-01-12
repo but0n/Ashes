@@ -5,7 +5,7 @@ export { EntityMgr } from "./ECS/entityMgr";
 export { ComponentSystem } from "./ECS/component";
 export { System } from "./ECS/system";
 // Math
-export { vec3, vec4, mat4, quat } from "./math";
+export { vec3, vec4, mat3, mat4, quat } from "./math";
 
 export { glsl } from "./glsl";
 export { Texture } from "./texture";
