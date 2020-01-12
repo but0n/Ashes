@@ -114,6 +114,28 @@ float hitAABB(vec3 ro, vec3 ird, vec3 bmax, vec3 bmin) {
     return max(T.x, Tz.x);
 }
 
+// Triangle:        https://www.shadertoy.com/view/MlGcDz
+float iTriangle( in vec3 ro, in vec3 rd, in vec2 distBound, inout vec3 normal,
+                 in vec3 v0, in vec3 v1, in vec3 v2 ) {
+    vec3 v1v0 = v1 - v0;
+    vec3 v2v0 = v2 - v0;
+    vec3 rov0 = ro - v0;
+
+    vec3  n = cross( v1v0, v2v0 );
+    vec3  q = cross( rov0, rd );
+    float d = 1.0/dot( rd, n );
+    float u = d*dot( -q, v2v0 );
+    float v = d*dot(  q, v1v0 );
+    float t = d*dot( -n, rov0 );
+
+    if( u<0. || v<0. || (u+v)>1. || t<distBound.x || t>distBound.y) {
+        return MAX_DIST;
+    } else {
+        normal = normalize(-n);
+        return t;
+    }
+}
+
 struct BVHNode {
     vec3    bmin;
     float   branch;
@@ -137,20 +159,32 @@ BVHNode getBVH(float i) {
     );
 }
 
+float hitTriangle(float i, vec3 ro, vec3 rd, inout vec3 N) {
+    ivec2 uv0 = ivec2( mod(i + 0., 2048.), floor((i + 0.) * INV_TEXTURE_WIDTH) );
+    ivec2 uv1 = ivec2( mod(i + 1., 2048.), floor((i + 1.) * INV_TEXTURE_WIDTH) );
+    ivec2 uv2 = ivec2( mod(i + 2., 2048.), floor((i + 2.) * INV_TEXTURE_WIDTH) );
+
+    vec3 v0 = texelFetch(triangleTex, uv0, 0).xyz;
+    vec3 v1 = texelFetch(triangleTex, uv1, 0).xyz;
+    vec3 v2 = texelFetch(triangleTex, uv2, 0).xyz;
+
+    return iTriangle(ro, rd, vec2(0, MAX_DIST), N, v0, v1, v2);
+}
+
 #ifndef SL
-#define SL 64
+#define SL 128
 #endif
-float hitLBVH(float i, vec3 ro, vec3 ird, inout vec3 normal) {
+float hitLBVH(float i, vec3 ro, vec3 rd, inout float tri, inout vec3 normal) {
+    vec3 ird = 1. / rd;
+
+    float offsetStack[SL];
+    int sp = 0; // Stack Pointer
 
     int c = 1024;
 
     float t = MAX_DIST; // Only for leaf
     float pNode = i;
-    float parent = i;
-    float right = 0.; // right branch
-    bool swize = false;
-    float offsetStack[SL];
-    int op = 0;
+
     BVHNode bvh;
     // while(c++ > min(100, iFrame/2)) {
     while(c > 0) {
@@ -168,45 +202,49 @@ float hitLBVH(float i, vec3 ro, vec3 ird, inout vec3 normal) {
             // Missing
 
             // Compares to other branch
-            if(op == 0)
+            if(sp == 0)
                 return t;
-            pNode = offsetStack[--op];
+            pNode = offsetStack[--sp];
         } else {    // Hit something
 
             if(bvh.index < 0.) {
                 if(t != MAX_DIST && current > t) {
                     // Go back
-                    if(op == 0)
+                    if(sp == 0)
                         return t;
-                    pNode = offsetStack[--op];
+                    pNode = offsetStack[--sp];
                 } else {
                     // Deep
-                    if(op == SL)
+                    if(sp == SL)
                         return t;
-                    offsetStack[op++] = bvh.branch;
+                    offsetStack[sp++] = bvh.branch;
                     pNode += 1.;
                 }
             } else {
                 // Leaf
-                if(t != MAX_DIST) {
-                    // Already got one leaf
-                    // Compares two leaf
-                    // return min(t, current);
-                    t = min(t, current);
-                } else {
-                    // First leaf
-                    // Update t and continue
-                    t = current;
-                    // Go back
+                current = hitTriangle(bvh.index, ro, rd, normal);
+                if(current != MAX_DIST) {
+                    if(t != MAX_DIST) {
+                        // Already got one leaf
+                        if(current < t)
+                            tri = bvh.index;
+                        // Compares two leaves
+                        t = min(t, current);
+                    } else {
+                        // First leaf
+                        // Update t and continue
+                        tri = bvh.index;
+                        t = current;
+                        // Go back
+                    }
                 }
-                if(op == 0)
+                if(sp == 0)
                     return t;
-                pNode = offsetStack[--op];
+                pNode = offsetStack[--sp];
             }
         }
     }
     return t;
-    return MAX_DIST;
 }
 
 float hitWorld(in vec3 ro, in vec3 rd, in vec2 dist, out vec3 normal) {
@@ -218,7 +256,12 @@ float hitWorld(in vec3 ro, in vec3 rd, in vec2 dist, out vec3 normal) {
 
     // }
     // float t = -1;
-    float t = hitLBVH(0., ro - vec3(0, 0, 0), ird, normal);
+    float triangleIndex = 0.;
+    float t = hitLBVH(0., ro - vec3(0, 0, 0), rd, triangleIndex, normal);
+    // if(t != MAX_DIST) {
+    //     t = hitTriangle(triangleIndex, ro, rd, normal);
+    // }
+
     // float t = hitLBVH(iTime * 100., ro - vec3(-.6, 0, 3), ird, normal);
     // float t = hitLBVH(0., ro - vec3(cos(iTime * .4)*1.5, sin(iTime * .4) * 1.2, 3), ird, normal);
     return t;
@@ -240,7 +283,8 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
         // vec3 n = normalize(ro + rd * t - normal);
         // return abs(n);
         // return abs(n) * max(dot(n, normalize(vec3(1, 1, -1))), .13);
-        return vec3(mod(1. - (t-2.)/3., 1.));
+        // return vec3(mod(1. - (t-2.)/3., 1.));
+        return normal;
         // return normalize(vec3(ro + rd * t).zzz);
     }
 
