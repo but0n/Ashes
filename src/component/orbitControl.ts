@@ -126,7 +126,7 @@ export class OrbitControl {
 
 
     static bindEvents(screen: HTMLElement, controler: OrbitControl) {
-        screen.oncontextmenu = () => false;
+        // screen.oncontextmenu = () => false;
         screen.addEventListener('mousedown', () => {
             screen.addEventListener('mousemove', controler.moveHandler)
         })

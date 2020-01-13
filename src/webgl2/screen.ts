@@ -50,6 +50,7 @@ export class Screen {
         this.gl.getExtension('OES_texture_float_linear');
         this.gl.getExtension('OES_texture_half_float');
 
+        this.gl.getExtension("EXT_color_buffer_float"); // Framebuffer
         this.setScreenSize(); // initial - full screen
 
         // initial capture
