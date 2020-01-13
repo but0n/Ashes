@@ -11,6 +11,8 @@ uniform sampler2D test;
 uniform sampler2D triangleTex;
 uniform sampler2D LBVHTex;
 uniform samplerCube skybox;
+uniform sampler2D hdr;
+
 
 uniform mat3 TBN;
 uniform vec3 vp;
@@ -18,10 +20,24 @@ uniform vec3 vp;
 #include <macros>
 
 #define PI 3.14159265358979
+#define invPI     0.3183098861837697
+#define invTWO_PI     0.15915494309
 #define GAMMA 2.2
 
 out vec4 outColor;
 
+// equirectangular map
+vec2 getuv(vec3 p) {
+    float theta = acos(p.y);
+    float phi = atan(p.z, p.x);
+    if (phi < 0.0) {
+        phi += 2.0 * PI;
+    }
+    vec2 s;
+    s.x = 1.0 - phi * invTWO_PI;
+    s.y = 1.-theta * invPI;
+    return s;
+}
 
 //
 // Hash functions by Nimitz:
@@ -148,13 +164,16 @@ BVHNode getBVH(float i) {
 }
 
 float hitTriangle(float i, vec3 ro, vec3 rd, inout vec3 N) {
-    ivec2 uv0 = ivec2( mod(i + 0., 2048.), floor((i + 0.) * INV_TEXTURE_WIDTH) );
-    ivec2 uv1 = ivec2( mod(i + 1., 2048.), floor((i + 1.) * INV_TEXTURE_WIDTH) );
-    ivec2 uv2 = ivec2( mod(i + 2., 2048.), floor((i + 2.) * INV_TEXTURE_WIDTH) );
+    ivec2 puv0 = ivec2( mod(i + 0., 2048.), floor((i + 0.) * INV_TEXTURE_WIDTH) );
+    ivec2 nuv0 = ivec2( mod(i + 1., 2048.), floor((i + 1.) * INV_TEXTURE_WIDTH) );
+    ivec2 puv1 = ivec2( mod(i + 2., 2048.), floor((i + 2.) * INV_TEXTURE_WIDTH) );
+    ivec2 nuv1 = ivec2( mod(i + 3., 2048.), floor((i + 3.) * INV_TEXTURE_WIDTH) );
+    ivec2 puv2 = ivec2( mod(i + 4., 2048.), floor((i + 4.) * INV_TEXTURE_WIDTH) );
+    ivec2 nuv2 = ivec2( mod(i + 5., 2048.), floor((i + 5.) * INV_TEXTURE_WIDTH) );
 
-    vec3 v0 = texelFetch(triangleTex, uv0, 0).xyz;
-    vec3 v1 = texelFetch(triangleTex, uv1, 0).xyz;
-    vec3 v2 = texelFetch(triangleTex, uv2, 0).xyz;
+    vec3 v0 = texelFetch(triangleTex, puv0, 0).xyz;
+    vec3 v1 = texelFetch(triangleTex, puv1, 0).xyz;
+    vec3 v2 = texelFetch(triangleTex, puv2, 0).xyz;
 
     return iTriangle(ro, rd, vec2(0, MAX_DIST), N, v0, v1, v2);
 }
@@ -168,7 +187,7 @@ float hitLBVH(float i, vec3 ro, vec3 rd, inout float tri, inout vec3 normal) {
     float offsetStack[SL];
     int sp = 0; // Stack Pointer
 
-    int c = 1024;
+    int c = 32;
 
     float t = MAX_DIST; // Only for leaf
     float pNode = i;
@@ -260,6 +279,7 @@ float hitWorld(in vec3 ro, in vec3 rd, in vec2 dist, out vec3 normal, out float 
     // float t = MAX_DIST;
     float t1 = hitLBVH (0., ro - vec3(0, 0, 0), rd, triangleIndex, normal);
     float t2 = iPlane  (ro-vec3( 0,-2., 0), rd, vec2(0, t1), normal, vec3(0,1,0), 0.);
+    // float t2 = MAX_DIST;
 
     float t = min(t1, t2);
     if(t1 < t2) {
@@ -297,6 +317,7 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
         } else {
             // col *= pow( texture(skybox, rd).rgb, vec3(GAMMA) ) * 1.;
             col *= texture(skybox, rd).rgb * 1.;
+            // col *= texture(hdr, getuv(rd)).rgb * 1.;
             return col;
         }
 

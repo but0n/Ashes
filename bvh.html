@@ -42,11 +42,11 @@ gltf = assetRoot + 'gltfsamples/FlightHelmet/glTF/FlightHelmet.gltf';
 // gltf = 'https://rawcdn.githack.com/KhronosGroup/glTF-Blender-Exporter/2bd852403600053dba95db78db3f21728b979a7c/polly/project_polly.glb'
 
 gltf = assetRoot + 'gltfsamples/DamagedHelmet.glb';
-gltf = assetRoot + 'gltfsamples/police_drone/scene.gltf';
+// gltf = assetRoot + 'gltfsamples/police_drone/scene.gltf';
 gltf2 = gltf;
 // gltf = assetRoot + 'res/MorphPrimitivesTest.glb';
 // gltf = assetRoot + 'gltfsamples/project_polly.glb';
-gltf = assetRoot + 'gltfsamples/Suzanne/Suzanne.gltf';
+// gltf = assetRoot + 'gltfsamples/Suzanne/Suzanne.gltf';
 // gltf = assetRoot + 'res/MorphPrimitivesTest.glb';
 // gltf = assetRoot + 'res/Horse.glb';
 scale = 2;
@@ -73,6 +73,11 @@ async function main() {
     // }
     // screen.attachFilter(new Vignetting(screen));
 
+    // Skybox
+
+    // let hdrEnv2 = await Asset.loadTexture('res/envmap/lebombo_4k.hdr');
+    // let hdrEnv = await Asset.loadTexture('res/envmap/helipad/negz.hdr');
+
 
     let skybox = await Asset.loadCubemap('res/envmap/helipad/', 'hdr');
     let diffenv = await Asset.loadCubemap('res/envmap/helipad_diff/', 'hdr');
@@ -84,7 +89,7 @@ async function main() {
     let mainCamera = scene.appendChild(EntityMgr.create('camera'));
     let cameraTrans = mainCamera.components.Transform;
     let cam = mainCamera.addComponent(new Camera(screen.width / screen.height));
-    vec3.set(cameraTrans.translate, 0, 0, 25);
+    vec3.set(cameraTrans.translate, 0, 0, 35);
     // vec3.set(cameraTrans.translate, 0, 0, -3);
 
     let orbitCtl = mainCamera.addComponent(new OrbitControl(screen, mainCamera));
@@ -95,10 +100,10 @@ async function main() {
     document.querySelector('body').appendChild(scene);
 
     let gltfroot = await Asset.loadGLTF(gltf, screen, skybox, diffenv)
-    let gltfroot2 = await Asset.loadGLTF(gltf2, screen, skybox, diffenv)
+    // let gltfroot2 = await Asset.loadGLTF(gltf2, screen, skybox, diffenv)
     // NOTE: gltf
     scene.appendChild(gltfroot);
-    scene.appendChild(gltfroot2);
+    // scene.appendChild(gltfroot2);
 
     let root = gltfroot.components.Transform;
     root.isVisible = false;
@@ -106,9 +111,9 @@ async function main() {
     root.translate[1] = yoffset || 0;
     vec3.scale(root.scale, root.scale, scale || 200);
 
-    gltfroot.components.Transform.translate[0] = -1.6;
-    gltfroot2.components.Transform.translate[1] = -1.6;
-    gltfroot2.components.Transform.translate[0] = 1.7;
+    // gltfroot.components.Transform.translate[0] = -1.6;
+    // gltfroot2.components.Transform.translate[1] = -1.6;
+    // gltfroot2.components.Transform.translate[0] = 1.7;
 
     meshes = EntityMgr.getComponents('Mesh', scene);
 
@@ -118,7 +123,7 @@ async function main() {
     })
     // NOTE: remove gltf model
     scene.removeChild(gltfroot);
-    scene.removeChild(gltfroot2);
+    // scene.removeChild(gltfroot2);
     EntityMgr.hasNewMember = true;
 
 
@@ -208,13 +213,16 @@ async function main() {
     }
 
     // visual(LBVH.tex, 2.2);
+    // visual(hdrEnv2, 2);
+    // visual(hdrEnv, 7);
     // visual(triangleTexture.tex, 2);
+    // return;
 
     let rt = new rayTracing(screen, cam);
     Material.setTexture(rt.material, 'triangleTex', triangleTexture.tex);
     Material.setTexture(rt.material, 'LBVHTex', LBVH.tex);
     Material.setTexture(rt.material, 'skybox', skybox);
-
+    // Material.setTexture(rt.material, 'hdr', hdrEnv);
 
     // screen.attachFilter(rt);
 

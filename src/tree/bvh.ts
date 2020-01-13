@@ -153,6 +153,7 @@ class BVHNode {
 class trianglePrimitive {
     bounds = new AABB();
     index: number;
+    mat: number;
 }
 
 class DataTexture {
@@ -217,7 +218,7 @@ export class BVHManager {
         // [[x, y, z] * 3, ...]
         for(let i = 0; i < size;) {
             const box = new trianglePrimitive();
-            box.index = i;  // Offset of the first vertex
+            box.index = i*2;  // Offset of the first vertex
             box.bounds.update(triangles[i++]);
             box.bounds.update(triangles[i++]);
             box.bounds.update(triangles[i++]);
@@ -229,19 +230,33 @@ export class BVHManager {
     buildBVH(meshes: Mesh[]) {
         const d = Date.now();
         // ? x-y-z-x y-z-x-y z-x
-        const triangleTexture = new DataTexture();
+        const triangleTexture = new DataTexture(2048, 2);
         let offset = 0;
         for(let m of meshes) {
             let trans = m['entity'].components.Transform as Transform;
             let data: any = m.data;
             let pos: Float32Array[] = data.POSITION;
+            let normal: Float32Array[] = data.NORMAL;
+            let uv: Float32Array[] = data.TEXCOORD_0;
             let face = m.indices.data;
             for(let i = 0; i < face.length; i++) {
+                // R G B A - R G B A - R G B A - R G B A - R G B A - R G B A
+                //[x y z u 1 n n n v] [x y z u 2 n n n v] [x y z u 3 n n n v]
+                const cur = triangleTexture.chunks[offset++];
                 const vertex = pos[face[i]];
                 const wpos = vec3.create(); // World position
                 vec3.transformMat4(wpos, vertex, trans.worldMatrix);
-                triangleTexture.chunks[offset++].set(wpos);
-                triangleTexture.chunks[offset][3] = 1; // Visible
+
+                cur.set(wpos);
+
+                if(normal) {
+                    cur.set(normal[face[i]], 4);
+                }
+
+                if(uv) {
+                    cur[3] = uv[face[i]][0];
+                    cur[7] = uv[face[i]][1];
+                }
             }
         }
 
