@@ -102,6 +102,7 @@ export class Shader {
             return shader;
         }
 
+        console.log(code);
         console.warn(gl.getShaderInfoLog(shader));
         gl.deleteShader(shader);
     }

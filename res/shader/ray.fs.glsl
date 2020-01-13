@@ -7,8 +7,10 @@ precision highp float;
 uniform int iFrame;
 uniform float iTime;
 uniform sampler2D base;
+uniform sampler2D test;
 uniform sampler2D triangleTex;
 uniform sampler2D LBVHTex;
+uniform samplerCube skybox;
 
 uniform mat3 TBN;
 uniform vec3 vp;
@@ -19,33 +21,6 @@ uniform vec3 vp;
 #define GAMMA 2.2
 
 out vec4 outColor;
-
-// in vec3 normal;
-// in vec2 uv;
-// in vec2 uv1;
-// in vec3 pos;
-// in vec4 vColor;
-// in mat3 TBN;
-
-
-
-// texture stuff
-vec4 sRGBtoLINEAR(vec4 color) {
-    return vec4(pow(color.rgb, vec3(GAMMA)), color.a);
-}
-vec4 LINEARtoSRGB(vec4 color) {
-    return vec4(pow(color.rgb, vec3(1.0/GAMMA)), color.a);
-}
-
-// Tone map
-vec3 toneMapACES(vec3 color) {
-    const float A = 2.51;
-    const float B = 0.03;
-    const float C = 2.43;
-    const float D = 0.59;
-    const float E = 0.14;
-    return pow(clamp((color * (A * color + B)) / (color * (C * color + D) + E), 0.0, 1.0), vec3(1.0/GAMMA));
-}
 
 
 //
@@ -114,6 +89,19 @@ float hitAABB(vec3 ro, vec3 ird, vec3 bmax, vec3 bmin) {
     return max(T.x, Tz.x);
 }
 
+// Plane
+float iPlane( in vec3 ro, in vec3 rd, in vec2 distBound, inout vec3 normal,
+              in vec3 planeNormal, in float planeDist) {
+    float a = dot(rd, planeNormal);
+    float d = -(dot(ro, planeNormal)+planeDist)/a;
+    if (a > 0. || d < distBound.x || d > distBound.y) {
+        return MAX_DIST;
+    } else {
+        normal = planeNormal;
+    	return d;
+    }
+}
+
 // Triangle:        https://www.shadertoy.com/view/MlGcDz
 float iTriangle( in vec3 ro, in vec3 rd, in vec2 distBound, inout vec3 normal,
                  in vec3 v0, in vec3 v1, in vec3 v2 ) {
@@ -131,7 +119,7 @@ float iTriangle( in vec3 ro, in vec3 rd, in vec2 distBound, inout vec3 normal,
     if( u<0. || v<0. || (u+v)>1. || t<distBound.x || t>distBound.y) {
         return MAX_DIST;
     } else {
-        normal = normalize(-n);
+        normal = normalize(n);  // NOTE: original version is n = normalize(-n), I am confuse
         return t;
     }
 }
@@ -172,7 +160,7 @@ float hitTriangle(float i, vec3 ro, vec3 rd, inout vec3 N) {
 }
 
 #ifndef SL
-#define SL 128
+#define SL 32
 #endif
 float hitLBVH(float i, vec3 ro, vec3 rd, inout float tri, inout vec3 normal) {
     vec3 ird = 1. / rd;
@@ -247,23 +235,38 @@ float hitLBVH(float i, vec3 ro, vec3 rd, inout float tri, inout vec3 normal) {
     return t;
 }
 
-float hitWorld(in vec3 ro, in vec3 rd, in vec2 dist, out vec3 normal) {
+vec3 cosWeightedRandomHemisphereDirection( const vec3 n, inout float seed ) {
+	vec3  uu = normalize(cross(n, abs(n.y) > .5 ? vec3(1.,0.,0.) : vec3(0.,1.,0.)));
+	vec3  vv = cross(uu, n);
+
+  	vec2 r = hash2(seed);
+
+    r.x *= 6.28318530718;
+	float ra = sqrt(r.y);
+	float rx = ra*cos(r.x);
+	float ry = ra*sin(r.x);
+	float rz = sqrt(1.-r.y);
+	vec3  rr = vec3(rx*uu + ry*vv + rz*n);
+    return normalize(rr);
+}
+
+
+
+float hitWorld(in vec3 ro, in vec3 rd, in vec2 dist, out vec3 normal, out float mat) {
     vec3 d = vec3(dist, 0.);
     vec3 ird = 1. / rd;
 
-    // float right = 1.;
-    // while(right) {
-
-    // }
-    // float t = -1;
     float triangleIndex = 0.;
-    float t = hitLBVH(0., ro - vec3(0, 0, 0), rd, triangleIndex, normal);
-    // if(t != MAX_DIST) {
-    //     t = hitTriangle(triangleIndex, ro, rd, normal);
-    // }
+    // float t = MAX_DIST;
+    float t1 = hitLBVH (0., ro - vec3(0, 0, 0), rd, triangleIndex, normal);
+    float t2 = iPlane  (ro-vec3( 0,-2., 0), rd, vec2(0, t1), normal, vec3(0,1,0), 0.);
 
-    // float t = hitLBVH(iTime * 100., ro - vec3(-.6, 0, 3), ird, normal);
-    // float t = hitLBVH(0., ro - vec3(cos(iTime * .4)*1.5, sin(iTime * .4) * 1.2, 3), ird, normal);
+    float t = min(t1, t2);
+    if(t1 < t2) {
+        mat = 0.;
+    } else {
+        mat = 1.;
+    }
     return t;
 }
 
@@ -271,36 +274,46 @@ float hitWorld(in vec3 ro, in vec3 rd, in vec2 dist, out vec3 normal) {
 
 vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
     vec3 albedo, normal, col = vec3(1);
+    float roughness = .5;
+    float metal = .1;
+    for (int i = 0; i < PATH_LENGTH; ++i) {
 
-    // for (int i = 0; i < PATH_LENGTH; ++i) {
+        float mat = -1.;
+        float t = hitWorld(ro, rd, vec2(0, 1000), normal, mat);
 
-    // }
-    vec3 center = vec3(cos(iTime)*1.2, sin(iTime), 15);
-    // float t = hitAABB(ro, 1./rd, center + vec3(1.), center - vec3(1.));
-    float t = hitWorld(ro, rd, vec2(0, 1000), normal);
+        if(t < MAX_DIST) {
+			ro += rd * t;
+            // float LoN = max(dot(normalize(vec3(-1,1,1)), normal), .4);
+            if(mat < 1.) {
+                albedo = vec3(1);
+            } else if(mat < 2.) {
+                float scale = .8;
+                float fact = step(.0, sin(ro.x / scale)+cos(ro.z / scale));
+                albedo = vec3(1) * clamp(fact, .1, 1.);
+            }
 
-    if(t < MAX_DIST) {
-        // vec3 n = normalize(ro + rd * t - normal);
-        // return abs(n);
-        // return abs(n) * max(dot(n, normalize(vec3(1, 1, -1))), .13);
-        // return vec3(mod(1. - (t-2.)/3., 1.));
-        return normal;
-        // return normalize(vec3(ro + rd * t).zzz);
+            col *= albedo;
+            rd = cosWeightedRandomHemisphereDirection(normal, seed);
+        } else {
+            // col *= pow( texture(skybox, rd).rgb, vec3(GAMMA) ) * 1.;
+            col *= texture(skybox, rd).rgb * 1.;
+            return col;
+        }
+
     }
-
-    return vec3(0.4);
+    return vec3(0);
 }
 
 
 
 void main() {
-    // outColor = vec4(toneMapACES(color), 1);
-    // outColor = vec4(0,0,0,1) + texture(base, gl_FragCoord.xy);
     vec2 uv = gl_FragCoord.xy * iResolution;
 
     vec2 p = (gl_FragCoord.xy * 2. - Resolution.xy) * iResolution.y;
     float seed = float(baseHash(floatBitsToUint(p - iTime)))/float(0xffffffffU);
 
+    // AA
+    p += 2.*hash2(seed) * iResolution.y;
     // color cache
     vec3 col = vec3(1);
 
@@ -317,14 +330,12 @@ void main() {
 
     int Frame = iFrame;
 
+    if(Frame == 0) {
+        outColor = vec4(col, 1);
+    } else {
+        // outColor = ( vec4(col, 1) * float(Frame) + texture(base, uv)) / float(Frame+1);
+        // outColor = vec4(( col * vec3(Frame) + texture(test, uv).rgb) / vec3(Frame+1), 1.);
+        outColor = vec4(col, 1) + texelFetch(base, ivec2(gl_FragCoord), 0);
 
-
-
-    // outColor = vec4(gl_FragCoord.xy * iResolution, 0, 1);
-    // outColor = texture(triangleTex, uv);
-    // outColor = texelFetch(LBVHTex, ivec2(p * 2048.), 0);
-    // outColor = vec4(vec3(seed), 1);
-    // outColor = vec4(p, 0, 1);
-    outColor = vec4(col, 1);
-    // outColor = vec4(rd.xy, 0, 1);
+    }
 }

@@ -31,7 +31,7 @@ let [,cuspath,scale, yoffset, threshold, radiu, intensity] = [,,,,];
 // scale = 0.003;
 yoffset = -0.5;
 yoffset = -0.0;
-yoffset = -3.6;
+// yoffset = -3.6;
 // threshold = 0.9;
 // gltf = assetRoot + 'gltfsamples/kgirls01/scene.gltf';
 // gltf = assetRoot + 'gltfsamples/hylian_shield/scene.gltf';
@@ -43,10 +43,10 @@ gltf = assetRoot + 'gltfsamples/FlightHelmet/glTF/FlightHelmet.gltf';
 
 gltf = assetRoot + 'gltfsamples/DamagedHelmet.glb';
 gltf = assetRoot + 'gltfsamples/police_drone/scene.gltf';
-
+gltf2 = gltf;
 // gltf = assetRoot + 'res/MorphPrimitivesTest.glb';
 // gltf = assetRoot + 'gltfsamples/project_polly.glb';
-// gltf = assetRoot + 'gltfsamples/Suzanne/Suzanne.gltf';
+gltf = assetRoot + 'gltfsamples/Suzanne/Suzanne.gltf';
 // gltf = assetRoot + 'res/MorphPrimitivesTest.glb';
 // gltf = assetRoot + 'res/Horse.glb';
 scale = 2;
@@ -84,34 +84,49 @@ async function main() {
     let mainCamera = scene.appendChild(EntityMgr.create('camera'));
     let cameraTrans = mainCamera.components.Transform;
     let cam = mainCamera.addComponent(new Camera(screen.width / screen.height));
-    vec3.set(cameraTrans.translate, 0, 0, 10);
+    vec3.set(cameraTrans.translate, 0, 0, 25);
     // vec3.set(cameraTrans.translate, 0, 0, -3);
 
-    mainCamera.addComponent(new OrbitControl(screen, mainCamera));
+    let orbitCtl = mainCamera.addComponent(new OrbitControl(screen, mainCamera));
+    orbitCtl.damping = 0;
+    orbitCtl.speed = 1;
     screen.mainCamera = cam;
 
     document.querySelector('body').appendChild(scene);
 
     let gltfroot = await Asset.loadGLTF(gltf, screen, skybox, diffenv)
+    let gltfroot2 = await Asset.loadGLTF(gltf2, screen, skybox, diffenv)
+    // NOTE: gltf
     scene.appendChild(gltfroot);
+    scene.appendChild(gltfroot2);
+
     let root = gltfroot.components.Transform;
     root.isVisible = false;
 
     root.translate[1] = yoffset || 0;
     vec3.scale(root.scale, root.scale, scale || 200);
 
+    gltfroot.components.Transform.translate[0] = -1.6;
+    gltfroot2.components.Transform.translate[1] = -1.6;
+    gltfroot2.components.Transform.translate[0] = 1.7;
 
-    meshes = EntityMgr.getComponents('Mesh', gltfroot);
+    meshes = EntityMgr.getComponents('Mesh', scene);
 
     // waiting for world matrices update
     await new Promise((res, rej) => {
-        setTimeout(() => res(), 1000);
+        setTimeout(() => res(), 200);
     })
+    // NOTE: remove gltf model
+    scene.removeChild(gltfroot);
+    scene.removeChild(gltfroot2);
+    EntityMgr.hasNewMember = true;
+
 
     let bvhMgr = new BVHManager();
     console.log(bvhMgr);
     const {LBVH, triangleTexture, primitives} = bvhMgr.buildBVH(meshes);
     console.log(LBVH)
+
 
 
 
@@ -198,8 +213,50 @@ async function main() {
     let rt = new rayTracing(screen, cam);
     Material.setTexture(rt.material, 'triangleTex', triangleTexture.tex);
     Material.setTexture(rt.material, 'LBVHTex', LBVH.tex);
+    Material.setTexture(rt.material, 'skybox', skybox);
 
+
+    // screen.attachFilter(rt);
+
+    let cache = new Filter(screen, new Shader(
+        `#version 300 es
+#include <macros>
+in vec3 POSITION;
+void main() {
+    gl_Position = vec4(POSITION, 1);
+}
+        `,
+        `#version 300 es
+#extension GL_OES_texture_float : enable
+#extension GL_OES_texture_float_linear : enable
+precision highp float;
+#include <macros>
+uniform sampler2D base;
+uniform sampler2D test;
+out vec4 outColor;
+void main(){
+    outColor = texelFetch(test, ivec2(gl_FragCoord), 0);
+}
+        `
+    ));
+    screen.attachFilter(cache);
     screen.attachFilter(rt);
+
+    cache.setInput(rt.output, 'test');
+    rt.setInput(cache.output, 'test');
+
+
+    let rt_final = new Filter(screen, new Shader(glsl.ray_comb.vs, glsl.ray_comb.fs, {
+        iResolution: `vec2(${1/screen.width},${1/screen.height})`,
+        Resolution: `vec2(${screen.width},${screen.height})`,
+        iTexel: `vec2(${1/2048})`,
+    }));
+
+    rt_final.setInput(rt.output, 'test');
+
+
+    screen.attachFilter(rt_final);
+
     window['bvhUp'] = (v = 12) => {
         const shader = rt.material.shader;
         // FIXME: not working yet
@@ -222,20 +279,35 @@ class rayTracing extends Filter {
             iTexel: `vec2(${1/2048})`,
         });
         super(screen, shader);
-        this.createTBN();
+
         this.cameraTrans = cam.entity.components.Transform;
         this.cam = cam;
-        // Init tbn
+
+        let update = () => this.reset();
+        screen.canvas.addEventListener('mousedown', () => {
+            update();
+            screen.canvas.addEventListener('mousemove', update)
+        })
+        screen.canvas.addEventListener('mouseup', () => {
+            screen.canvas.removeEventListener('mousemove', update);
+        })
+
+        screen.canvas.addEventListener('wheel', update);
+
+        this.createTBN();
+        this.reset();
+
         this.onRender = (dt) => {
-            // console.log('testsetst');
-            this.updateTBN();
-            Material.setUniform(this.material, 'iFrame', this.frame++);
+            // this.updateTBN();
             document.title = 'F ' + this.frame;
+            Material.setUniform(this.material, 'iFrame', this.frame);
             Material.setUniform(this.material, 'iTime', this.timer);
-            Material.setUniform(this.material, 'vp', this.cameraTrans.translate);
-            Material.setUniform(this.material, 'TBN', this.tbn);
+            // Material.setUniform(this.material, 'vp', this.cameraTrans.translate);
+            // Material.setUniform(this.material, 'TBN', this.tbn);
             this.timer += dt;
+            this.frame += 1;
         }
+
     }
 
     tbn;
@@ -260,7 +332,15 @@ class rayTracing extends Filter {
         vec3.normalize(this.t, this.t);
 
         vec3.cross(this.b, this.t, this.n);
+        Material.setUniform(this.material, 'vp', this.cameraTrans.translate);
+        Material.setUniform(this.material, 'TBN', this.tbn);
 
+    }
+
+    reset() {
+        this.frame = 0;
+        // this.timer = 0;
+        this.updateTBN();
     }
 }
 

@@ -33,11 +33,15 @@ export class Filter {
     renderToScreen = true;
     screen: Screen;
     onRender = null;
-    constructor(screen: Screen, shader: Shader, width: number = screen.width * screen.ratio, height: number = screen.height * screen.ratio) {
+    useFloatTexture = false;
+    constructor(screen: Screen, shader: Shader, width: number = screen.width, height: number = screen.height, floatTex = false) {
         this.ctx = screen.gl;
         this.screen = screen;
         this.width = width;
         this.height = height;
+
+        // TODO:
+        this.useFloatTexture = true;
 
         // Create framebuffer
         this.buffer = this.ctx.createFramebuffer();
@@ -71,6 +75,12 @@ export class Filter {
         this.bind();
 
         let color = new Texture(null, Filter.sampleColor, this.width, this.height);
+        if(this.useFloatTexture) {
+            color.format = WebGL2RenderingContext.RGBA;
+            color.internalformat = WebGL2RenderingContext.RGBA32F;
+            color.type = WebGL2RenderingContext.FLOAT;
+        }
+
         Texture.createTexture(this.ctx, color);
         this.ctx.framebufferTexture2D(Filter.FRAMEBUFFER, Filter.COLOR_ATTACH_BASE + this.color.length, color.glType, color.sampler.texture, color.level);
         this.color.push(color);
