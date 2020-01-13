@@ -332,7 +332,7 @@ export class Asset {
         if(format == 'hdr') {
             let raw = await (await fetch(url)).arrayBuffer();
             const {size, buffer} = this.HDRParse(raw);
-            let tex = new Texture(null, {
+            const tex = new Texture(null, {
                 magFilter: WebGL2RenderingContext.LINEAR,
                 minFilter: WebGL2RenderingContext.LINEAR,
                 wrapS: WebGL2RenderingContext.CLAMP_TO_EDGE,
@@ -346,6 +346,7 @@ export class Asset {
             tex.type = WebGL2RenderingContext.FLOAT;
             tex.image = null;
             tex.isDirty = true;
+            return tex;
         } else {
             let image = await this.loadImage(url);
             return new Texture(image, option);
