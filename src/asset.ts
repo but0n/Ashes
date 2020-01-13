@@ -328,7 +328,27 @@ export class Asset {
         return tex;
     }
     static async loadTexture(url: string, option) {
-        let image = await this.loadImage(url);
-        return new Texture(image, option);
+        const format = url.split('.').pop();
+        if(format == 'hdr') {
+            let raw = await (await fetch(url)).arrayBuffer();
+            const {size, buffer} = this.HDRParse(raw);
+            let tex = new Texture(null, {
+                magFilter: WebGL2RenderingContext.LINEAR,
+                minFilter: WebGL2RenderingContext.LINEAR,
+                wrapS: WebGL2RenderingContext.CLAMP_TO_EDGE,
+                wrapT: WebGL2RenderingContext.CLAMP_TO_EDGE,
+            });
+            tex.data = buffer;
+            tex.height = size[1];
+            tex.width = size[3];
+            tex.format = WebGL2RenderingContext.RGB;
+            tex.internalformat = WebGL2RenderingContext.RGB32F;
+            tex.type = WebGL2RenderingContext.FLOAT;
+            tex.image = null;
+            tex.isDirty = true;
+        } else {
+            let image = await this.loadImage(url);
+            return new Texture(image, option);
+        }
     }
 }
