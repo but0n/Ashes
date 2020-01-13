@@ -265,6 +265,9 @@ export class Asset {
         size[1] *= 1;
         size[3] *= 1;
         const total = size[1] * size[3];
+        if(total * 4 != rgbeData.length) {
+            console.error('RLE encoding!');
+        }
         let buffer = new Float32Array(total * 3);
         for(let x = 0; x < total; x++) {
             const [r, g, b, e] = rgbeData.subarray(x * 4, (x + 1) * 4);
