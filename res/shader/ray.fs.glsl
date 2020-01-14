@@ -181,7 +181,7 @@ float hitTriangle(float i, vec3 ro, vec3 rd, inout vec3 N) {
 #ifndef SL
 #define SL 32
 #endif
-float hitLBVH(float i, vec3 ro, vec3 rd, inout float tri, inout vec3 normal) {
+float hitLBVH(float i, vec3 ro, vec3 rd, inout float mat, inout vec3 normal) {
     vec3 ird = 1. / rd;
 
     float offsetStack[SL];
@@ -190,6 +190,7 @@ float hitLBVH(float i, vec3 ro, vec3 rd, inout float tri, inout vec3 normal) {
     int c = 32;
 
     float t = MAX_DIST; // Only for leaf
+    float tri;          // Triangle index cache
     float pNode = i;
 
     BVHNode bvh;
@@ -233,8 +234,10 @@ float hitLBVH(float i, vec3 ro, vec3 rd, inout float tri, inout vec3 normal) {
                 if(current != MAX_DIST) {
                     if(t != MAX_DIST) {
                         // Already got one leaf
-                        if(current < t)
+                        if(current < t) {
                             tri = bvh.index;
+                            mat = bvh.branch;
+                        }
                         // Compares two leaves
                         t = min(t, current);
                     } else {
@@ -242,6 +245,7 @@ float hitLBVH(float i, vec3 ro, vec3 rd, inout float tri, inout vec3 normal) {
                         // Update t and continue
                         tri = bvh.index;
                         t = current;
+                        mat = bvh.branch;
                         // Go back
                     }
                 }
@@ -275,17 +279,14 @@ float hitWorld(in vec3 ro, in vec3 rd, in vec2 dist, out vec3 normal, out float 
     vec3 d = vec3(dist, 0.);
     vec3 ird = 1. / rd;
 
-    float triangleIndex = 0.;
     // float t = MAX_DIST;
-    float t1 = hitLBVH (0., ro - vec3(0, 0, 0), rd, triangleIndex, normal);
+    float t1 = hitLBVH (0., ro - vec3(0, 0, 0), rd, mat, normal);
     float t2 = iPlane  (ro-vec3( 0,-2., 0), rd, vec2(0, t1), normal, vec3(0,1,0), 0.);
     // float t2 = MAX_DIST;
 
     float t = min(t1, t2);
-    if(t1 < t2) {
-        mat = 0.;
-    } else {
-        mat = 1.;
+    if(t1 > t2) {
+        mat = 10.;
     }
     return t;
 }
@@ -304,9 +305,12 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
         if(t < MAX_DIST) {
 			ro += rd * t;
             // float LoN = max(dot(normalize(vec3(-1,1,1)), normal), .4);
-            if(mat < 1.) {
+            if(mat < 2.) {
                 albedo = vec3(1);
-            } else if(mat < 2.) {
+            } else if(mat < 3.) {
+                albedo = vec3(.8, 1, .2);
+                return albedo;
+            } else if(mat > 9.) {
                 float scale = .8;
                 float fact = step(.0, sin(ro.x / scale)+cos(ro.z / scale));
                 albedo = vec3(1) * clamp(fact, .1, 1.);
