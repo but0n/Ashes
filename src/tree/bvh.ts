@@ -141,6 +141,7 @@ class BVHNode {
     left: BVHNode;
     isLeaf = false;
     index: number = -1;
+    mat: number = -1;
     length: number;
 
     get raw() {
@@ -213,11 +214,16 @@ export class BVHManager {
         // X-Y-Z-_-X-Y-Z-P
     }
     // Generate bounds of triangles, mind GC!
-    genBounds(triangles: Float32Array[], size = triangles.length) {
+    genBounds(triangles: Float32Array[], size = triangles.length, materialOffset) {
         const boxList: trianglePrimitive[] = [];
         // [[x, y, z] * 3, ...]
+        let mat = 0;
         for(let i = 0; i < size;) {
+            if(i >= materialOffset[mat]) {
+                mat++;
+            }
             const box = new trianglePrimitive();
+            box.mat = mat;  // Count From 1
             box.index = i*2;  // Offset of the first vertex
             box.bounds.update(triangles[i++]);
             box.bounds.update(triangles[i++]);
@@ -229,10 +235,12 @@ export class BVHManager {
 
     buildBVH(meshes: Mesh[]) {
         const d = Date.now();
+        let materialList = [];
         // ? x-y-z-x y-z-x-y z-x
         const triangleTexture = new DataTexture(2048, 2);
         let offset = 0;
         for(let m of meshes) {
+            materialList.push(offset);
             let trans = m['entity'].components.Transform as Transform;
             let data: any = m.data;
             let pos: Float32Array[] = data.POSITION;
@@ -240,6 +248,7 @@ export class BVHManager {
             let uv: Float32Array[] = data.TEXCOORD_0;
             let face = m.indices.data;
             for(let i = 0; i < face.length; i++) {
+                // Per vertex
                 // R G B A - R G B A - R G B A - R G B A - R G B A - R G B A
                 //[x y z u 1 n n n v] [x y z u 2 n n n v] [x y z u 3 n n n v]
                 const cur = triangleTexture.chunks[offset++];
@@ -260,7 +269,7 @@ export class BVHManager {
             }
         }
 
-        const primitives = this.genBounds(triangleTexture.chunks, offset);
+        const primitives = this.genBounds(triangleTexture.chunks, offset, materialList);
         const root = this.root = this.splitBVH(primitives);
         const LBVH = this.fillLBVH(root, this.LBVHTexture);
         console.log(`Build BVH cost ${Date.now() - d}ms`);
@@ -284,6 +293,7 @@ export class BVHManager {
         if(prim.length < 2) {
             node.isLeaf = true;
             node.index = prim[0].index;
+            node.mat = prim[0].mat;
             return node;
         }
 
@@ -386,7 +396,12 @@ export class BVHManager {
         mem[index].set(root.bounds.min);
         mem[index].set(root.bounds.max, 4);
         // TODO: Obj
-        mem[index][3] = right;
+        if(root.isLeaf) {
+            // Leaf node
+            mem[index][3] = root.mat;
+        } else {
+            mem[index][3] = right;
+        }
         mem[index][7] = root.index;
         index++;
 
