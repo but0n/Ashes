@@ -224,7 +224,8 @@ export class BVHManager {
             }
             const box = new trianglePrimitive();
             box.mat = mat;  // Count From 1
-            box.index = i*2;  // Offset of the first vertex
+            // box.index = i*2;  // Offset of the first vertex
+            box.index = i;  // Offset of the first vertex
             box.bounds.update(triangles[i++]);
             box.bounds.update(triangles[i++]);
             box.bounds.update(triangles[i++]);
@@ -237,8 +238,10 @@ export class BVHManager {
         const d = Date.now();
         let materialList = [];
         // ? x-y-z-x y-z-x-y z-x
-        const triangleTexture = new DataTexture(2048, 2);
+        const triangleTexture = new DataTexture(2048, 1);
         let offset = 0;
+        // Reduce GC
+        const wpos = vec3.create(); // World position
         for(let m of meshes) {
             materialList.push(offset);
             let trans = m['entity'].components.Transform as Transform;
@@ -253,19 +256,19 @@ export class BVHManager {
                 //[x y z u 1 n n n v] [x y z u 2 n n n v] [x y z u 3 n n n v]
                 const cur = triangleTexture.chunks[offset++];
                 const vertex = pos[face[i]];
-                const wpos = vec3.create(); // World position
                 vec3.transformMat4(wpos, vertex, trans.worldMatrix);
 
                 cur.set(wpos);
+                cur[3] = 1;
 
-                if(normal) {
-                    cur.set(normal[face[i]], 4);
-                }
+                // if(normal) {
+                //     cur.set(normal[face[i]], 4);
+                // }
 
-                if(uv) {
-                    cur[3] = uv[face[i]][0];
-                    cur[7] = uv[face[i]][1];
-                }
+                // if(uv) {
+                //     cur[3] = uv[face[i]][0];
+                //     cur[7] = uv[face[i]][1];
+                // }
             }
         }
 
