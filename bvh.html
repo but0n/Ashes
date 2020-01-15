@@ -10,7 +10,7 @@
     <!-- <script src="https://cdn.jsdelivr.net/npm/ashes3d@0.0.46/build/ashes.main.js"></script> -->
     <script src="build/ashes.main.js"></script>
     <script>
-let { Asset, EntityMgr, Camera, vec3, mat3, mat4, quat, Screen, OrbitControl, Filter, Shader, Material, QuadMesh, MeshRenderer, Texture, glsl } = Ashes;
+let { Asset, EntityMgr, Camera, vec2, vec3, mat3, mat4, quat, Screen, OrbitControl, Filter, Shader, Material, QuadMesh, MeshRenderer, Texture, glsl } = Ashes;
 let {Vignetting} = Ashes;
 let {Bloom} = Ashes;
 let {BVHManager, AABB} = Ashes;
@@ -40,7 +40,6 @@ gltf = assetRoot + 'gltfsamples/FlightHelmet/glTF/FlightHelmet.gltf';
 // gltf = assetRoot + 'res/BrainStem.glb';
 // gltf = 'https://github.com/KhronosGroup/glTF-Blender-Exporter/raw/master/polly/project_polly.glb';
 // gltf = 'https://rawcdn.githack.com/KhronosGroup/glTF-Blender-Exporter/2bd852403600053dba95db78db3f21728b979a7c/polly/project_polly.glb'
-
 gltf = assetRoot + 'gltfsamples/DamagedHelmet.glb';
 // gltf = assetRoot + 'gltfsamples/police_drone/scene.gltf';
 gltf2 = gltf;
@@ -49,6 +48,7 @@ gltf2 = gltf;
 gltf2 = assetRoot + 'gltfsamples/Suzanne/Suzanne.gltf';
 // gltf = assetRoot + 'res/MorphPrimitivesTest.glb';
 // gltf = assetRoot + 'res/Horse.glb';
+gltf3 = assetRoot + 'gltfsamples/sylvanas_3d_windrunner_wow/scene.gltf';
 scale = 2;
 
 async function main() {
@@ -77,6 +77,7 @@ async function main() {
 
     // let hdrEnv2 = await Asset.loadTexture('res/envmap/lebombo_4k.hdr');
     // let hdrEnv = await Asset.loadTexture('res/envmap/helipad/negz.hdr');
+    let wall = await Asset.loadTexture('res/textures/988021.jpg');
 
 
     let skybox = await Asset.loadCubemap('res/envmap/helipad/', 'hdr');
@@ -89,7 +90,7 @@ async function main() {
     let mainCamera = scene.appendChild(EntityMgr.create('camera'));
     let cameraTrans = mainCamera.components.Transform;
     let cam = mainCamera.addComponent(new Camera(screen.width / screen.height));
-    vec3.set(cameraTrans.translate, 0, 0, 35);
+    vec3.set(cameraTrans.translate, 0, 0, 15);
     // vec3.set(cameraTrans.translate, 0, 0, -3);
 
     let orbitCtl = mainCamera.addComponent(new OrbitControl(screen, mainCamera));
@@ -101,9 +102,11 @@ async function main() {
 
     let gltfroot = await Asset.loadGLTF(gltf, screen, skybox, diffenv)
     let gltfroot2 = await Asset.loadGLTF(gltf2, screen, skybox, diffenv)
+    let gltfroot3 = await Asset.loadGLTF(gltf3, screen, skybox, diffenv)
     // NOTE: gltf
-    scene.appendChild(gltfroot);
-    scene.appendChild(gltfroot2);
+    // scene.appendChild(gltfroot);
+    // scene.appendChild(gltfroot2);
+    scene.appendChild(gltfroot3);
 
     let root = gltfroot.components.Transform;
     root.isVisible = false;
@@ -111,25 +114,38 @@ async function main() {
     root.translate[1] = yoffset || 0;
     vec3.scale(root.scale, root.scale, scale || 200);
 
-    gltfroot.components.Transform.translate[0] = -1.6;
+    gltfroot.components.Transform.translate[0] = 0;
+    vec3.scale(gltfroot2.components.Transform.scale, gltfroot2.components.Transform.scale, 2);
+    vec3.scale(gltfroot3.components.Transform.scale, gltfroot2.components.Transform.scale, .025);
+
     // gltfroot2.components.Transform.translate[1] = -1.6;
-    gltfroot2.components.Transform.translate[0] = 1.7;
+    gltfroot2.components.Transform.translate[0] = -5;
+    gltfroot.components.Transform.translate[0] = 5;
+    gltfroot3.components.Transform.translate[1] = -4.2;
+    gltfroot3.components.Transform.translate[2] += 0.2;
+    quat.fromEuler(gltfroot3.components.Transform.quaternion, 0, -100, 0);
 
     meshes = EntityMgr.getComponents('Mesh', scene);
+    // debugger
+    // for(let m of meshes) {
+    //     m.entity.components.Transform.translate[2] = 200;
+    //     m.entity.components.Transform.isDirty = true;
+    // }
 
     // waiting for world matrices update
     await new Promise((res, rej) => {
         setTimeout(() => res(), 200);
     })
     // NOTE: remove gltf model
-    scene.removeChild(gltfroot);
-    scene.removeChild(gltfroot2);
+    // scene.removeChild(gltfroot);
+    // scene.removeChild(gltfroot2);
+    scene.removeChild(gltfroot3);
     EntityMgr.hasNewMember = true;
 
 
     let bvhMgr = new BVHManager();
     console.log(bvhMgr);
-    const {LBVH, triangleTexture, primitives} = bvhMgr.buildBVH(meshes);
+    const {LBVH, triangleTexture, primitives} = bvhMgr.buildBVH([ meshes[14], meshes[38], meshes[37], meshes[41], meshes[81]]);
     console.log(LBVH)
 
 
@@ -223,6 +239,7 @@ async function main() {
     Material.setTexture(rt.material, 'LBVHTex', LBVH.tex);
     Material.setTexture(rt.material, 'skybox', skybox);
     // Material.setTexture(rt.material, 'hdr', hdrEnv);
+    Material.setTexture(rt.material, 'wall', wall);
 
     // screen.attachFilter(rt);
 
@@ -257,7 +274,7 @@ void main(){
     let rt_final = new Filter(screen, new Shader(glsl.ray_comb.vs, glsl.ray_comb.fs, {
         iResolution: `vec2(${1/screen.width},${1/screen.height})`,
         Resolution: `vec2(${screen.width},${screen.height})`,
-        iTexel: `vec2(${1/2048})`,
+        iTexel: `vec2(${1/4096})`,
     }));
 
     rt_final.setInput(rt.output, 'test');
@@ -265,12 +282,14 @@ void main(){
 
     screen.attachFilter(rt_final);
 
-    window['bvhUp'] = (v = 12) => {
-        const shader = rt.material.shader;
-        // FIXME: not working yet
-        shader.macros['SL'] = v;
-        shader.isDirty = true;
-    }
+    // Control
+    document.addEventListener('keypress', (e) => {
+        switch(e.key) {
+            case 'k':
+                rt.toggleMode();
+                break;
+        }
+    })
 
 
 }
@@ -278,8 +297,10 @@ void main(){
 class rayTracing extends Filter {
     frame = 0;
     timer = 0;
-    tar = vec3.create();
+    tar = vec3.fromValues(0, 3.8, 0);
     cam;
+    fastMode = true;
+    mousePos = vec2.create();
     constructor(screen, cam) {
         let shader = new Shader(glsl.ray.vs, glsl.ray.fs, {
             iResolution: `vec2(${1/screen.width},${1/screen.height})`,
@@ -290,10 +311,21 @@ class rayTracing extends Filter {
 
         this.cameraTrans = cam.entity.components.Transform;
         this.cam = cam;
+        cam.lookAt = this.tar;
 
-        let update = () => this.reset();
-        screen.canvas.addEventListener('mousedown', () => {
-            update();
+        let update = (e) => {
+            if(e) {
+                const {pageX, pageY} = e;
+                this.mousePos[0] = (pageX * 2 - window.innerWidth) / window.innerHeight;
+                this.mousePos[1] = ((window.innerHeight - pageY) * 2 - window.innerHeight) / window.innerHeight;
+                Material.setUniform(this.material, 'mousePos', this.mousePos);
+            }
+            this.reset();
+        }
+        screen.canvas.addEventListener('mousedown', e => {
+            if(e.button == 2) // right click
+                return;
+            update(e);
             screen.canvas.addEventListener('mousemove', update)
         })
         screen.canvas.addEventListener('mouseup', () => {
@@ -304,6 +336,8 @@ class rayTracing extends Filter {
 
         this.createTBN();
         this.reset();
+
+        this.toggleMode();
 
         this.onRender = (dt) => {
             // this.updateTBN();
@@ -316,6 +350,11 @@ class rayTracing extends Filter {
             this.frame += 1;
         }
 
+    }
+    toggleMode() {
+        this.fastMode = !this.fastMode;
+        Material.setUniform(this.material, 'PATH_LENGTH', this.fastMode ? 1 : 10);
+        this.reset();
     }
 
     tbn;
@@ -342,6 +381,8 @@ class rayTracing extends Filter {
         vec3.cross(this.b, this.t, this.n);
         Material.setUniform(this.material, 'vp', this.cameraTrans.translate);
         Material.setUniform(this.material, 'TBN', this.tbn);
+        // Material.setUniform(this.materials, 'mousePos', this.mousePos);
+
 
     }
 
