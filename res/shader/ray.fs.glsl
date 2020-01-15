@@ -4,6 +4,8 @@
 
 precision highp float;
 
+uniform int PATH_LENGTH;
+
 uniform int iFrame;
 uniform float iTime;
 uniform sampler2D base;
@@ -12,10 +14,12 @@ uniform sampler2D triangleTex;
 uniform sampler2D LBVHTex;
 uniform samplerCube skybox;
 uniform sampler2D hdr;
+uniform sampler2D wall;
 
 
 uniform mat3 TBN;
 uniform vec3 vp;
+uniform vec2 mousePos;
 
 #include <macros>
 
@@ -25,6 +29,14 @@ uniform vec3 vp;
 #define GAMMA 2.2
 
 out vec4 outColor;
+
+// texture stuff
+vec4 sRGBtoLINEAR(vec4 color) {
+    return vec4(pow(color.rgb, vec3(GAMMA)), color.a);
+}
+vec4 LINEARtoSRGB(vec4 color) {
+    return vec4(pow(color.rgb, vec3(1.0/GAMMA)), color.a);
+}
 
 // equirectangular map
 vec2 getuv(vec3 p) {
@@ -37,6 +49,16 @@ vec2 getuv(vec3 p) {
     s.x = 1.0 - phi * invTWO_PI;
     s.y = 1.-theta * invPI;
     return s;
+}
+
+
+//
+// Palette by Íñigo Quílez:
+// https://www.shadertoy.com/view/ll2GD3
+//
+// 颜色板
+vec3 pal(in float t, in vec3 a, in vec3 b, in vec3 c, in vec3 d) {
+    return a + b*cos(6.28318530718*(c*t+d));
 }
 
 //
@@ -59,6 +81,14 @@ vec2 hash2(inout float seed) {
     uint n = baseHash(floatBitsToUint(vec2(seed+=.1,seed+=.1)));
     uvec2 rz = uvec2(n, n*48271U);
     return vec2(rz.xy & uvec2(0x7fffffffU))/float(0x7fffffff);
+}
+
+vec2 randomInUnitDisk( inout float seed ) {
+    // 生成两个随机数, x: 抖动半径[0,1]; y: 弧度[0,2PI]
+    vec2 h = hash2(seed) * vec2(1,6.28318530718);
+    float phi = h.y;
+    float r = sqrt(h.x);
+	return r*vec2(sin(phi),cos(phi));
 }
 
 #define MAX_DIST 1e10
@@ -103,6 +133,35 @@ float hitAABB(vec3 ro, vec3 ird, vec3 bmax, vec3 bmin) {
         return MAX_DIST; // Missing
     }
     return max(T.x, Tz.x);
+}
+
+
+// Box:             https://www.shadertoy.com/view/ld23DV
+float iBox( in vec3 ro, in vec3 rd, in vec2 distBound, inout vec3 normal,
+            in vec3 boxSize ) {
+    vec3 m = sign(rd)/max(abs(rd), 1e-8);
+    vec3 n = m*ro;
+    vec3 k = abs(m)*boxSize;
+
+    vec3 t1 = -n - k;
+    vec3 t2 = -n + k;
+
+	float tN = max( max( t1.x, t1.y ), t1.z );
+	float tF = min( min( t2.x, t2.y ), t2.z );
+
+    if (tN > tF || tF <= 0.) {
+        return MAX_DIST;
+    } else {
+        if (tN >= distBound.x && tN <= distBound.y) {
+        	normal = -sign(rd)*step(t1.yzx,t1.xyz)*step(t1.zxy,t1.xyz);
+            return tN;
+        } else if (tF >= distBound.x && tF <= distBound.y) {
+        	normal = -sign(rd)*step(t1.yzx,t1.xyz)*step(t1.zxy,t1.xyz);
+            return tF;
+        } else {
+            return MAX_DIST;
+        }
+    }
 }
 
 // Plane
@@ -162,14 +221,26 @@ BVHNode getBVH(float i) {
         bvh1.a
     );
 }
-
+#define TRI_TEXSIZE     2048.
+#define INV_TRIANGLE    1./TRI_TEXSIZE
 float hitTriangle(float i, vec3 ro, vec3 rd, inout vec3 N) {
-    ivec2 puv0 = ivec2( mod(i + 0., 2048.), floor((i + 0.) * INV_TEXTURE_WIDTH) );
-    ivec2 nuv0 = ivec2( mod(i + 1., 2048.), floor((i + 1.) * INV_TEXTURE_WIDTH) );
-    ivec2 puv1 = ivec2( mod(i + 2., 2048.), floor((i + 2.) * INV_TEXTURE_WIDTH) );
-    ivec2 nuv1 = ivec2( mod(i + 3., 2048.), floor((i + 3.) * INV_TEXTURE_WIDTH) );
-    ivec2 puv2 = ivec2( mod(i + 4., 2048.), floor((i + 4.) * INV_TEXTURE_WIDTH) );
-    ivec2 nuv2 = ivec2( mod(i + 5., 2048.), floor((i + 5.) * INV_TEXTURE_WIDTH) );
+#ifdef HAS_NORMAL
+    ivec2 puv0 = ivec2( mod(i + 0., 4096.), floor((i + 0.) * INV_TRIANGLE) );
+    ivec2 nuv0 = ivec2( mod(i + 1., 4096.), floor((i + 1.) * INV_TRIANGLE) );
+    ivec2 puv1 = ivec2( mod(i + 2., 4096.), floor((i + 2.) * INV_TRIANGLE) );
+    ivec2 nuv1 = ivec2( mod(i + 3., 4096.), floor((i + 3.) * INV_TRIANGLE) );
+    ivec2 puv2 = ivec2( mod(i + 4., 4096.), floor((i + 4.) * INV_TRIANGLE) );
+    ivec2 nuv2 = ivec2( mod(i + 5., 4096.), floor((i + 5.) * INV_TRIANGLE) );
+
+#else
+
+    ivec2 puv0 = ivec2( mod(i + 0., TRI_TEXSIZE), floor((i + 0.) * INV_TRIANGLE) );
+    ivec2 puv1 = ivec2( mod(i + 1., TRI_TEXSIZE), floor((i + 1.) * INV_TRIANGLE) );
+    ivec2 puv2 = ivec2( mod(i + 2., TRI_TEXSIZE), floor((i + 2.) * INV_TRIANGLE) );
+
+#endif
+
+
 
     vec3 v0 = texelFetch(triangleTex, puv0, 0).xyz;
     vec3 v1 = texelFetch(triangleTex, puv1, 0).xyz;
@@ -230,25 +301,33 @@ float hitLBVH(float i, vec3 ro, vec3 rd, inout float mat, inout vec3 normal) {
                 }
             } else {
                 // Leaf
-                current = hitTriangle(bvh.index, ro, rd, normal);
-                if(current != MAX_DIST) {
+                // current = hitTriangle(bvh.index, ro, rd, normal);
+                // if(current != MAX_DIST) {
                     if(t != MAX_DIST) {
                         // Already got one leaf
                         if(current < t) {
-                            tri = bvh.index;
-                            mat = bvh.branch;
+                            // still have chance for countinue
+                            current = hitTriangle(bvh.index, ro, rd, normal);
+                            if(current < t) {
+                                tri = bvh.index;
+                                mat = bvh.branch;
+                                t = current;
+                            }
                         }
                         // Compares two leaves
-                        t = min(t, current);
+                        // t = min(t, current);
                     } else {
                         // First leaf
-                        // Update t and continue
-                        tri = bvh.index;
-                        t = current;
-                        mat = bvh.branch;
+                        current = hitTriangle(bvh.index, ro, rd, normal);
+                        if(current != MAX_DIST) {
+                            // Update t and continue
+                            tri = bvh.index;
+                            t = current;
+                            mat = bvh.branch;
+                        }
                         // Go back
                     }
-                }
+                // }
                 if(sp == 0)
                     return t;
                 pNode = offsetStack[--sp];
@@ -273,29 +352,57 @@ vec3 cosWeightedRandomHemisphereDirection( const vec3 n, inout float seed ) {
     return normalize(rr);
 }
 
+vec3 modifyDirectionWithRoughness( const vec3 normal, const vec3 n, const float roughness, inout float seed ) {
+    vec2 r = hash2(seed);
+
+	vec3  uu = normalize(cross(n, abs(n.y) > .5 ? vec3(1.,0.,0.) : vec3(0.,1.,0.)));
+	vec3  vv = cross(uu, n);
+
+    float a = roughness*roughness;
+    r.x *= 6.28318530718;
+	float rz = sqrt(abs((1.0-r.y) / clamp(1.+(a - 1.)*r.y,.00001,1.)));
+	float ra = sqrt(abs(1.-rz*rz));
+	float rx = ra*cos(r.x);
+	float ry = ra*sin(r.x);
+	vec3  rr = vec3(rx*uu + ry*vv + rz*n);
+
+    vec3 ret = normalize(rr);
+    return dot(ret,normal) > 0. ? ret : n;
+}
+
+float FresnelSchlickRoughness( float cosTheta, float F0, float roughness ) {
+    return F0 + (max((1. - roughness), F0) - F0) * pow(abs(1. - cosTheta), 5.0);
+}
 
 
+#define W_RATIO 0.5625
+#define W_WIDTH 10.
 float hitWorld(in vec3 ro, in vec3 rd, in vec2 dist, out vec3 normal, out float mat) {
     vec3 d = vec3(dist, 0.);
     vec3 ird = 1. / rd;
 
     // float t = MAX_DIST;
-    float t1 = hitLBVH (0., ro - vec3(0, 0, 0), rd, mat, normal);
-    float t2 = iPlane  (ro-vec3( 0,-2., 0), rd, vec2(0, t1), normal, vec3(0,1,0), 0.);
-    // float t2 = MAX_DIST;
+    float t1 = hitLBVH  (0., ro - vec3(0, 0, 0), rd, mat, normal);
 
-    float t = min(t1, t2);
-    if(t1 > t2) {
+    float t2 = iPlane   (ro-vec3( 0,-2., 0), rd, vec2(0, t1), normal, vec3(0,1,0), 0.);
+
+    float t3 = iBox     (ro-vec3(0,.4*W_WIDTH,-4), rd, vec2(0, t1), normal, vec3(W_WIDTH,W_WIDTH*W_RATIO,.01));
+
+    float t = min(min(t1, t2), t3);
+    if(t2 == t) {
         mat = 10.;
+    }
+    if(t3 == t) {
+        mat = 11.;
     }
     return t;
 }
 
-#define PATH_LENGTH 12
+// #define PATH_LENGTH 2
 
 vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
     vec3 albedo, normal, col = vec3(1);
-    float roughness = .5;
+    float roughness = .8;
     float metal = .1;
     for (int i = 0; i < PATH_LENGTH; ++i) {
 
@@ -305,22 +412,68 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
         if(t < MAX_DIST) {
 			ro += rd * t;
             // float LoN = max(dot(normalize(vec3(-1,1,1)), normal), .4);
-            if(mat < 2.) {
-                albedo = vec3(1);
-            } else if(mat < 3.) {
-                albedo = vec3(.8, 1, .2);
-                return albedo;
-            } else if(mat > 9.) {
+            if(mat < 1.5) {
+                // Eye
+                // albedo = pal((mat+8.)*.52996323, vec3(.6),vec3(.5),vec3(1),vec3(0.3,.6,.7));
+                // albedo = vec3(.8, .2, .6);
+                albedo = pal((mat+8.)*.52996323, vec3(.6),vec3(.5),vec3(1),vec3(0.3,.6,.7));
+
+                metal = .3;
+                roughness = .2;
+                // metal = .0;
+                // return albedo;
+                // roughness = 1.;
+            } else if(mat < 2.5) {
+                albedo = pal((mat+8.)*.52996323, vec3(.6),vec3(.5),vec3(1),vec3(0.3,.6,.7));
+                // albedo = pal((mat+3.)*.52996323, vec3(.6),vec3(.5),vec3(1),vec3(0.3,.6,.7));
+                metal = .0;
+            // } else if(mat < 3.5) {
+            //     albedo = pal((mat+8.)*.52996323, vec3(.6),vec3(.5),vec3(1),vec3(0.3,.6,.7));
+            //     metal = .0;
+
+            } else if(mat < 3.5) {
+                albedo = pal((mat+8.)*.52996323, vec3(.4),vec3(.5),vec3(1),vec3(0.3,.6,.7));
+                // albedo = vec3(.2, .6, .7);
+
+                // return albedo;
+                // metal = 1.;
+                metal = .5;
+                roughness = .6;
+                // return albedo;
+            } else if(mat < 10.) {
+                // albedo = vec3(0.7764705882352941, 0.5254901960784314, 0.25882352941176473);
+                // albedo = vec3(0.8784313725490196, 0.6745098039215687, 0.4117647058823529);
+                albedo = vec3(1, 0.8588235294117647, 0.6745098039215687);
+                metal = .1;
+                roughness = .9;
+
+            } else if(mat < 11.) {
                 float scale = .8;
                 float fact = step(.0, sin(ro.x / scale)+cos(ro.z / scale));
                 albedo = vec3(1) * clamp(fact, .1, 1.);
+                metal = .5;
+            } else if(mat < 12.) {
+                // albedo = pal((mat+4.)*.52996323, vec3(.4),vec3(.5),vec3(1),vec3(0.3,.6,.7));
+                vec2 uv = mod((ro.xy * vec2(1., -1./W_RATIO) / W_WIDTH *.5 - vec2(5. - 4.,1.5)/W_WIDTH), 1.);
+                albedo = sRGBtoLINEAR(texture(wall, uv)).rgb * 3.;
+                return albedo;
             }
 
-            col *= albedo;
-            rd = cosWeightedRandomHemisphereDirection(normal, seed);
+            float F = FresnelSchlickRoughness(max(0.,-dot(normal, rd)), .04, roughness);
+            if (F>hash1(seed)-metal) {
+                rd = modifyDirectionWithRoughness(normal, reflect(rd,normal), roughness, seed);
+            } else {
+	            col *= albedo;
+                rd = cosWeightedRandomHemisphereDirection(normal, seed);
+            }
+
+
+            // col *= albedo;
+            // rd = cosWeightedRandomHemisphereDirection(normal, seed);
         } else {
             // col *= pow( texture(skybox, rd).rgb, vec3(GAMMA) ) * 1.;
             col *= texture(skybox, rd).rgb * 1.;
+            // col *= texture(skybox, rd).rgb * .09;
             // col *= texture(hdr, getuv(rd)).rgb * 1.;
             return col;
         }
@@ -329,38 +482,67 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
     return vec3(0);
 }
 
-
+// #define DOF_FACTOR .03
+#define DOF_FACTOR .11
 
 void main() {
     vec2 uv = gl_FragCoord.xy * iResolution;
 
-    vec2 p = (gl_FragCoord.xy * 2. - Resolution.xy) * iResolution.y;
-    float seed = float(baseHash(floatBitsToUint(p - iTime)))/float(0xffffffffU);
 
-    // AA
-    p += 2.*hash2(seed) * iResolution.y;
-    // color cache
-    vec3 col = vec3(1);
 
     // Ray Origin Position
     vec3 ro = vec3(0, 0, 10);
     ro = vp;
-    // Ray Direction
-    vec3 rd = normalize(vec3(p,1.6));
-    rd = TBN * rd;
 
 
 
-    col = render(ro, rd, seed);
 
     int Frame = iFrame;
 
-    if(Frame == 0) {
-        outColor = vec4(col, 1);
-    } else {
-        // outColor = ( vec4(col, 1) * float(Frame) + texture(base, uv)) / float(Frame+1);
-        // outColor = vec4(( col * vec3(Frame) + texture(test, uv).rgb) / vec3(Frame+1), 1.);
-        outColor = vec4(col, 1) + texelFetch(base, ivec2(gl_FragCoord), 0);
+    float fpd = texelFetch(base, ivec2(0), 0).r;
 
+    if(all(equal(ivec2(gl_FragCoord), ivec2(0)))) {
+        // Calculate focus plane distance.
+        if(Frame == 0) {
+            float tmp;
+            vec3 tmp3;
+            // float nfpd = hitWorld(ro, normalize(vec3(0)-ro), vec2(0, MAX_DIST), tmp3, tmp);
+            // float nfpd = hitWorld(ro, TBN * vec3(0,0,1), vec2(0, MAX_DIST), tmp3, tmp);
+            float nfpd = hitWorld(ro, TBN * normalize(vec3(mousePos,1.6)), vec2(0, MAX_DIST), tmp3, tmp);
+            outColor = vec4(nfpd);
+        } else {
+            outColor = vec4(fpd);
+        }
+    } else {
+        vec3 col = vec3(1);
+
+        vec2 p = (gl_FragCoord.xy * 2. - Resolution.xy) * iResolution.y;
+        float seed = float(baseHash(floatBitsToUint(p - iTime)))/float(0xffffffffU);
+
+
+        // AA
+        p += 2.*hash2(seed) * iResolution.y;
+
+        // Ray Direction
+        vec3 rd = normalize(vec3(p,1.6));
+        rd = TBN * rd;
+
+        // DOF
+        vec3 fp = ro + rd * fpd;
+        ro = ro + TBN * vec3(randomInUnitDisk(seed), 0.) * DOF_FACTOR;
+        rd = normalize(fp - ro);
+
+        col = render(ro, rd, seed);
+
+        if(Frame == 0) {
+            outColor = vec4(col, 1);
+
+        } else {
+            // outColor = ( vec4(col, 1) * float(Frame) + texture(base, uv)) / float(Frame+1);
+            // outColor = vec4(( col * vec3(Frame) + texture(test, uv).rgb) / vec3(Frame+1), 1.);
+            outColor = vec4(col, 1) + texelFetch(base, ivec2(gl_FragCoord), 0);
+
+        }
     }
+
 }
