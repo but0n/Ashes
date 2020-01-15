@@ -15,14 +15,6 @@ uniform sampler2D test;
 out vec4 outColor;
 
 
-// texture stuff
-vec4 sRGBtoLINEAR(vec4 color) {
-    return vec4(pow(color.rgb, vec3(GAMMA)), color.a);
-}
-vec4 LINEARtoSRGB(vec4 color) {
-    return vec4(pow(color.rgb, vec3(1.0/GAMMA)), color.a);
-}
-
 // Tone map
 vec3 toneMapACES(vec3 color) {
     const float A = 2.51;
