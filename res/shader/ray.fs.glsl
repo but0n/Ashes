@@ -86,9 +86,8 @@ vec2 hash2(inout float seed) {
 vec2 randomInUnitDisk( inout float seed ) {
     // 生成两个随机数, x: 抖动半径[0,1]; y: 弧度[0,2PI]
     vec2 h = hash2(seed) * vec2(1,6.28318530718);
-    float phi = h.y;
-    float r = sqrt(h.x);
-	return r*vec2(sin(phi),cos(phi));
+    float r = sqrt(h.x); // 避免丛聚
+	return r*vec2(sin(h.y),cos(h.y));
 }
 
 #define MAX_DIST 1e10
@@ -338,18 +337,15 @@ float hitLBVH(float i, vec3 ro, vec3 rd, inout float mat, inout vec3 normal) {
 }
 
 vec3 cosWeightedRandomHemisphereDirection( const vec3 n, inout float seed ) {
-	vec3  uu = normalize(cross(n, abs(n.y) > .5 ? vec3(1.,0.,0.) : vec3(0.,1.,0.)));
-	vec3  vv = cross(uu, n);
+	vec3  t = normalize(cross(n, abs(n.y) > .5 ? vec3(1.,0.,0.) : vec3(0.,1.,0.)));
+	vec3  b = cross(t, n);
 
-  	vec2 r = hash2(seed);
+    vec2 h = hash2(seed) * vec2(1,6.28318530718);
 
-    r.x *= 6.28318530718;
-	float ra = sqrt(r.y);
-	float rx = ra*cos(r.x);
-	float ry = ra*sin(r.x);
-	float rz = sqrt(1.-r.y);
-	vec3  rr = vec3(rx*uu + ry*vv + rz*n);
-    return normalize(rr);
+    // l^2 + z^2 = 1 = h.x + 1. - h.x
+    vec3 r = vec3(sqrt(h.x) * vec2(cos(h.y), sin(h.y)), sqrt(1.-h.x));
+
+    return normalize(mat3(t,b,n) * r);
 }
 
 vec3 modifyDirectionWithRoughness( const vec3 normal, const vec3 n, const float roughness, inout float seed ) {
