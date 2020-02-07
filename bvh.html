@@ -42,13 +42,17 @@ gltf = assetRoot + 'gltfsamples/FlightHelmet/glTF/FlightHelmet.gltf';
 // gltf = 'https://rawcdn.githack.com/KhronosGroup/glTF-Blender-Exporter/2bd852403600053dba95db78db3f21728b979a7c/polly/project_polly.glb'
 gltf = assetRoot + 'gltfsamples/DamagedHelmet.glb';
 // gltf = assetRoot + 'gltfsamples/police_drone/scene.gltf';
-gltf2 = gltf;
 // gltf = assetRoot + 'res/MorphPrimitivesTest.glb';
 // gltf = assetRoot + 'gltfsamples/project_polly.glb';
 gltf2 = assetRoot + 'gltfsamples/Suzanne/Suzanne.gltf';
+// gltf = assetRoot + 'gltfsamples/police_drone/scene.gltf';
+
 // gltf = assetRoot + 'res/MorphPrimitivesTest.glb';
 // gltf = assetRoot + 'res/Horse.glb';
 gltf3 = assetRoot + 'gltfsamples/sylvanas_3d_windrunner_wow/scene.gltf';
+
+ashesLogo = assetRoot + 'gltfsamples/ashesface.glb';
+ashesLogo = assetRoot + 'gltfsamples/ashes.glb';
 scale = 2;
 
 async function main() {
@@ -78,9 +82,12 @@ async function main() {
     // let hdrEnv2 = await Asset.loadTexture('res/envmap/lebombo_4k.hdr');
     // let hdrEnv = await Asset.loadTexture('res/envmap/helipad/negz.hdr');
     let wall = await Asset.loadTexture('res/textures/988021.jpg');
+    let ground = await Asset.loadTexture('res/textures/grid.jpg');
 
 
     let skybox = await Asset.loadCubemap('res/envmap/helipad/', 'hdr');
+    let skybox2 = await Asset.loadTexture('res/envmap/sky.jpg');
+    skybox2.flipY = true;
     let diffenv = await Asset.loadCubemap('res/envmap/helipad_diff/', 'hdr');
     // let skybox = await Asset.loadCubemap(assetRoot + 'res/envmap/GoldenGateBridge2/');
 
@@ -100,13 +107,16 @@ async function main() {
 
     document.querySelector('body').appendChild(scene);
 
-    let gltfroot = await Asset.loadGLTF(gltf, screen, skybox, diffenv)
-    let gltfroot2 = await Asset.loadGLTF(gltf2, screen, skybox, diffenv)
-    let gltfroot3 = await Asset.loadGLTF(gltf3, screen, skybox, diffenv)
+    let gltfroot = await Asset.loadGLTF(gltf, screen, skybox, diffenv);
+    let gltfroot2 = await Asset.loadGLTF(gltf2, screen, skybox, diffenv);
+    // let gltfroot3 = await Asset.loadGLTF(gltf3, screen, skybox, diffenv);
+    ashesLogo = await Asset.loadGLTF(ashesLogo, screen, skybox, diffenv);
     // NOTE: gltf
-    // scene.appendChild(gltfroot);
-    // scene.appendChild(gltfroot2);
-    scene.appendChild(gltfroot3);
+    scene.appendChild(gltfroot);
+    scene.appendChild(gltfroot2);
+    scene.appendChild(ashesLogo);
+
+    // scene.appendChild(gltfroot3);
 
     let root = gltfroot.components.Transform;
     root.isVisible = false;
@@ -116,14 +126,17 @@ async function main() {
 
     gltfroot.components.Transform.translate[0] = 0;
     vec3.scale(gltfroot2.components.Transform.scale, gltfroot2.components.Transform.scale, 2);
-    vec3.scale(gltfroot3.components.Transform.scale, gltfroot2.components.Transform.scale, .025);
+    // vec3.scale(gltfroot3.components.Transform.scale, gltfroot2.components.Transform.scale, .025);
 
     // gltfroot2.components.Transform.translate[1] = -1.6;
-    gltfroot2.components.Transform.translate[0] = -5;
-    gltfroot.components.Transform.translate[0] = 5;
-    gltfroot3.components.Transform.translate[1] = -4.2;
-    gltfroot3.components.Transform.translate[2] += 0.2;
-    quat.fromEuler(gltfroot3.components.Transform.quaternion, 0, -100, 0);
+    gltfroot2.components.Transform.translate[0] = -4.5;
+    gltfroot.components.Transform.translate[0] = 4.5;
+    ashesLogo.components.Transform.translate[1] = 0.3;
+    ashesLogo.components.Transform.translate[2] = 1.;
+    // gltfroot3.components.Transform.translate[1] = -4.2;
+    // gltfroot3.components.Transform.translate[2] += 0.2;
+    // quat.fromEuler(gltfroot3.components.Transform.quaternion, 0, -100, 0);
+    quat.fromEuler(ashesLogo.components.Transform.quaternion, 0, 0, 0);
 
     meshes = EntityMgr.getComponents('Mesh', scene);
     // debugger
@@ -131,21 +144,24 @@ async function main() {
     //     m.entity.components.Transform.translate[2] = 200;
     //     m.entity.components.Transform.isDirty = true;
     // }
+    // return
 
     // waiting for world matrices update
     await new Promise((res, rej) => {
         setTimeout(() => res(), 200);
     })
     // NOTE: remove gltf model
-    // scene.removeChild(gltfroot);
-    // scene.removeChild(gltfroot2);
-    scene.removeChild(gltfroot3);
+    scene.removeChild(gltfroot);
+    scene.removeChild(gltfroot2);
+    // scene.removeChild(gltfroot3);
+    scene.removeChild(ashesLogo);
     EntityMgr.hasNewMember = true;
 
 
     let bvhMgr = new BVHManager();
     console.log(bvhMgr);
-    const {LBVH, triangleTexture, primitives} = bvhMgr.buildBVH([ meshes[14], meshes[38], meshes[37], meshes[41], meshes[81]]);
+    // const {LBVH, triangleTexture, primitives} = bvhMgr.buildBVH([ meshes[14], meshes[38], meshes[37], meshes[41], meshes[81]]);
+    const {LBVH, triangleTexture, primitives} = bvhMgr.buildBVH(meshes);
     console.log(LBVH)
 
 
@@ -156,8 +172,10 @@ async function main() {
             : new Shader(glsl.stylize2.vs, glsl.stylize2.fs);
 
     // // The original size of quad is 2x2
-    const brdfurl = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Viewer/master/assets/images/brdfLUT.png';
-    let brdfLUT = await Asset.loadTexture(brdfurl, { minFilter: WebGL2RenderingContext.LINEAR });
+    // const brdfurl = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Viewer/master/assets/images/brdfLUT.png';
+    // let brdfLUT = await Asset.loadTexture(brdfurl, { minFilter: WebGL2RenderingContext.LINEAR });
+
+    let brdfLUT = wall;
 
 
     // Debug BVH nodes
@@ -237,9 +255,10 @@ async function main() {
     let rt = new rayTracing(screen, cam);
     Material.setTexture(rt.material, 'triangleTex', triangleTexture.tex);
     Material.setTexture(rt.material, 'LBVHTex', LBVH.tex);
-    Material.setTexture(rt.material, 'skybox', skybox);
+    Material.setTexture(rt.material, 'skybox', skybox2);
     // Material.setTexture(rt.material, 'hdr', hdrEnv);
     Material.setTexture(rt.material, 'wall', wall);
+    Material.setTexture(rt.material, 'ground', ground);
 
     // screen.attachFilter(rt);
 
@@ -297,7 +316,8 @@ void main(){
 class rayTracing extends Filter {
     frame = 0;
     timer = 0;
-    tar = vec3.fromValues(0, 3.8, 0);
+    // tar = vec3.fromValues(0, 3.8, 0);
+    tar = vec3.fromValues(0, 0.1, 0);
     cam;
     fastMode = true;
     mousePos = vec2.create();
@@ -313,8 +333,8 @@ class rayTracing extends Filter {
         this.cam = cam;
         cam.lookAt = this.tar;
 
-        let update = (e) => {
-            if(e) {
+        let update = (e, focus = false) => {
+            if(e && focus) {
                 const {pageX, pageY} = e;
                 this.mousePos[0] = (pageX * 2 - window.innerWidth) / window.innerHeight;
                 this.mousePos[1] = ((window.innerHeight - pageY) * 2 - window.innerHeight) / window.innerHeight;
@@ -325,7 +345,7 @@ class rayTracing extends Filter {
         screen.canvas.addEventListener('mousedown', e => {
             if(e.button == 2) // right click
                 return;
-            update(e);
+            update(e, true);
             screen.canvas.addEventListener('mousemove', update)
         })
         screen.canvas.addEventListener('mouseup', () => {
@@ -353,7 +373,7 @@ class rayTracing extends Filter {
     }
     toggleMode() {
         this.fastMode = !this.fastMode;
-        Material.setUniform(this.material, 'PATH_LENGTH', this.fastMode ? 1 : 10);
+        Material.setUniform(this.material, 'PATH_LENGTH', this.fastMode ? 1 : 12);
         this.reset();
     }
 
