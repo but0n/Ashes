@@ -641,7 +641,7 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
 
 // #define DOF_FACTOR .03
 #define DOF_FACTOR .09
-#define FVO 2.5
+#define FOV 2.5
 void main() {
     vec2 uv = gl_FragCoord.xy * iResolution;
 
@@ -665,7 +665,7 @@ void main() {
             vec3 tmp3;
             // float nfpd = hitWorld(ro, normalize(vec3(0)-ro), vec2(0, MAX_DIST), tmp3, tmp);
             // float nfpd = hitWorld(ro, TBN * vec3(0,0,1), vec2(0, MAX_DIST), tmp3, tmp);
-            float nfpd = hitWorld(ro, TBN * normalize(vec3(mousePos,FVO)), vec2(0, MAX_DIST), tmp3, tmp);
+            float nfpd = hitWorld(ro, TBN * normalize(vec3(mousePos,FOV)), vec2(0, MAX_DIST), tmp3, tmp);
             outColor = vec4(nfpd);
         } else {
             outColor = vec4(fpd);
@@ -681,7 +681,7 @@ void main() {
         p += 2.*hash2(seed) * iResolution.y;
 
         // Ray Direction
-        vec3 rd = normalize(vec3(p,FVO));
+        vec3 rd = normalize(vec3(p,FOV));
         rd = TBN * rd;
 
         // DOF
