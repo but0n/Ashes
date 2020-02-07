@@ -12,9 +12,10 @@ uniform sampler2D base;
 uniform sampler2D test;
 uniform sampler2D triangleTex;
 uniform sampler2D LBVHTex;
-uniform samplerCube skybox;
+uniform sampler2D skybox;
 uniform sampler2D hdr;
 uniform sampler2D wall;
+uniform sampler2D ground;
 
 
 uniform mat3 TBN;
@@ -105,8 +106,8 @@ float hitAABB(vec3 ro, vec3 ird, vec3 bmax, vec3 bmin) {
     }
 
     // Y
-    Ty.y = (bmin.y - ro.y) * ird.y;
-    Ty.x = (bmax.y - ro.y) * ird.y;
+    Ty.x = (bmin.y - ro.y) * ird.y;
+    Ty.y = (bmax.y - ro.y) * ird.y;
     if(Ty.y < Ty.x) {
         Ty = Ty.yx;
     }
@@ -220,16 +221,17 @@ BVHNode getBVH(float i) {
         bvh1.a
     );
 }
+#define HAS_NORMAL
 #define TRI_TEXSIZE     2048.
 #define INV_TRIANGLE    1./TRI_TEXSIZE
 float hitTriangle(float i, vec3 ro, vec3 rd, inout vec3 N) {
 #ifdef HAS_NORMAL
-    ivec2 puv0 = ivec2( mod(i + 0., 4096.), floor((i + 0.) * INV_TRIANGLE) );
-    ivec2 nuv0 = ivec2( mod(i + 1., 4096.), floor((i + 1.) * INV_TRIANGLE) );
-    ivec2 puv1 = ivec2( mod(i + 2., 4096.), floor((i + 2.) * INV_TRIANGLE) );
-    ivec2 nuv1 = ivec2( mod(i + 3., 4096.), floor((i + 3.) * INV_TRIANGLE) );
-    ivec2 puv2 = ivec2( mod(i + 4., 4096.), floor((i + 4.) * INV_TRIANGLE) );
-    ivec2 nuv2 = ivec2( mod(i + 5., 4096.), floor((i + 5.) * INV_TRIANGLE) );
+    ivec2 puv0 = ivec2( mod(i + 0., TRI_TEXSIZE), floor((i + 0.) * INV_TRIANGLE) );
+    ivec2 nuv0 = ivec2( mod(i + 1., TRI_TEXSIZE), floor((i + 1.) * INV_TRIANGLE) );
+    ivec2 puv1 = ivec2( mod(i + 2., TRI_TEXSIZE), floor((i + 2.) * INV_TRIANGLE) );
+    ivec2 nuv1 = ivec2( mod(i + 3., TRI_TEXSIZE), floor((i + 3.) * INV_TRIANGLE) );
+    ivec2 puv2 = ivec2( mod(i + 4., TRI_TEXSIZE), floor((i + 4.) * INV_TRIANGLE) );
+    ivec2 nuv2 = ivec2( mod(i + 5., TRI_TEXSIZE), floor((i + 5.) * INV_TRIANGLE) );
 
 #else
 
@@ -241,18 +243,167 @@ float hitTriangle(float i, vec3 ro, vec3 rd, inout vec3 N) {
 
 
 
-    vec3 v0 = texelFetch(triangleTex, puv0, 0).xyz;
-    vec3 v1 = texelFetch(triangleTex, puv1, 0).xyz;
-    vec3 v2 = texelFetch(triangleTex, puv2, 0).xyz;
+    vec4 v0 = texelFetch(triangleTex, puv0, 0);
+    vec4 v1 = texelFetch(triangleTex, puv1, 0);
+    vec4 v2 = texelFetch(triangleTex, puv2, 0);
 
-    return iTriangle(ro, rd, vec2(0, MAX_DIST), N, v0, v1, v2);
+    if(dot(cross((v2.xyz-v0.xyz), (v1.xyz-v0.xyz)), rd) < 0.) {
+
+        vec4 cache = v2;
+        v2 = v1;
+        v1 = cache;
+    }
+
+    float d = iTriangle(ro, rd, vec2(0, MAX_DIST), N, v0.xyz, v1.xyz, v2.xyz);
+
+    // TODO: Calculate normal only if necessary
+
+#ifdef HAS_NORMAL
+    vec4 n0 = texelFetch(triangleTex, nuv0, 0);
+    vec4 n1 = texelFetch(triangleTex, nuv1, 0);
+    vec4 n2 = texelFetch(triangleTex, nuv2, 0);
+
+    vec2 uv0 = vec2(v0.z, n0.z);
+    vec2 uv1 = vec2(v1.z, n1.z);
+    vec2 uv2 = vec2(v2.z, n2.z);
+
+    if(d != MAX_DIST) {
+        vec3 p = ro + rd * d;
+        vec3 e1 = v0.xyz - v1.xyz;
+        vec3 e2 = v2.xyz - v1.xyz;
+        vec3 ne1 = normalize(e1);
+        float le1 = length(e1);
+        vec3 ne2 = normalize(e2);
+        float le2 = length(e2);
+
+        vec3 ep = p - v1.xyz;
+        vec3 nep = normalize(ep);
+
+        // float cp = normalize(e2) * dot(e1, e2);
+        float s = length(v0.xyz - ne2 * dot(e1, ne2)) * le2;
+        float s1 = length(p - ne1 * dot(ep, ne1)) * le1 / s;
+        float s2 = length(p - ne2 * dot(ep, ne2)) * le2 / s;
+
+        N = -normalize(n0.xyz * s2 * n1.xyz * (1.-s1-s2) * n2.xyz * s1);
+    }
+
+#endif
+
+    return d;
 }
 
 #ifndef SL
-#define SL 32
+#define SL 64
 #endif
-float hitLBVH(float i, vec3 ro, vec3 rd, inout float mat, inout vec3 normal) {
+float hitLBVH2(float i, vec3 ro, vec3 rd, inout float mat, inout vec3 N) {
     vec3 ird = 1. / rd;
+    vec3 normal;
+
+    float offsetStack[SL];
+    int sp = 0; // Stack Pointer
+
+
+    float t = MAX_DIST; // Only for leaf
+    float tri;          // Triangle index cache
+    float pNode = i;
+
+    // BVHNode bvh;
+    BVHNode bvh = getBVH(pNode);
+
+    float bvhRoot = hitAABB(ro, ird, bvh.bmax, bvh.bmin);
+
+    if(bvhRoot == MAX_DIST)
+        return MAX_DIST;
+
+    int c = 32;
+
+    BVHNode l, r, cur;
+    float lt, rt, current;
+
+    while(c > 0) {
+        bvh = getBVH(pNode);
+        current = hitAABB(ro, ird, bvh.bmax, bvh.bmin);
+        if(current > 0. && current == MAX_DIST) {
+            // Missing
+            // Compares to other branch
+            if(sp == 0)
+                return t;
+            pNode = offsetStack[--sp];
+        } else {
+            if(bvh.index < 0.) {
+
+                l = getBVH(pNode + 1.);
+                r = getBVH(bvh.branch);
+                lt = hitAABB(ro, ird, l.bmax, l.bmin);
+                rt = hitAABB(ro, ird, r.bmax, r.bmin);
+                if(rt == MAX_DIST && lt == MAX_DIST) {
+                    // Go back
+                    if(sp == 0)
+                        return t;
+                    pNode = offsetStack[--sp];
+
+                } else {
+
+                    if(sp == SL)    // cannot go further
+                        return t;
+
+                    if(rt < lt) {   // if right branch is closer
+
+                        offsetStack[sp++] = pNode + 1.; // store another optional node
+                        pNode = bvh.branch;
+
+                    } else {        // left branch is closer
+
+                        offsetStack[sp++] = bvh.branch; // store another optional node
+                        pNode += 1.;
+                    }
+
+                }
+
+
+            } else {
+                // leaf
+                // if(bvh.branch >= 0.) { // Not empty
+                    if(t > 0. && t != MAX_DIST) {
+                        // Already got one leaf
+                        // if(current >= t) {
+                            // still have chance for countinue
+                            current = hitTriangle(bvh.index, ro, rd, normal);
+                            if(current != MAX_DIST && current < t) {
+                                tri = bvh.index;
+                                mat = bvh.branch;
+                                t = current;
+                                N = normal;
+                            }
+                        // }
+                        // Compares two leaves
+                        // t = min(t, current);
+                    } else {
+                        // First leaf
+                        current = hitTriangle(bvh.index, ro, rd, normal);
+                        if(current > 0. && current != MAX_DIST) {
+                            // Update t and continue
+                            tri = bvh.index;
+                            t = current;
+                            mat = bvh.branch;
+                            N = normal;
+                            // return t;
+                        }
+                        // Go back
+                    }
+                // }
+                if(sp == 0)
+                    return t;
+                pNode = offsetStack[--sp];
+            }
+        }
+
+    }
+    return t;
+}
+float hitLBVH(float i, vec3 ro, vec3 rd, inout float mat, inout vec3 N) {
+    vec3 ird = 1. / rd;
+    vec3 normal;
 
     float offsetStack[SL];
     int sp = 0; // Stack Pointer
@@ -311,6 +462,7 @@ float hitLBVH(float i, vec3 ro, vec3 rd, inout float mat, inout vec3 normal) {
                                 tri = bvh.index;
                                 mat = bvh.branch;
                                 t = current;
+                                N = normal;
                             }
                         }
                         // Compares two leaves
@@ -323,6 +475,7 @@ float hitLBVH(float i, vec3 ro, vec3 rd, inout float mat, inout vec3 normal) {
                             tri = bvh.index;
                             t = current;
                             mat = bvh.branch;
+                            N = normal;
                         }
                         // Go back
                     }
@@ -370,71 +523,71 @@ float FresnelSchlickRoughness( float cosTheta, float F0, float roughness ) {
     return F0 + (max((1. - roughness), F0) - F0) * pow(abs(1. - cosTheta), 5.0);
 }
 
+vec3 opU(vec3 d, float iResult, float mat) {
+	return (iResult < d.y) ? vec3(d.x, iResult, mat) : d;
+}
+
 
 #define W_RATIO 0.5625
 #define W_WIDTH 10.
 float hitWorld(in vec3 ro, in vec3 rd, in vec2 dist, out vec3 normal, out float mat) {
-    vec3 d = vec3(dist, 0.);
+    vec3 d = vec3(dist, -1);
     vec3 ird = 1. / rd;
 
-    // float t = MAX_DIST;
-    float t1 = hitLBVH  (0., ro - vec3(0, 0, 0), rd, mat, normal);
+    d = opU(d, hitLBVH2(0., ro - vec3(0, 0, 0), rd, mat, normal), mat);
 
-    float t2 = iPlane   (ro-vec3( 0,-2., 0), rd, vec2(0, t1), normal, vec3(0,1,0), 0.);
+    d = opU(d, iPlane(ro-vec3( 0,-2., 0), rd, d.xy, normal, vec3(0,1,0), 0.), 10.);
 
-    float t3 = iBox     (ro-vec3(0,.4*W_WIDTH,-4), rd, vec2(0, t1), normal, vec3(W_WIDTH,W_WIDTH*W_RATIO,.01));
+    // d = opU(d, iBox(ro-vec3(0,.4*W_WIDTH,-8), rd, d.xy, normal, vec3(W_WIDTH,W_WIDTH*W_RATIO,.01)), 11.);
 
-    float t = min(min(t1, t2), t3);
-    if(t2 == t) {
-        mat = 10.;
-    }
-    if(t3 == t) {
-        mat = 11.;
-    }
-    return t;
+    mat = d.z;
+
+    return d.y;
 }
 
 // #define PATH_LENGTH 2
 
+// #define DEBUG_NORMAL
+
 vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
     vec3 albedo, normal, col = vec3(1);
-    float roughness = .8;
-    float metal = .1;
+    float roughness = .86;
+    float metal = .01;
     for (int i = 0; i < PATH_LENGTH; ++i) {
 
         float mat = -1.;
-        float t = hitWorld(ro, rd, vec2(0, 1000), normal, mat);
+        float t = hitWorld(ro, rd, vec2(0, MAX_DIST), normal, mat);
 
-        if(t < MAX_DIST) {
+        if(t > 0. && t < MAX_DIST) {
 			ro += rd * t;
+            if(mat < 0.) {
+                continue;
+            }
+
+#ifdef DEBUG_NORMAL
+    return max(vec3(0), normal);
+#endif
+
             // float LoN = max(dot(normalize(vec3(-1,1,1)), normal), .4);
             if(mat < 1.5) {
                 // Eye
-                // albedo = pal((mat+8.)*.52996323, vec3(.6),vec3(.5),vec3(1),vec3(0.3,.6,.7));
-                // albedo = vec3(.8, .2, .6);
-                albedo = pal((mat+8.)*.52996323, vec3(.6),vec3(.5),vec3(1),vec3(0.3,.6,.7));
-
-                metal = .3;
-                roughness = .2;
+                albedo = pal((mat+4.)*.52996323, vec3(.4),vec3(.5),vec3(1),vec3(0.3,.6,.7));
+                roughness = .6;
+                metal = .2;
                 // metal = .0;
                 // return albedo;
                 // roughness = 1.;
             } else if(mat < 2.5) {
-                albedo = pal((mat+8.)*.52996323, vec3(.6),vec3(.5),vec3(1),vec3(0.3,.6,.7));
-                // albedo = pal((mat+3.)*.52996323, vec3(.6),vec3(.5),vec3(1),vec3(0.3,.6,.7));
-                metal = .0;
-            // } else if(mat < 3.5) {
-            //     albedo = pal((mat+8.)*.52996323, vec3(.6),vec3(.5),vec3(1),vec3(0.3,.6,.7));
-            //     metal = .0;
+                albedo = pal((mat+10.)*.52996323, vec3(.4),vec3(.5),vec3(1),vec3(0.3,.6,.7));
+                roughness = .6;
+
+                metal = .1;
 
             } else if(mat < 3.5) {
-                albedo = pal((mat+8.)*.52996323, vec3(.4),vec3(.5),vec3(1),vec3(0.3,.6,.7));
-                // albedo = vec3(.2, .6, .7);
-
-                // return albedo;
-                // metal = 1.;
-                metal = .5;
+                albedo = pal((mat+1.)*.52996323, vec3(.4),vec3(.5),vec3(1),vec3(0.3,.6,.7));
                 roughness = .6;
+                metal = .1;
+
                 // return albedo;
             } else if(mat < 10.) {
                 // albedo = vec3(0.7764705882352941, 0.5254901960784314, 0.25882352941176473);
@@ -444,13 +597,21 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
                 roughness = .9;
 
             } else if(mat < 11.) {
-                float scale = .8;
-                float fact = step(.0, sin(ro.x / scale)+cos(ro.z / scale));
-                albedo = vec3(1) * clamp(fact, .1, 1.);
-                metal = .5;
+                // float scale = .8;
+                // float fact = step(.0, sin(ro.x / scale)+cos(ro.z / scale));
+                // albedo = vec3(1) * clamp(fact, .1, 1.);
+                // metal = .1;
+
+                vec2 uv = ro.xz * 0.4;
+                // ground
+                albedo = sRGBtoLINEAR(texture(ground, uv)).rgb;
+                roughness = .8;
+                metal = .1;
+
             } else if(mat < 12.) {
                 // albedo = pal((mat+4.)*.52996323, vec3(.4),vec3(.5),vec3(1),vec3(0.3,.6,.7));
-                vec2 uv = mod((ro.xy * vec2(1., -1./W_RATIO) / W_WIDTH *.5 - vec2(5. - 4.,1.5)/W_WIDTH), 1.);
+                // vec2 uv = mod((ro.xy * vec2(1., -1./W_RATIO) / W_WIDTH *.5 - vec2(5. - 4.,1.5)/W_WIDTH), 1.);
+                vec2 uv = mod((ro.xy * vec2(1., -1./W_RATIO) / W_WIDTH *.5 - vec2(5.,1.5)/W_WIDTH), 1.);
                 albedo = sRGBtoLINEAR(texture(wall, uv)).rgb * 3.;
                 return albedo;
             }
@@ -468,7 +629,7 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
             // rd = cosWeightedRandomHemisphereDirection(normal, seed);
         } else {
             // col *= pow( texture(skybox, rd).rgb, vec3(GAMMA) ) * 1.;
-            col *= texture(skybox, rd).rgb * 1.;
+            col *= sRGBtoLINEAR(texture(skybox, getuv(rd) + vec2(0,0))).rgb;
             // col *= texture(skybox, rd).rgb * .09;
             // col *= texture(hdr, getuv(rd)).rgb * 1.;
             return col;
@@ -479,8 +640,8 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
 }
 
 // #define DOF_FACTOR .03
-#define DOF_FACTOR .11
-
+#define DOF_FACTOR .09
+#define FVO 2.5
 void main() {
     vec2 uv = gl_FragCoord.xy * iResolution;
 
@@ -504,7 +665,7 @@ void main() {
             vec3 tmp3;
             // float nfpd = hitWorld(ro, normalize(vec3(0)-ro), vec2(0, MAX_DIST), tmp3, tmp);
             // float nfpd = hitWorld(ro, TBN * vec3(0,0,1), vec2(0, MAX_DIST), tmp3, tmp);
-            float nfpd = hitWorld(ro, TBN * normalize(vec3(mousePos,1.6)), vec2(0, MAX_DIST), tmp3, tmp);
+            float nfpd = hitWorld(ro, TBN * normalize(vec3(mousePos,FVO)), vec2(0, MAX_DIST), tmp3, tmp);
             outColor = vec4(nfpd);
         } else {
             outColor = vec4(fpd);
@@ -520,7 +681,7 @@ void main() {
         p += 2.*hash2(seed) * iResolution.y;
 
         // Ray Direction
-        vec3 rd = normalize(vec3(p,1.6));
+        vec3 rd = normalize(vec3(p,FVO));
         rd = TBN * rd;
 
         // DOF
