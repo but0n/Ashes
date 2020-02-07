@@ -1,4 +1,4 @@
-import { vec3 } from "../math";
+import { vec3, vec4 } from "../math";
 import { Mesh, bufferView, Accessor } from "../mesh/mesh";
 import { Texture } from "../texture";
 import { Entity, EntityMgr } from "../ECS/entityMgr";
@@ -224,13 +224,14 @@ export class BVHManager {
             }
             const box = new trianglePrimitive();
             box.mat = mat;  // Count From 1
-            // box.index = i*2;  // Offset of the first vertex
-            box.index = i;  // Offset of the first vertex
+            box.index = i*2;  // Offset of the first vertex
+            // box.index = i;  // Offset of the first vertex
             box.bounds.update(triangles[i++]);
             box.bounds.update(triangles[i++]);
             box.bounds.update(triangles[i++]);
             boxList.push(box);
         }
+        console.log("Total Materials: " + mat);
         return boxList;
     }
 
@@ -238,10 +239,11 @@ export class BVHManager {
         const d = Date.now();
         let materialList = [];
         // ? x-y-z-x y-z-x-y z-x
-        const triangleTexture = new DataTexture(2048, 1);
+        const triangleTexture = new DataTexture(2048, 2);
         let offset = 0;
         // Reduce GC
         const wpos = vec3.create(); // World position
+        const wnor = vec4.create(); // World position
         for(let m of meshes) {
             materialList.push(offset);
             let trans = m['entity'].components.Transform as Transform;
@@ -259,11 +261,16 @@ export class BVHManager {
                 vec3.transformMat4(wpos, vertex, trans.worldMatrix);
 
                 cur.set(wpos);
-                cur[3] = 1;
+                // cur[3] = 1;
 
-                // if(normal) {
-                //     cur.set(normal[face[i]], 4);
-                // }
+                if(normal) {
+                    const n = normal[face[i]];
+                    vec4.set(wnor, n[0], n[1], n[2], 0);
+                    vec4.transformMat4(wnor, wnor, trans.worldNormalMatrix);
+                    vec3.normalize(wnor, wnor);
+
+                    cur.set(wnor, 4);
+                }
 
                 // if(uv) {
                 //     cur[3] = uv[face[i]][0];
