@@ -12,6 +12,7 @@ uniform sampler2D base;
 uniform sampler2D test;
 uniform sampler2D triangleTex;
 uniform sampler2D LBVHTex;
+// uniform samplerCube skybox;
 uniform sampler2D skybox;
 uniform sampler2D hdr;
 uniform sampler2D wall;
@@ -280,9 +281,9 @@ float hitTriangle(float i, vec3 ro, vec3 rd, inout vec3 N) {
         float lep = length(ep);
         vec3 nep = normalize(ep);
 
-        float s = le1 * le2 * sqrt(1. - dot(ne1, ne2));
-        float s1 = lep * le1 * sqrt(1. - dot(nep, ne1)) / s;
-        float s2 = lep * le2 * sqrt(1. - dot(nep, ne2)) / s;
+        float s = length(cross(e1, e2));
+        float s1 = length(cross(ep, e1)) / s;
+        float s2 = length(cross(ep, e2)) / s;
 
         // N = normalize(vec3(s1, s2, 1. - s1 - s2));
         N = normalize(n0.xyz * s2 * n1.xyz * (1.-s1-s2) * n2.xyz * s1);
@@ -618,7 +619,7 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
                 return albedo;
             }
 
-            float F = FresnelSchlickRoughness(max(0.,-dot(normal, rd)), .04, roughness);
+            float F = FresnelSchlickRoughness(max(0.,dot(normal, -rd)), .04, roughness);
             if (F>hash1(seed)-metal) {
                 rd = modifyDirectionWithRoughness(normal, reflect(rd,normal), roughness, seed);
             } else {
@@ -631,8 +632,9 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
             // rd = cosWeightedRandomHemisphereDirection(normal, seed);
         } else {
             // col *= pow( texture(skybox, rd).rgb, vec3(GAMMA) ) * 1.;
-            col *= sRGBtoLINEAR(texture(skybox, getuv(rd) + vec2(0.6,0))).rgb * 1.2;
-            // col *= texture(skybox, rd).rgb * .09;
+            col *= sRGBtoLINEAR(texture(skybox, getuv(rd) + vec2(0,0))).rgb * 1.2;
+            // col *= sRGBtoLINEAR(texture(skybox, getuv(rd) + vec2(0.6,0))).rgb * 1.2;
+            // col *= texture(skybox, rd).rgb * 1.;
             // col *= texture(hdr, getuv(rd)).rgb * 1.;
             return col;
         }
@@ -643,7 +645,7 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
 
 // #define DOF_FACTOR .03
 #define DOF_FACTOR .09
-#define FOV 2.5
+#define FOV 4.
 void main() {
     vec2 uv = gl_FragCoord.xy * iResolution;
 
