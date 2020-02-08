@@ -325,8 +325,8 @@ float hitLBVH2(float i, vec3 ro, vec3 rd, inout float mat, inout vec3 N) {
     while(c > 0) {
         bvh = getBVH(pNode);
         current = hitAABB(ro, ird, bvh.bmax, bvh.bmin);
-        if(current < 0. && current == MAX_DIST) {
-            // Missing
+        if(current < 0. || current >= t) {
+            // Missing or unnecessary
             // Compares to other branch
             if(sp == 0)
                 return t;
@@ -550,7 +550,7 @@ float hitWorld(in vec3 ro, in vec3 rd, in vec2 dist, out vec3 normal, out float 
 
 // #define PATH_LENGTH 2
 
-#define DEBUG_NORMAL
+// #define DEBUG_NORMAL
 
 vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
     vec3 albedo, normal, col = vec3(1);
@@ -632,7 +632,7 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
             // rd = cosWeightedRandomHemisphereDirection(normal, seed);
         } else {
             // col *= pow( texture(skybox, rd).rgb, vec3(GAMMA) ) * 1.;
-            col *= sRGBtoLINEAR(texture(skybox, getuv(rd) + vec2(0,0))).rgb * 1.2;
+            col *= sRGBtoLINEAR(texture(skybox, getuv(rd) + vec2(0,0))).rgb * 1.;
             // col *= sRGBtoLINEAR(texture(skybox, getuv(rd) + vec2(0.6,0))).rgb * 1.2;
             // col *= texture(skybox, rd).rgb * 1.;
             // col *= texture(hdr, getuv(rd)).rgb * 1.;
