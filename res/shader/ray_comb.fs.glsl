@@ -25,9 +25,11 @@ vec3 toneMapACES(vec3 color) {
     return pow(clamp((color * (A * color + B)) / (color * (C * color + D) + E), 0.0, 1.0), vec3(1.0/GAMMA));
 }
 
+#define EXPOSURE 1.2
+
 void main() {
 
     vec4 data = texelFetch(test, ivec2(gl_FragCoord), 0);
 
-    outColor = vec4(toneMapACES(data.rgb / data.w), 1);
+    outColor = vec4(toneMapACES(data.rgb / data.w * EXPOSURE), 1);
 }
