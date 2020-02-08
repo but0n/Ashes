@@ -51,8 +51,8 @@ gltf2 = assetRoot + 'gltfsamples/Suzanne/Suzanne.gltf';
 // gltf = assetRoot + 'res/Horse.glb';
 gltf3 = assetRoot + 'gltfsamples/sylvanas_3d_windrunner_wow/scene.gltf';
 
-ashesLogo = assetRoot + 'gltfsamples/ashesface.glb';
 ashesLogo = assetRoot + 'gltfsamples/ashes.glb';
+// ashesLogo = assetRoot + 'gltfsamples/ashes_floor.glb';
 scale = 2;
 
 async function main() {
@@ -319,7 +319,7 @@ class rayTracing extends Filter {
     // tar = vec3.fromValues(0, 3.8, 0);
     tar = vec3.fromValues(0, 0.1, 0);
     cam;
-    fastMode = true;
+    fastMode = false;
     mousePos = vec2.create();
     constructor(screen, cam) {
         let shader = new Shader(glsl.ray.vs, glsl.ray.fs, {
