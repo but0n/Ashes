@@ -319,7 +319,7 @@ class rayTracing extends Filter {
     // tar = vec3.fromValues(0, 3.8, 0);
     tar = vec3.fromValues(0, 0.1, 0);
     cam;
-    fastMode = false;
+    fastMode = true;
     mousePos = vec2.create();
     constructor(screen, cam) {
         let shader = new Shader(glsl.ray.vs, glsl.ray.fs, {
@@ -373,7 +373,8 @@ class rayTracing extends Filter {
     }
     toggleMode() {
         this.fastMode = !this.fastMode;
-        Material.setUniform(this.material, 'PATH_LENGTH', this.fastMode ? 1 : 12);
+        // Material.setUniform(this.material, 'PATH_LENGTH', 12);
+        Material.setUniform(this.material, 'DEBUG_NORMAL', this.fastMode ? -1 : 1);
         this.reset();
     }
 

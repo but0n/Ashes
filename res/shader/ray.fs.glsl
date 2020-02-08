@@ -4,7 +4,8 @@
 
 precision highp float;
 
-uniform int PATH_LENGTH;
+// uniform int PATH_LENGTH;
+uniform int DEBUG_NORMAL;
 
 uniform int iFrame;
 uniform float iTime;
@@ -325,7 +326,7 @@ float hitLBVH2(float i, vec3 ro, vec3 rd, inout float mat, inout vec3 N) {
     while(c > 0) {
         bvh = getBVH(pNode);
         current = hitAABB(ro, ird, bvh.bmax, bvh.bmin);
-        if(current < 0. || current >= t) {
+        if(current < 0. || current >= t || current == MAX_DIST) {
             // Missing or unnecessary
             // Compares to other branch
             if(sp == 0)
@@ -541,14 +542,14 @@ float hitWorld(in vec3 ro, in vec3 rd, in vec2 dist, out vec3 normal, out float 
 
     d = opU(d, iPlane(ro-vec3( 0,-2., 0), rd, d.xy, normal, vec3(0,1,0), 0.), 10.);
 
-    // d = opU(d, iBox(ro-vec3(0,.4*W_WIDTH,-8), rd, d.xy, normal, vec3(W_WIDTH,W_WIDTH*W_RATIO,.01)), 11.);
+    d = opU(d, iBox(ro-vec3(0,.4*W_WIDTH,-8), rd, d.xy, normal, vec3(W_WIDTH,W_WIDTH*W_RATIO,.01)), 11.);
 
     mat = d.z;
 
     return d.y;
 }
 
-// #define PATH_LENGTH 2
+#define PATH_LENGTH 12
 
 // #define DEBUG_NORMAL
 
@@ -567,16 +568,17 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
                 continue;
             }
 
-#ifdef DEBUG_NORMAL
-    return max(vec3(0), normal);
-#endif
+// #ifdef DEBUG_NORMAL
+            if(DEBUG_NORMAL > 0)
+                return max(vec3(0), normal);
+// #endif
 
             // float LoN = max(dot(normalize(vec3(-1,1,1)), normal), .4);
             if(mat < 1.5) {
                 // Eye
-                albedo = pal((mat+4.)*.52996323, vec3(.4),vec3(.5),vec3(1),vec3(0.3,.6,.7));
-                roughness = .6;
-                metal = .2;
+                albedo = pal((mat+3.)*.52996323, vec3(.4),vec3(.5),vec3(1),vec3(0.3,.6,.7));
+                roughness = .9;
+                metal = .1;
                 // metal = .0;
                 // return albedo;
                 // roughness = 1.;
@@ -605,7 +607,7 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
                 // albedo = vec3(1) * clamp(fact, .1, 1.);
                 // metal = .1;
 
-                vec2 uv = ro.xz * 0.4;
+                vec2 uv = ro.xz * 0.3;
                 // ground
                 albedo = sRGBtoLINEAR(texture(ground, uv)).rgb;
                 roughness = .8;
@@ -619,7 +621,7 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
                 return albedo;
             }
 
-            float F = FresnelSchlickRoughness(max(0.,dot(normal, -rd)), .04, roughness);
+            float F = FresnelSchlickRoughness(max(0.,-dot(normal, rd)), .04, roughness);
             if (F>hash1(seed)-metal) {
                 rd = modifyDirectionWithRoughness(normal, reflect(rd,normal), roughness, seed);
             } else {
