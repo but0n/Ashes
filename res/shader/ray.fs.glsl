@@ -267,7 +267,7 @@ float hitTriangle(float i, vec3 ro, vec3 rd, inout vec3 N) {
     vec2 uv1 = vec2(v1.z, n1.z);
     vec2 uv2 = vec2(v2.z, n2.z);
 
-    if(d != MAX_DIST) {
+    if(d > 0. && d != MAX_DIST) {
         vec3 p = ro + rd * d;
         vec3 e1 = v0.xyz - v1.xyz;
         vec3 e2 = v2.xyz - v1.xyz;
@@ -277,14 +277,15 @@ float hitTriangle(float i, vec3 ro, vec3 rd, inout vec3 N) {
         float le2 = length(e2);
 
         vec3 ep = p - v1.xyz;
+        float lep = length(ep);
         vec3 nep = normalize(ep);
 
-        // float cp = normalize(e2) * dot(e1, e2);
-        float s = length(v0.xyz - ne2 * dot(e1, ne2)) * le2;
-        float s1 = length(p - ne1 * dot(ep, ne1)) * le1 / s;
-        float s2 = length(p - ne2 * dot(ep, ne2)) * le2 / s;
+        float s = le1 * le2 * sqrt(1. - dot(ne1, ne2));
+        float s1 = lep * le1 * sqrt(1. - dot(nep, ne1)) / s;
+        float s2 = lep * le2 * sqrt(1. - dot(nep, ne2)) / s;
 
-        N = -normalize(n0.xyz * s2 * n1.xyz * (1.-s1-s2) * n2.xyz * s1);
+        // N = normalize(vec3(s1, s2, 1. - s1 - s2));
+        N = normalize(n0.xyz * s2 * n1.xyz * (1.-s1-s2) * n2.xyz * s1);
     }
 
 #endif
@@ -293,7 +294,7 @@ float hitTriangle(float i, vec3 ro, vec3 rd, inout vec3 N) {
 }
 
 #ifndef SL
-#define SL 64
+#define SL 32
 #endif
 float hitLBVH2(float i, vec3 ro, vec3 rd, inout float mat, inout vec3 N) {
     vec3 ird = 1. / rd;
@@ -323,7 +324,7 @@ float hitLBVH2(float i, vec3 ro, vec3 rd, inout float mat, inout vec3 N) {
     while(c > 0) {
         bvh = getBVH(pNode);
         current = hitAABB(ro, ird, bvh.bmax, bvh.bmin);
-        if(current > 0. && current == MAX_DIST) {
+        if(current < 0. && current == MAX_DIST) {
             // Missing
             // Compares to other branch
             if(sp == 0)
@@ -364,17 +365,18 @@ float hitLBVH2(float i, vec3 ro, vec3 rd, inout float mat, inout vec3 N) {
             } else {
                 // leaf
                 // if(bvh.branch >= 0.) { // Not empty
-                    if(t > 0. && t != MAX_DIST) {
+                    if(t != MAX_DIST) {
                         // Already got one leaf
                         // if(current >= t) {
                             // still have chance for countinue
                             current = hitTriangle(bvh.index, ro, rd, normal);
-                            if(current != MAX_DIST && current < t) {
+                            if(current > 0. && current < t) {
                                 tri = bvh.index;
                                 mat = bvh.branch;
                                 t = current;
                                 N = normal;
                             }
+                            // return t;
                         // }
                         // Compares two leaves
                         // t = min(t, current);
@@ -547,7 +549,7 @@ float hitWorld(in vec3 ro, in vec3 rd, in vec2 dist, out vec3 normal, out float 
 
 // #define PATH_LENGTH 2
 
-// #define DEBUG_NORMAL
+#define DEBUG_NORMAL
 
 vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
     vec3 albedo, normal, col = vec3(1);
@@ -579,9 +581,9 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
                 // roughness = 1.;
             } else if(mat < 2.5) {
                 albedo = pal((mat+10.)*.52996323, vec3(.4),vec3(.5),vec3(1),vec3(0.3,.6,.7));
-                roughness = .6;
+                roughness = .02;
 
-                metal = .1;
+                metal = .9;
 
             } else if(mat < 3.5) {
                 albedo = pal((mat+1.)*.52996323, vec3(.4),vec3(.5),vec3(1),vec3(0.3,.6,.7));
@@ -629,7 +631,7 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
             // rd = cosWeightedRandomHemisphereDirection(normal, seed);
         } else {
             // col *= pow( texture(skybox, rd).rgb, vec3(GAMMA) ) * 1.;
-            col *= sRGBtoLINEAR(texture(skybox, getuv(rd) + vec2(0,0))).rgb;
+            col *= sRGBtoLINEAR(texture(skybox, getuv(rd) + vec2(0.6,0))).rgb * 1.2;
             // col *= texture(skybox, rd).rgb * .09;
             // col *= texture(hdr, getuv(rd)).rgb * 1.;
             return col;
