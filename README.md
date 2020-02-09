@@ -7,7 +7,7 @@
 [![](https://data.jsdelivr.com/v1/package/npm/ashes3d/badge)](https://www.jsdelivr.com/package/npm/ashes3d)
 
 ![](https://user-images.githubusercontent.com/7625588/74088915-80658f00-4aef-11ea-9acf-9359e2d4c445.png)
-![](https://user-images.githubusercontent.com/7625588/67295473-c0d9d680-f519-11e9-96b8-72422af0a547.png)
+![](https://user-images.githubusercontent.com/7625588/74095701-8dfb3300-4b48-11ea-8e56-2dd58922d9b6.png)
 
 # Examples
  - [glTF test](https://cx20.github.io/gltf-test/?engines=Ashes)
