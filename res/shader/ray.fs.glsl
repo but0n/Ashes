@@ -619,14 +619,13 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
             } else if(mat < 2.5) {
                 // albedo = pal((mat+10.)*.52996323, vec3(.4),vec3(.5),vec3(1),vec3(0.3,.6,.7));
                 albedo = sRGBtoLINEAR(texture(uvck, iuv)).rgb;
-                // roughness = .02;
-
-                // metal = .9;
+                roughness = .08;
+                metal = .8;
 
             } else if(mat < 3.5) {
                 albedo = pal((mat+1.)*.52996323, vec3(.4),vec3(.5),vec3(1),vec3(0.3,.6,.7));
-                roughness = .0;
-                metal = .2;
+                roughness = .1;
+                metal = .1;
                 // return albedo;
 
             } else if(mat < 4.5) {
@@ -682,9 +681,9 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
             // rd = cosWeightedRandomHemisphereDirection(normal, seed);
         } else {
             // col *= pow( texture(skybox, rd).rgb, vec3(GAMMA) ) * 1.;
-            // col *= sRGBtoLINEAR(texture(skybox, getuv(rd) + vec2(0,0))).rgb * 1.;
+            col *= sRGBtoLINEAR(texture(skybox, getuv(rd) + vec2(0,0))).rgb * 1.;
             // col *= sRGBtoLINEAR(texture(skybox, getuv(rd) + vec2(0.6,0))).rgb * 1.2;
-            col *= texture(hdrSky, rd).rgb * 1.;
+            // col *= texture(hdrSky, rd).rgb * 1.;
             // col *= texture(hdr, getuv(rd)).rgb * 1.;
             return col;
         }
@@ -694,8 +693,8 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
 }
 
 // #define DOF_FACTOR .03
-#define DOF_FACTOR .09
-#define FOV 4.
+#define DOF_FACTOR .07
+#define FOV 3.5
 void main() {
     vec2 uv = gl_FragCoord.xy * iResolution;
 

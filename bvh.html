@@ -91,7 +91,7 @@ async function main() {
 
 
     let skybox = await Asset.loadCubemap('res/envmap/helipad/', 'hdr');
-    let skybox2 = await Asset.loadTexture('res/envmap/sky.jpg');
+    let skybox2 = await Asset.loadTexture('res/envmap/sky4.jpg');
     skybox2.flipY = true;
     let diffenv = await Asset.loadCubemap('res/envmap/helipad_diff/', 'hdr');
     // let skybox = await Asset.loadCubemap(assetRoot + 'res/envmap/GoldenGateBridge2/');
@@ -134,11 +134,13 @@ async function main() {
     // vec3.scale(gltfroot3.components.Transform.scale, gltfroot2.components.Transform.scale, .025);
 
     // gltfroot2.components.Transform.translate[1] = -1.6;
-    gltfroot2.components.Transform.translate[0] = -4 - 4;
-    gltfroot.components.Transform.translate[0] = 4 - 4;
+    gltfroot2.components.Transform.translate[0] = -4 - 0;
+    gltfroot.components.Transform.translate[0] = 4 - 0;
+    gltfroot.components.Transform.translate[1] = -0.1;
     gltfroot.components.Transform.translate[2] = 1.;
-    ashesLogo.components.Transform.translate[0] = -4;
-    ashesLogo.components.Transform.translate[1] = -1.9;
+    ashesLogo.components.Transform.translate[0] = -0;
+    ashesLogo.components.Transform.translate[1] = -2.;
+    // ashesLogo.components.Transform.translate[1] = 0.25;
     ashesLogo.components.Transform.translate[2] = 1.;
     // gltfroot3.components.Transform.translate[1] = -4.2;
     // gltfroot3.components.Transform.translate[2] += 0.2;
@@ -262,8 +264,8 @@ async function main() {
     let rt = new rayTracing(screen, cam);
     Material.setTexture(rt.material, 'triangleTex', triangleTexture.tex);
     Material.setTexture(rt.material, 'LBVHTex', LBVH.tex);
-    // Material.setTexture(rt.material, 'skybox', skybox2);
-    Material.setTexture(rt.material, 'hdrSky', skybox);
+    Material.setTexture(rt.material, 'skybox', skybox2);
+    // Material.setTexture(rt.material, 'hdrSky', skybox);
     // Material.setTexture(rt.material, 'hdr', hdrEnv);
     Material.setTexture(rt.material, 'wall', wall);
     Material.setTexture(rt.material, 'ground', ground);
