@@ -83,6 +83,10 @@ async function main() {
     // let hdrEnv = await Asset.loadTexture('res/envmap/helipad/negz.hdr');
     let wall = await Asset.loadTexture('res/textures/988021.jpg');
     let ground = await Asset.loadTexture('res/textures/grid.jpg');
+    let albedo = await Asset.loadTexture('res/textures/Default_albedo.jpg');
+    let rmTex = await Asset.loadTexture('res/textures/Default_metalRoughness.jpg');
+    let uvck = await Asset.loadTexture('res/textures/checker.png');
+    // albedo.flipY = true;
 
 
     let skybox = await Asset.loadCubemap('res/envmap/helipad/', 'hdr');
@@ -129,8 +133,9 @@ async function main() {
     // vec3.scale(gltfroot3.components.Transform.scale, gltfroot2.components.Transform.scale, .025);
 
     // gltfroot2.components.Transform.translate[1] = -1.6;
-    gltfroot2.components.Transform.translate[0] = -4.5;
-    gltfroot.components.Transform.translate[0] = 4.5;
+    gltfroot2.components.Transform.translate[0] = -4.5 - 4.5;
+    gltfroot.components.Transform.translate[0] = 4.5 - 4.5;
+    ashesLogo.components.Transform.translate[0] = -4.5;
     ashesLogo.components.Transform.translate[1] = 0.3;
     ashesLogo.components.Transform.translate[2] = 1.;
     // gltfroot3.components.Transform.translate[1] = -4.2;
@@ -259,6 +264,9 @@ async function main() {
     // Material.setTexture(rt.material, 'hdr', hdrEnv);
     Material.setTexture(rt.material, 'wall', wall);
     Material.setTexture(rt.material, 'ground', ground);
+    Material.setTexture(rt.material, 'albedoTex', albedo);
+    Material.setTexture(rt.material, 'uvck', uvck);
+    Material.setTexture(rt.material, 'rmTex', rmTex);
 
     // screen.attachFilter(rt);
 
@@ -317,7 +325,7 @@ class rayTracing extends Filter {
     frame = 0;
     timer = 0;
     // tar = vec3.fromValues(0, 3.8, 0);
-    tar = vec3.fromValues(0, 0.1, 0);
+    tar = vec3.fromValues(0, 0, 0);
     cam;
     fastMode = true;
     mousePos = vec2.create();
