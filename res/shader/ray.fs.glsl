@@ -583,7 +583,7 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
         float t = hitWorld(ro, rd, vec2(0, MAX_DIST), normal, iuv, mat);
 
         if(t > 0. && t < MAX_DIST) {
-			ro += rd * (t - .01);   // fix Z-fatting issue
+			ro += rd * (t - .01);   // fix Z-fighting issue
             if(mat < 0.) {
                 continue;
             }
