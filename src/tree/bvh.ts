@@ -272,10 +272,10 @@ export class BVHManager {
                     cur.set(wnor, 4);
                 }
 
-                // if(uv) {
-                //     cur[3] = uv[face[i]][0];
-                //     cur[7] = uv[face[i]][1];
-                // }
+                if(uv) {
+                    cur[3] = uv[face[i]][0];
+                    cur[7] = uv[face[i]][1];
+                }
             }
         }
 
