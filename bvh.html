@@ -52,7 +52,7 @@ gltf2 = assetRoot + 'gltfsamples/Suzanne/Suzanne.gltf';
 gltf3 = assetRoot + 'gltfsamples/sylvanas_3d_windrunner_wow/scene.gltf';
 
 ashesLogo = assetRoot + 'gltfsamples/ashes.glb';
-// ashesLogo = assetRoot + 'gltfsamples/ashes_floor.glb';
+ashesLogo = assetRoot + 'gltfsamples/ashes_bg.glb';
 scale = 2;
 
 async function main() {
@@ -85,6 +85,7 @@ async function main() {
     let ground = await Asset.loadTexture('res/textures/grid.jpg');
     let albedo = await Asset.loadTexture('res/textures/Default_albedo.jpg');
     let rmTex = await Asset.loadTexture('res/textures/Default_metalRoughness.jpg');
+    let emTex = await Asset.loadTexture('res/textures/Default_emissive.jpg');
     let uvck = await Asset.loadTexture('res/textures/checker.png');
     // albedo.flipY = true;
 
@@ -133,10 +134,11 @@ async function main() {
     // vec3.scale(gltfroot3.components.Transform.scale, gltfroot2.components.Transform.scale, .025);
 
     // gltfroot2.components.Transform.translate[1] = -1.6;
-    gltfroot2.components.Transform.translate[0] = -4.5 - 4.5;
-    gltfroot.components.Transform.translate[0] = 4.5 - 4.5;
-    ashesLogo.components.Transform.translate[0] = -4.5;
-    ashesLogo.components.Transform.translate[1] = 0.3;
+    gltfroot2.components.Transform.translate[0] = -4 - 4;
+    gltfroot.components.Transform.translate[0] = 4 - 4;
+    gltfroot.components.Transform.translate[2] = 1.;
+    ashesLogo.components.Transform.translate[0] = -4;
+    ashesLogo.components.Transform.translate[1] = -1.9;
     ashesLogo.components.Transform.translate[2] = 1.;
     // gltfroot3.components.Transform.translate[1] = -4.2;
     // gltfroot3.components.Transform.translate[2] += 0.2;
@@ -260,13 +262,15 @@ async function main() {
     let rt = new rayTracing(screen, cam);
     Material.setTexture(rt.material, 'triangleTex', triangleTexture.tex);
     Material.setTexture(rt.material, 'LBVHTex', LBVH.tex);
-    Material.setTexture(rt.material, 'skybox', skybox2);
+    // Material.setTexture(rt.material, 'skybox', skybox2);
+    Material.setTexture(rt.material, 'hdrSky', skybox);
     // Material.setTexture(rt.material, 'hdr', hdrEnv);
     Material.setTexture(rt.material, 'wall', wall);
     Material.setTexture(rt.material, 'ground', ground);
     Material.setTexture(rt.material, 'albedoTex', albedo);
     Material.setTexture(rt.material, 'uvck', uvck);
     Material.setTexture(rt.material, 'rmTex', rmTex);
+    Material.setTexture(rt.material, 'emTex', emTex);
 
     // screen.attachFilter(rt);
 
