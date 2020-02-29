@@ -250,10 +250,9 @@ export class BVHManager {
         for(const [name, [i,mt]] of mats) {
             // Textures
             const tex = mt.textures;
-            let base = 'albedo = pal((mat+1.)*.52996323, vec3(.4),vec3(.5),vec3(1),vec3(0.3,.6,.7));';
-            let mr = '';
 
             // baseColorTexture
+            let base = 'albedo = pal((mat+1.)*.52996323, vec3(.4),vec3(.5),vec3(1),vec3(0.3,.6,.7));';
             if(tex.has('baseColorTexture')) {
                 params += `
 uniform sampler2D baseColorTexture_${i};
@@ -264,9 +263,43 @@ uniform sampler2D baseColorTexture_${i};
                 });
             }
 
+            // metallicRoughnessTexture
+            let rm = 'vec3 rm = vec3(1, 0, 0);';
+            if(tex.has('metallicRoughnessTexture')) {
+                params += `
+uniform sampler2D metallicRoughnessTexture_${i};
+`;
+                rm = `
+                vec3 rm = texture(metallicRoughnessTexture_${i}, iuv).rgb;
+                metal = clamp(rm.b, 0.0, 1.0);
+                roughness = clamp(rm.g, 0.04, 1.0);
+`;
+                tasks.push(m => {
+                    Material.setTexture(m, `metallicRoughnessTexture_${i}`, tex.get('metallicRoughnessTexture')[1]);
+                });
+            }
+
+            // emissiveTexture
+            let em = '';
+            if(tex.has('emissiveTexture')) {
+                params += `
+uniform sampler2D emissiveTexture_${i};
+`;
+                em = `
+                vec3 em = sRGBtoLINEAR(texture(emissiveTexture_${i}, iuv)).rgb;
+                if(dot(em, em) > .01)
+                    return em;
+`;
+                tasks.push(m => {
+                    Material.setTexture(m, `emissiveTexture_${i}`, tex.get('emissiveTexture')[1]);
+                });
+            }
+
             route += `
             else if(mat < ${i}.5) { // NOTE: ${name}
                 ${base}
+                ${rm}
+                ${em}
             }`;
         }
         const init = m => {

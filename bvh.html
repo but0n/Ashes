@@ -56,6 +56,8 @@ ashesLogo = assetRoot + 'gltfsamples/ashes_bg.glb';
 
 // Zelda
 zelda = 'res/zelda_-_breath_of_the_wild/scene.gltf';
+zelda = 'res/old_torch_-_dirt_low_poly/scene.gltf';
+zelda = 'res/MetalRoughSpheres.glb';
 gltf3 = zelda;
 scale = 2;
 
@@ -87,9 +89,6 @@ async function main() {
     // let hdrEnv = await Asset.loadTexture('res/envmap/helipad/negz.hdr');
     let wall = await Asset.loadTexture('res/textures/988021.jpg');
     let ground = await Asset.loadTexture('res/textures/grid.jpg');
-    let albedo = await Asset.loadTexture('res/textures/Default_albedo.jpg');
-    let rmTex = await Asset.loadTexture('res/textures/Default_metalRoughness.jpg');
-    let emTex = await Asset.loadTexture('res/textures/Default_emissive.jpg');
     let uvck = await Asset.loadTexture('res/textures/checker.png');
     // albedo.flipY = true;
 
@@ -121,7 +120,7 @@ async function main() {
     let gltfroot3 = await Asset.loadGLTF(gltf3, screen, skybox, diffenv);
     ashesLogo = await Asset.loadGLTF(ashesLogo, screen, skybox, diffenv);
     // NOTE: gltf
-    // scene.appendChild(gltfroot);
+    scene.appendChild(gltfroot);
     // scene.appendChild(gltfroot2);
     // scene.appendChild(ashesLogo);
 
@@ -135,20 +134,20 @@ async function main() {
 
     gltfroot.components.Transform.translate[0] = 0;
     vec3.scale(gltfroot2.components.Transform.scale, gltfroot2.components.Transform.scale, 2);
-    vec3.scale(gltfroot3.components.Transform.scale, gltfroot2.components.Transform.scale, .015);
+    // vec3.scale(gltfroot3.components.Transform.scale, gltfroot2.components.Transform.scale, .015);
 
     // gltfroot2.components.Transform.translate[1] = -1.6;
     gltfroot2.components.Transform.translate[0] = -4 - 0;
-    gltfroot.components.Transform.translate[0] = 4 - 0;
+    gltfroot.components.Transform.translate[0] = 5.5;
     gltfroot.components.Transform.translate[1] = -0.1;
-    gltfroot.components.Transform.translate[2] = 1.;
     ashesLogo.components.Transform.translate[0] = -0;
     ashesLogo.components.Transform.translate[1] = -2.;
     // ashesLogo.components.Transform.translate[1] = 0.25;
     ashesLogo.components.Transform.translate[2] = -5.;
 
-    gltfroot3.components.Transform.translate[1] = -1.4;
-    gltfroot3.components.Transform.translate[2] -= .5;
+    // gltfroot3.components.Transform.translate[1] = -1.4;
+    gltfroot3.components.Transform.translate[1] = 3.;
+    gltfroot3.components.Transform.translate[2] += 1.;
     // quat.fromEuler(gltfroot3.components.Transform.quaternion, 0, -100, 0);
     quat.fromEuler(ashesLogo.components.Transform.quaternion, 0, 0, 0);
 
@@ -165,7 +164,7 @@ async function main() {
         setTimeout(() => res(), 200);
     })
     // NOTE: remove gltf model
-    // scene.removeChild(gltfroot);
+    scene.removeChild(gltfroot);
     // scene.removeChild(gltfroot2);
     scene.removeChild(gltfroot3);
     // scene.removeChild(ashesLogo);
@@ -282,10 +281,7 @@ async function main() {
     // Material.setTexture(rt.material, 'hdr', hdrEnv);
     Material.setTexture(rt.material, 'wall', wall);
     Material.setTexture(rt.material, 'ground', ground);
-    Material.setTexture(rt.material, 'albedoTex', albedo);
     Material.setTexture(rt.material, 'uvck', uvck);
-    Material.setTexture(rt.material, 'rmTex', rmTex);
-    Material.setTexture(rt.material, 'emTex', emTex);
 
     matHandler.init(rt.material);
 

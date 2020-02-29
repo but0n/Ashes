@@ -18,10 +18,7 @@ uniform sampler2D skybox;
 uniform sampler2D hdr;
 uniform sampler2D wall;
 uniform sampler2D ground;
-uniform sampler2D albedoTex;
 uniform sampler2D uvck;
-uniform sampler2D rmTex;
-uniform sampler2D emTex;
 #include <mat_params>
 
 
@@ -628,7 +625,8 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
             // // normal = -normal;
 
             float F = FresnelSchlickRoughness(max(0.,-dot(normal, rd)), .04, roughness);
-            if (F>hash1(seed)-metal) {
+            if (F>hash1(seed) - metal) {
+	            col *= albedo;
                 rd = modifyDirectionWithRoughness(normal, reflect(rd,normal), roughness, seed);
             } else {
 	            col *= albedo;
@@ -651,8 +649,7 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
     return vec3(0);
 }
 
-// #define DOF_FACTOR .03
-#define DOF_FACTOR .02
+#define DOF_FACTOR .03
 #define FOV 2.2
 void main() {
     vec2 uv = gl_FragCoord.xy * iResolution;
