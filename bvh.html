@@ -95,7 +95,7 @@ async function main() {
 
 
     let skybox = await Asset.loadCubemap('res/envmap/helipad/', 'hdr');
-    let skybox2 = await Asset.loadTexture('res/envmap/sky4.jpg');
+    let skybox2 = await Asset.loadTexture('res/envmap/sky.jpg');
     skybox2.flipY = true;
     let diffenv = await Asset.loadCubemap('res/envmap/helipad_diff/', 'hdr');
     // let skybox = await Asset.loadCubemap(assetRoot + 'res/envmap/GoldenGateBridge2/');
@@ -123,7 +123,7 @@ async function main() {
     // NOTE: gltf
     // scene.appendChild(gltfroot);
     // scene.appendChild(gltfroot2);
-    scene.appendChild(ashesLogo);
+    // scene.appendChild(ashesLogo);
 
     scene.appendChild(gltfroot3);
 
@@ -146,8 +146,9 @@ async function main() {
     ashesLogo.components.Transform.translate[1] = -2.;
     // ashesLogo.components.Transform.translate[1] = 0.25;
     ashesLogo.components.Transform.translate[2] = -5.;
-    gltfroot3.components.Transform.translate[1] = -1.8;
-    // gltfroot3.components.Transform.translate[2] += 5.2;
+
+    gltfroot3.components.Transform.translate[1] = -1.4;
+    gltfroot3.components.Transform.translate[2] -= .5;
     // quat.fromEuler(gltfroot3.components.Transform.quaternion, 0, -100, 0);
     quat.fromEuler(ashesLogo.components.Transform.quaternion, 0, 0, 0);
 
@@ -167,15 +168,16 @@ async function main() {
     // scene.removeChild(gltfroot);
     // scene.removeChild(gltfroot2);
     scene.removeChild(gltfroot3);
-    scene.removeChild(ashesLogo);
+    // scene.removeChild(ashesLogo);
     EntityMgr.hasNewMember = true;
 
 
     let bvhMgr = new BVHManager();
     console.log(bvhMgr);
     // const {LBVH, triangleTexture, primitives} = bvhMgr.buildBVH([ meshes[0], meshes[1], meshes[14+2], meshes[38+2], meshes[37+2], meshes[41+2], meshes[81+2]]);
-    const {LBVH, triangleTexture, primitives} = bvhMgr.buildBVH(meshes);
-    console.log(LBVH)
+    const {LBVH, triangleTexture, primitives, matHandler} = bvhMgr.buildBVH(meshes);
+    console.log(LBVH);
+    console.log(matHandler.params);
 
 
 
@@ -264,8 +266,15 @@ async function main() {
     // visual(hdrEnv, 7);
     // visual(triangleTexture.tex, 2);
     // return;
-
-    let rt = new rayTracing(screen, cam);
+    const rtShader = new Shader(glsl.ray.vs, glsl.ray.fs, {
+        iResolution: `vec2(${1/screen.width},${1/screen.height})`,
+        Resolution: `vec2(${screen.width},${screen.height})`,
+        iTexel: `vec2(${1/2048})`,
+    });
+    rtShader.fragmentSource = rtShader.fragmentSource
+        .replace('#include <mat_params>', matHandler.params)
+        .replace('#include <mat_route>', matHandler.route);
+    let rt = new rayTracing(screen, cam, rtShader);
     Material.setTexture(rt.material, 'triangleTex', triangleTexture.tex);
     Material.setTexture(rt.material, 'LBVHTex', LBVH.tex);
     Material.setTexture(rt.material, 'skybox', skybox2);
@@ -277,6 +286,8 @@ async function main() {
     Material.setTexture(rt.material, 'uvck', uvck);
     Material.setTexture(rt.material, 'rmTex', rmTex);
     Material.setTexture(rt.material, 'emTex', emTex);
+
+    matHandler.init(rt.material);
 
     // screen.attachFilter(rt);
 
@@ -325,6 +336,14 @@ void main(){
             case 'k':
                 rt.toggleMode();
                 break;
+            case 'u':
+                rt.tar[1] += 0.1;
+                rt.reset();
+                break;
+            case 'j':
+                rt.tar[1] -= 0.1;
+                rt.reset();
+                break;
         }
     })
 
@@ -334,17 +353,12 @@ void main(){
 class rayTracing extends Filter {
     frame = 0;
     timer = 0;
-    tar = vec3.fromValues(0, 1.5, 0);
+    tar = vec3.fromValues(0, 1.2, 0);
     // tar = vec3.fromValues(0, 0, 0);
     cam;
     fastMode = true;
     mousePos = vec2.create();
-    constructor(screen, cam) {
-        let shader = new Shader(glsl.ray.vs, glsl.ray.fs, {
-            iResolution: `vec2(${1/screen.width},${1/screen.height})`,
-            Resolution: `vec2(${screen.width},${screen.height})`,
-            iTexel: `vec2(${1/2048})`,
-        });
+    constructor(screen, cam, shader) {
         super(screen, shader);
 
         this.cameraTrans = cam.entity.components.Transform;
