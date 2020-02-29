@@ -596,7 +596,7 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
                 return sRGBtoLINEAR(texture(uvck, iuv)).rgb;
                 // return abs(vec3(iuv, 0));
 #else
-                return max(vec3(0), normal);
+                return max(vec3(0), normal) * sRGBtoLINEAR(texture(uvck, iuv)).rgb;
 #endif
             }
 
