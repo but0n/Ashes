@@ -264,7 +264,11 @@ uniform sampler2D baseColorTexture_${i};
             }
 
             // metallicRoughnessTexture
-            let rm = 'vec3 rm = vec3(1, 0, 0);';
+            let rm = `
+            vec3 rm = vec3(0, .5, .1);
+            metal = clamp(rm.b, 0.0, 1.0);
+            roughness = clamp(rm.g, 0.04, 1.0);
+`;
             if(tex.has('metallicRoughnessTexture')) {
                 params += `
 uniform sampler2D metallicRoughnessTexture_${i};
