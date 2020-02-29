@@ -22,6 +22,7 @@ uniform sampler2D albedoTex;
 uniform sampler2D uvck;
 uniform sampler2D rmTex;
 uniform sampler2D emTex;
+#include <mat_params>
 
 
 uniform mat3 TBN;
@@ -559,7 +560,7 @@ float hitWorld(in vec3 ro, in vec3 rd, in vec2 dist, out vec3 normal, out vec2 i
         getTriangle(tri, ro + rd * d.y, normal, iuv);
     }
 
-    // d = opU(d, iPlane(ro-vec3( 0, -2., 0), rd, d.xy, normal, vec3(0,1,0), 0.), 10.);
+    d = opU(d, iPlane(ro-vec3( 0, -2., 0), rd, d.xy, normal, vec3(0,1,0), 0.), 10.);
 
     // d = opU(d, iBox(ro-vec3(0,.4*W_WIDTH,-8), rd, d.xy, normal, vec3(W_WIDTH,W_WIDTH*W_RATIO,.01)), 11.);
 
@@ -600,53 +601,10 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
 #endif
             }
 
-            // float LoN = max(dot(normalize(vec3(-1,1,1)), normal), .4);
-            if(mat < 1.5) {
-                // Eye
-                // albedo = pal((mat+3.)*.52996323, vec3(.4),vec3(.5),vec3(1),vec3(0.3,.6,.7));
-                vec3 em = sRGBtoLINEAR(texture(emTex, iuv)).rgb;
-                if(dot(em, em) > .01)
-                    return em;
-                vec3 rm = texture(rmTex, iuv).rgb;
 
-                // roughness = .9;
-                // metal = .1;
-                roughness = 0.;
-                roughness = clamp(rm.g, 0.0, 1.0);
-                // metal = clamp(rm.b, 0.0, 1.0);
-                metal = clamp(1. - rm.b, 0.0, 1.0);
-                albedo = sRGBtoLINEAR(texture(albedoTex, iuv)).rgb * (vec3(1) - vec3(0.04)) * (1. - metal);;
-            } else if(mat < 2.5) {
-                // albedo = pal((mat+10.)*.52996323, vec3(.4),vec3(.5),vec3(1),vec3(0.3,.6,.7));
-                albedo = sRGBtoLINEAR(texture(uvck, iuv)).rgb;
-                roughness = .08;
-                metal = .8;
+#include <mat_route>
 
-            } else if(mat < 3.5) {
-                albedo = pal((mat+1.)*.52996323, vec3(.4),vec3(.5),vec3(1),vec3(0.3,.6,.7));
-                roughness = .1;
-                metal = .1;
-                // return albedo;
-
-            } else if(mat < 4.5) {
-                // albedo = pal((mat+1.)*.52996323, vec3(.4),vec3(.5),vec3(1),vec3(0.3,.6,.7));
-                // albedo = sRGBtoLINEAR(texture(ground, iuv * 10.)).rgb;
-                float scale = 50.;
-                float fact = step(.0, sin(iuv.x * scale)*sin(iuv.y * scale));
-                albedo = vec3(1) * clamp(fact, .3, 1.);
-
-                roughness = .6;
-                metal = .1;
-
-                // return albedo;
-            } else if(mat < 10.) {
-                // albedo = vec3(0.7764705882352941, 0.5254901960784314, 0.25882352941176473);
-                // albedo = vec3(0.8784313725490196, 0.6745098039215687, 0.4117647058823529);
-                albedo = vec3(1, 0.8588235294117647, 0.6745098039215687);
-                metal = .1;
-                roughness = .9;
-
-            } else if(mat < 11.) {
+            else if(mat < 11.) {
                 // float scale = .8;
                 // float fact = step(.0, sin(ro.x / scale)+cos(ro.z / scale));
                 // albedo = vec3(1) * clamp(fact, .1, 1.);
@@ -657,16 +615,17 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
                 albedo = sRGBtoLINEAR(texture(ground, uv)).rgb;
                 roughness = .8;
                 metal = .1;
-
-            } else if(mat < 12.) {
-                // albedo = pal((mat+4.)*.52996323, vec3(.4),vec3(.5),vec3(1),vec3(0.3,.6,.7));
-                // vec2 uv = mod((ro.xy * vec2(1., -1./W_RATIO) / W_WIDTH *.5 - vec2(5. - 4.,1.5)/W_WIDTH), 1.);
-                vec2 uv = mod((ro.xy * vec2(1., -1./W_RATIO) / W_WIDTH *.5 - vec2(5.,1.5)/W_WIDTH), 1.);
-                albedo = sRGBtoLINEAR(texture(wall, uv)).rgb * 3.;
-                return albedo;
             }
-            // metal = 1.;
-            // normal = -normal;
+
+            // } else if(mat < 12.) {
+            //     // albedo = pal((mat+4.)*.52996323, vec3(.4),vec3(.5),vec3(1),vec3(0.3,.6,.7));
+            //     // vec2 uv = mod((ro.xy * vec2(1., -1./W_RATIO) / W_WIDTH *.5 - vec2(5. - 4.,1.5)/W_WIDTH), 1.);
+            //     vec2 uv = mod((ro.xy * vec2(1., -1./W_RATIO) / W_WIDTH *.5 - vec2(5.,1.5)/W_WIDTH), 1.);
+            //     albedo = sRGBtoLINEAR(texture(wall, uv)).rgb * 3.;
+            //     return albedo;
+            // }
+            // // metal = 1.;
+            // // normal = -normal;
 
             float F = FresnelSchlickRoughness(max(0.,-dot(normal, rd)), .04, roughness);
             if (F>hash1(seed)-metal) {
@@ -681,7 +640,7 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
             // rd = cosWeightedRandomHemisphereDirection(normal, seed);
         } else {
             // col *= pow( texture(skybox, rd).rgb, vec3(GAMMA) ) * 1.;
-            col *= sRGBtoLINEAR(texture(skybox, getuv(rd) + vec2(0,0))).rgb * 1.;
+            col *= sRGBtoLINEAR(texture(skybox, getuv(rd) + vec2(0,0))).rgb * 1.4;
             // col *= sRGBtoLINEAR(texture(skybox, getuv(rd) + vec2(0.6,0))).rgb * 1.2;
             // col *= texture(hdrSky, rd).rgb * 1.;
             // col *= texture(hdr, getuv(rd)).rgb * 1.;
@@ -693,8 +652,8 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
 }
 
 // #define DOF_FACTOR .03
-#define DOF_FACTOR .07
-#define FOV 3.5
+#define DOF_FACTOR .02
+#define FOV 2.2
 void main() {
     vec2 uv = gl_FragCoord.xy * iResolution;
 
