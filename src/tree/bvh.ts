@@ -205,6 +205,10 @@ export class BVHManager {
     trianglesTex: DataTexture;
     LBVHTexture: DataTexture;
 
+    matMap: Map<string, [number, Material]> = new Map();
+
+    matConfig;
+
     constructor(texSize = 2048) {
         // const LBVHTexture = BVHManager.createDataTex(texSize, 2);
         this.LBVHTexture = new DataTexture(texSize, 2);
@@ -217,13 +221,14 @@ export class BVHManager {
     genBounds(triangles: Float32Array[], size = triangles.length, materialOffset) {
         const boxList: trianglePrimitive[] = [];
         // [[x, y, z] * 3, ...]
-        let mat = 0;
+        let anchor = 0;
         for(let i = 0; i < size;) {
-            if(i >= materialOffset[mat]) {
-                mat++;
+            // [offset, index]
+            if(anchor < materialOffset.length - 1 && i >= materialOffset[anchor+1][0]) {
+                anchor++;
             }
             const box = new trianglePrimitive();
-            box.mat = mat;  // Count From 1
+            box.mat = materialOffset[anchor][1];  // Count From 0
             box.index = i*2;  // Offset of the first vertex
             // box.index = i;  // Offset of the first vertex
             box.bounds.update(triangles[i++]);
@@ -231,8 +236,44 @@ export class BVHManager {
             box.bounds.update(triangles[i++]);
             boxList.push(box);
         }
-        console.log("Total Materials: " + mat);
+        console.log("Materials: " + this.matMap);
         return boxList;
+    }
+
+    materialsHandle(mats: Map<string, [number, Material]>) {
+        let params = '';
+        let route = `
+        if(mat < -.5) {
+            continue;
+        }`;
+        let tasks = [];
+        for(const [name, [i,mt]] of mats) {
+            // Textures
+            const tex = mt.textures;
+            let base = 'albedo = pal((mat+1.)*.52996323, vec3(.4),vec3(.5),vec3(1),vec3(0.3,.6,.7));';
+            let mr = '';
+
+            // baseColorTexture
+            if(tex.has('baseColorTexture')) {
+                params += `
+uniform sampler2D baseColorTexture_${i};
+`;
+                base = `albedo = sRGBtoLINEAR(texture(baseColorTexture_${i}, iuv)).rgb;`;
+                tasks.push(m => {
+                    Material.setTexture(m, `baseColorTexture_${i}`, tex.get('baseColorTexture')[1]);
+                });
+            }
+
+            route += `
+            else if(mat < ${i}.5) { // NOTE: ${name}
+                ${base}
+            }`;
+        }
+        const init = m => {
+            for(let t of tasks)
+                t(m);
+        }
+        return {params, route, init};
     }
 
     buildBVH(meshes: Mesh[]) {
@@ -244,8 +285,19 @@ export class BVHManager {
         // Reduce GC
         const wpos = vec3.create(); // World position
         const wnor = vec4.create(); // World position
+
         for(let m of meshes) {
-            materialList.push(offset);
+            // Collect materials
+            const mt = m['entity'].components.Material as Material;
+            let mtIndex = -1;
+            if(this.matMap.has(mt.name)) {
+                [mtIndex] = this.matMap.get(mt.name);
+            } else {
+                // New material
+                mtIndex = this.matMap.size;
+                this.matMap.set(mt.name, [this.matMap.size, mt]);
+            }
+            materialList.push([offset, mtIndex]);
             let trans = m['entity'].components.Transform as Transform;
             let data: any = m.data;
             let pos: Float32Array[] = data.POSITION;
@@ -282,8 +334,9 @@ export class BVHManager {
         const primitives = this.genBounds(triangleTexture.chunks, offset, materialList);
         const root = this.root = this.splitBVH(primitives);
         const LBVH = this.fillLBVH(root, this.LBVHTexture);
+        const matHandler = this.materialsHandle(this.matMap);
         console.log(`Build BVH cost ${Date.now() - d}ms`);
-        return {LBVH, triangleTexture, primitives};
+        return {LBVH, triangleTexture, primitives, matHandler};
     }
 
     private _size = vec3.create();
