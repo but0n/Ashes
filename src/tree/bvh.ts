@@ -240,7 +240,7 @@ export class BVHManager {
         return boxList;
     }
 
-    materialsHandle(mats: Map<string, [number, Material]>) {
+    materialsHandler(mats: Map<string, [number, Material]>) {
         let params = '';
         let route = `
         if(mat < -.5) {
@@ -252,7 +252,12 @@ export class BVHManager {
             const tex = mt.textures;
 
             // baseColorTexture
-            let base = 'albedo = pal((mat+1.)*.52996323, vec3(.4),vec3(.5),vec3(1),vec3(0.3,.6,.7));';
+            let base = `
+            // float scale = 50.;
+            // float fact = step(.0, sin(iuv.x * scale)*sin(iuv.y * scale));
+            // albedo = vec3(1) * clamp(fact, .2, 1.);
+            albedo = sRGBtoLINEAR(texture(ground, iuv * 15.)).rgb;
+`;
             if(tex.has('baseColorTexture')) {
                 params += `
 uniform sampler2D baseColorTexture_${i};
@@ -265,9 +270,9 @@ uniform sampler2D baseColorTexture_${i};
 
             // metallicRoughnessTexture
             let rm = `
-            vec3 rm = vec3(0, .5, .1);
+            vec3 rm = vec3(0, .8, .08);
             metal = clamp(rm.b, 0.0, 1.0);
-            roughness = clamp(rm.g, 0.04, 1.0);
+            roughness = clamp(rm.g, 0.0, 1.0);
 `;
             if(tex.has('metallicRoughnessTexture')) {
                 params += `
@@ -371,7 +376,7 @@ uniform sampler2D emissiveTexture_${i};
         const primitives = this.genBounds(triangleTexture.chunks, offset, materialList);
         const root = this.root = this.splitBVH(primitives);
         const LBVH = this.fillLBVH(root, this.LBVHTexture);
-        const matHandler = this.materialsHandle(this.matMap);
+        const matHandler = this.materialsHandler(this.matMap);
         console.log(`Build BVH cost ${Date.now() - d}ms`);
         return {LBVH, triangleTexture, primitives, matHandler};
     }

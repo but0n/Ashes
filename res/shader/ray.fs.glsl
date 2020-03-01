@@ -557,7 +557,7 @@ float hitWorld(in vec3 ro, in vec3 rd, in vec2 dist, out vec3 normal, out vec2 i
         getTriangle(tri, ro + rd * d.y, normal, iuv);
     }
 
-    d = opU(d, iPlane(ro-vec3( 0, -2., 0), rd, d.xy, normal, vec3(0,1,0), 0.), 10.);
+    // d = opU(d, iPlane(ro-vec3( 0, -2., 0), rd, d.xy, normal, vec3(0,1,0), 0.), 10.);
 
     // d = opU(d, iBox(ro-vec3(0,.4*W_WIDTH,-8), rd, d.xy, normal, vec3(W_WIDTH,W_WIDTH*W_RATIO,.01)), 11.);
 
@@ -649,7 +649,7 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
     return vec3(0);
 }
 
-#define DOF_FACTOR .03
+#define DOF_FACTOR .025
 #define FOV 2.2
 void main() {
     vec2 uv = gl_FragCoord.xy * iResolution;
