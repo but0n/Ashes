@@ -35,29 +35,28 @@ yoffset = -0.0;
 // threshold = 0.9;
 // gltf = assetRoot + 'gltfsamples/kgirls01/scene.gltf';
 // gltf = assetRoot + 'gltfsamples/hylian_shield/scene.gltf';
-gltf = assetRoot + 'gltfsamples/FlightHelmet/glTF/FlightHelmet.gltf';
+FlightHelmet = assetRoot + 'gltfsamples/FlightHelmet/glTF/FlightHelmet.gltf';
 // gltf = assetRoot + 'res/CesiumMan.glb';
 // gltf = assetRoot + 'res/BrainStem.glb';
 // gltf = 'https://github.com/KhronosGroup/glTF-Blender-Exporter/raw/master/polly/project_polly.glb';
 // gltf = 'https://rawcdn.githack.com/KhronosGroup/glTF-Blender-Exporter/2bd852403600053dba95db78db3f21728b979a7c/polly/project_polly.glb'
-gltf = assetRoot + 'gltfsamples/DamagedHelmet.glb';
+DamagedHelmet = assetRoot + 'gltfsamples/DamagedHelmet.glb';
 // gltf = assetRoot + 'gltfsamples/police_drone/scene.gltf';
 // gltf = assetRoot + 'res/MorphPrimitivesTest.glb';
 // gltf = assetRoot + 'gltfsamples/project_polly.glb';
-gltf2 = assetRoot + 'gltfsamples/Suzanne/Suzanne.gltf';
+// gltf2 = assetRoot + 'gltfsamples/Suzanne/Suzanne.gltf';
 // gltf = assetRoot + 'gltfsamples/police_drone/scene.gltf';
 
 // gltf = assetRoot + 'res/MorphPrimitivesTest.glb';
 // gltf = assetRoot + 'res/Horse.glb';
-gltf3 = assetRoot + 'gltfsamples/sylvanas_3d_windrunner_wow/scene.gltf';
+// gltf3 = assetRoot + 'gltfsamples/sylvanas_3d_windrunner_wow/scene.gltf';
 
 ashesLogo = assetRoot + 'gltfsamples/ashes.glb';
 ashesLogo = assetRoot + 'gltfsamples/ashes_bg.glb';
 
 // Zelda
 zelda = 'res/zelda_-_breath_of_the_wild/scene.gltf';
-zelda = 'res/old_torch_-_dirt_low_poly/scene.gltf';
-zelda = 'res/MetalRoughSpheres.glb';
+// zelda = 'res/de_dust2_-_cs_map/scene.gltf';
 gltf3 = zelda;
 scale = 2;
 
@@ -115,41 +114,36 @@ async function main() {
 
     document.querySelector('body').appendChild(scene);
 
-    let gltfroot = await Asset.loadGLTF(gltf, screen, skybox, diffenv);
-    let gltfroot2 = await Asset.loadGLTF(gltf2, screen, skybox, diffenv);
-    let gltfroot3 = await Asset.loadGLTF(gltf3, screen, skybox, diffenv);
+    FlightHelmet = await Asset.loadGLTF(FlightHelmet, screen, skybox, diffenv);
+    DamagedHelmet = await Asset.loadGLTF(DamagedHelmet, screen, skybox, diffenv);
+    // gltf3 = await Asset.loadGLTF(gltf3, screen, skybox, diffenv);
     ashesLogo = await Asset.loadGLTF(ashesLogo, screen, skybox, diffenv);
     // NOTE: gltf
-    scene.appendChild(gltfroot);
-    // scene.appendChild(gltfroot2);
-    // scene.appendChild(ashesLogo);
+    // scene.appendChild(FlightHelmet);
+    scene.appendChild(DamagedHelmet);
+    scene.appendChild(ashesLogo);
 
-    scene.appendChild(gltfroot3);
+    // scene.appendChild(gltfroot3);
 
-    let root = gltfroot.components.Transform;
-    root.isVisible = false;
+    FlightHelmet.components.Transform.translate[0] = 0;
+    vec3.scale(DamagedHelmet.components.Transform.scale, DamagedHelmet.components.Transform.scale, 2);
+    // vec3.scale(gltfroot3.components.Transform.scale, gltfroot3.components.Transform.scale, .015);
 
-    root.translate[1] = yoffset || 0;
-    vec3.scale(root.scale, root.scale, scale || 200);
+    // FlightHelmet.components.Transform.translate[0] = -4 - 0;
 
-    gltfroot.components.Transform.translate[0] = 0;
-    vec3.scale(gltfroot2.components.Transform.scale, gltfroot2.components.Transform.scale, 2);
-    // vec3.scale(gltfroot3.components.Transform.scale, gltfroot2.components.Transform.scale, .015);
-
-    // gltfroot2.components.Transform.translate[1] = -1.6;
-    gltfroot2.components.Transform.translate[0] = -4 - 0;
-    gltfroot.components.Transform.translate[0] = 5.5;
-    gltfroot.components.Transform.translate[1] = -0.1;
+    DamagedHelmet.components.Transform.translate[0] = -4.;
+    DamagedHelmet.components.Transform.translate[1] = -0.1;
+    // FlightHelmet.components.Transform.translate[1] = -1.6;
     ashesLogo.components.Transform.translate[0] = -0;
     ashesLogo.components.Transform.translate[1] = -2.;
     // ashesLogo.components.Transform.translate[1] = 0.25;
-    ashesLogo.components.Transform.translate[2] = -5.;
+    ashesLogo.components.Transform.translate[2] = -4;
+    quat.fromEuler(ashesLogo.components.Transform.quaternion, 0, 0, 0);
 
     // gltfroot3.components.Transform.translate[1] = -1.4;
-    gltfroot3.components.Transform.translate[1] = 3.;
-    gltfroot3.components.Transform.translate[2] += 1.;
+    // gltfroot3.components.Transform.translate[1] = -1.6;
+    // gltfroot3.components.Transform.translate[2] += 1.;
     // quat.fromEuler(gltfroot3.components.Transform.quaternion, 0, -100, 0);
-    quat.fromEuler(ashesLogo.components.Transform.quaternion, 0, 0, 0);
 
     meshes = EntityMgr.getComponents('Mesh', scene);
     // debugger
@@ -164,10 +158,10 @@ async function main() {
         setTimeout(() => res(), 200);
     })
     // NOTE: remove gltf model
-    scene.removeChild(gltfroot);
-    // scene.removeChild(gltfroot2);
-    scene.removeChild(gltfroot3);
-    // scene.removeChild(ashesLogo);
+    // scene.removeChild(FlightHelmet);
+    scene.removeChild(DamagedHelmet);
+    // scene.removeChild(gltfroot3);
+    scene.removeChild(ashesLogo);
     EntityMgr.hasNewMember = true;
 
 
