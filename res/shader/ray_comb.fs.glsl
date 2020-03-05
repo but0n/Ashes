@@ -9,6 +9,8 @@ uniform sampler2D test;
 
 #include <macros>
 
+#define SHADER_NAME ray_final
+
 #define PI 3.14159265358979
 #define GAMMA 2.2
 

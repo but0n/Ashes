@@ -28,6 +28,8 @@ uniform vec2 mousePos;
 
 #include <macros>
 
+#define SHADER_NAME ray_fs
+
 #define PI 3.14159265358979
 #define invPI     0.3183098861837697
 #define invTWO_PI     0.15915494309

@@ -1,6 +1,8 @@
 #version 300 es
 #include <macros>
 
+#define SHADER_NAME ray_vs
+
 in vec3 POSITION;
 
 
