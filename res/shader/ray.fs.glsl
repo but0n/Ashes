@@ -16,7 +16,6 @@ uniform sampler2D LBVHTex;
 uniform samplerCube hdrSky;
 uniform sampler2D skybox;
 uniform sampler2D hdr;
-uniform sampler2D wall;
 uniform sampler2D ground;
 uniform sampler2D uvck;
 #include <mat_params>
@@ -640,9 +639,9 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
             // rd = cosWeightedRandomHemisphereDirection(normal, seed);
         } else {
             // col *= pow( texture(skybox, rd).rgb, vec3(GAMMA) ) * 1.;
-            col *= sRGBtoLINEAR(texture(skybox, getuv(rd) + vec2(0,0))).rgb * 1.4;
+            // col *= sRGBtoLINEAR(texture(skybox, getuv(rd) + vec2(0,0))).rgb * 1.4;
             // col *= sRGBtoLINEAR(texture(skybox, getuv(rd) + vec2(0.6,0))).rgb * 1.2;
-            // col *= texture(hdrSky, rd).rgb * 1.;
+            col *= texture(hdrSky, rd).rgb * 1.4;
             // col *= texture(hdr, getuv(rd)).rgb * 1.;
             return col;
         }

@@ -86,15 +86,14 @@ async function main() {
 
     // let hdrEnv2 = await Asset.loadTexture('res/envmap/lebombo_4k.hdr');
     // let hdrEnv = await Asset.loadTexture('res/envmap/helipad/negz.hdr');
-    let wall = await Asset.loadTexture('res/textures/988021.jpg');
     let ground = await Asset.loadTexture('res/textures/grid.jpg');
     let uvck = await Asset.loadTexture('res/textures/checker.png');
     // albedo.flipY = true;
 
 
     let skybox = await Asset.loadCubemap('res/envmap/helipad/', 'hdr');
-    let skybox2 = await Asset.loadTexture('res/envmap/sky.jpg');
-    skybox2.flipY = true;
+    // let skybox2 = await Asset.loadTexture('res/envmap/sky.jpg');
+    // skybox2.flipY = true;
     let diffenv = await Asset.loadCubemap('res/envmap/helipad_diff/', 'hdr');
     // let skybox = await Asset.loadCubemap(assetRoot + 'res/envmap/GoldenGateBridge2/');
 
@@ -270,10 +269,9 @@ async function main() {
     let rt = new rayTracing(screen, cam, rtShader);
     Material.setTexture(rt.material, 'triangleTex', triangleTexture.tex);
     Material.setTexture(rt.material, 'LBVHTex', LBVH.tex);
-    Material.setTexture(rt.material, 'skybox', skybox2);
-    // Material.setTexture(rt.material, 'hdrSky', skybox);
+    // Material.setTexture(rt.material, 'skybox', skybox2);
+    Material.setTexture(rt.material, 'hdrSky', skybox);
     // Material.setTexture(rt.material, 'hdr', hdrEnv);
-    Material.setTexture(rt.material, 'wall', wall);
     Material.setTexture(rt.material, 'ground', ground);
     Material.setTexture(rt.material, 'uvck', uvck);
 
