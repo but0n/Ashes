@@ -265,17 +265,70 @@ export class Asset {
         size[1] *= 1;
         size[3] *= 1;
         const total = size[1] * size[3];
+
+        let scanline_num = size[1];
+        let scanline_width = size[3];
+
+        let buffer = new Float32Array(total * 3);
+
+        let ptr = 0;
         if(total * 4 != rgbeData.length) {
             console.error('RLE encoding!');
-        }
-        let buffer = new Float32Array(total * 3);
-        for(let x = 0; x < total; x++) {
-            const [r, g, b, e] = rgbeData.subarray(x * 4, (x + 1) * 4);
-            const pixel = buffer.subarray(x * 3, (x + 1) * 3);
-            if(e != 0) {
-                pixel[0] = r * Math.pow(2, e - 128 - 8);
-                pixel[1] = g * Math.pow(2, e - 128 - 8);
-                pixel[2] = b * Math.pow(2, e - 128 - 8);
+            // 4 channels
+            for(let y = 0; y < scanline_num; y++) {
+                let flag = rgbeData.subarray(ptr, ptr+4);
+                ptr += 4;
+                if(flag[0] != 2 || flag[1] != 2) {
+                    console.log('this file is not run length encoded');
+                } else {
+                    console.log('RLE!');
+                    const scanline_buf = [[], [], [], []];
+                    for(let ch = 0; ch < 4; ch++) {
+
+                        const line = scanline_buf[ch];
+                        while(line.length < scanline_width) {
+                            let count = 0;
+                            let data = rgbeData.subarray(ptr, ptr+2);
+                            ptr += 2;
+                            if(data[0] > 128) {
+                                count = data[0] - 128;
+                                while(count--)
+                                    line.push(data[1]);
+                            } else {
+                                count = data[0] - 1;
+                                line.push(data[1]);
+                                while(count--)
+                                    line.push(rgbeData.subarray(ptr, ++ptr)[0])
+                            }
+                        }
+                    }
+                    for(let x = 0; x < scanline_width; x++) {
+                        // const [r, g, b, e] = scanline_buf[0][1];
+                        const r = scanline_buf[0][x];
+                        const g = scanline_buf[1][x];
+                        const b = scanline_buf[2][x];
+                        const e = scanline_buf[3][x];
+                        const pixel = buffer.subarray((y * scanline_width + x) * 3, (y * scanline_width + (x + 1)) * 3);
+                        if(e != 0) {
+                            pixel[0] = r * Math.pow(2, e - 128 - 8);
+                            pixel[1] = g * Math.pow(2, e - 128 - 8);
+                            pixel[2] = b * Math.pow(2, e - 128 - 8);
+                        }
+
+                    }
+
+                }
+            }
+
+        } else {
+            for(let x = 0; x < total; x++) {
+                const [r, g, b, e] = rgbeData.subarray(x * 4, (x + 1) * 4);
+                const pixel = buffer.subarray(x * 3, (x + 1) * 3);
+                if(e != 0) {
+                    pixel[0] = r * Math.pow(2, e - 128 - 8);
+                    pixel[1] = g * Math.pow(2, e - 128 - 8);
+                    pixel[2] = b * Math.pow(2, e - 128 - 8);
+                }
             }
         }
         return {size, buffer};
