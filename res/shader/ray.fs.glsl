@@ -4,8 +4,11 @@
 
 precision highp float;
 
+#define HDR_IBL
+
 // uniform int PATH_LENGTH;
 uniform int DEBUG_NORMAL;
+uniform float EXP;
 
 uniform int iFrame;
 uniform float iTime;
@@ -13,7 +16,13 @@ uniform sampler2D base;
 uniform sampler2D test;
 uniform sampler2D triangleTex;
 uniform sampler2D LBVHTex;
+
+#ifdef HDR_IBL
+uniform sampler2D hdrSky;
+#else
 uniform samplerCube hdrSky;
+#endif
+
 uniform sampler2D skybox;
 uniform sampler2D hdr;
 uniform sampler2D ground;
@@ -639,10 +648,16 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
             // rd = cosWeightedRandomHemisphereDirection(normal, seed);
         } else {
             // col *= pow( texture(skybox, rd).rgb, vec3(GAMMA) ) * 1.;
-            // col *= sRGBtoLINEAR(texture(skybox, getuv(rd) + vec2(0,0))).rgb * 1.4;
+            #ifdef HDR_IBL
+
+            col *= texture(hdrSky, getuv(rd) + vec2(0,0)).rgb;
+            // col *= sRGBtoLINEAR(texture(hdrSky, getuv(rd) + vec2(0,0))).rgb;
             // col *= sRGBtoLINEAR(texture(skybox, getuv(rd) + vec2(0.6,0))).rgb * 1.2;
-            col *= texture(hdrSky, rd).rgb * 1.4;
+            #else
+            col *= texture(hdrSky, rd).rgb;
             // col *= texture(hdr, getuv(rd)).rgb * 1.;
+            #endif
+
             return col;
         }
 

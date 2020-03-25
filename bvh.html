@@ -41,7 +41,7 @@ FlightHelmet = assetRoot + 'gltfsamples/FlightHelmet/glTF/FlightHelmet.gltf';
 // gltf = 'https://github.com/KhronosGroup/glTF-Blender-Exporter/raw/master/polly/project_polly.glb';
 // gltf = 'https://rawcdn.githack.com/KhronosGroup/glTF-Blender-Exporter/2bd852403600053dba95db78db3f21728b979a7c/polly/project_polly.glb'
 DamagedHelmet = assetRoot + 'gltfsamples/DamagedHelmet.glb';
-// gltf = assetRoot + 'gltfsamples/police_drone/scene.gltf';
+BoomBox = assetRoot + 'gltfsamples/BoomBox.glb';
 // gltf = assetRoot + 'res/MorphPrimitivesTest.glb';
 // gltf = assetRoot + 'gltfsamples/project_polly.glb';
 // gltf2 = assetRoot + 'gltfsamples/Suzanne/Suzanne.gltf';
@@ -50,6 +50,8 @@ DamagedHelmet = assetRoot + 'gltfsamples/DamagedHelmet.glb';
 // gltf = assetRoot + 'res/MorphPrimitivesTest.glb';
 // gltf = assetRoot + 'res/Horse.glb';
 // gltf3 = assetRoot + 'gltfsamples/sylvanas_3d_windrunner_wow/scene.gltf';
+
+// BoomBox = assetRoot + 'res/MetalRoughSpheres.glb';
 
 ashesLogo = assetRoot + 'gltfsamples/ashes.glb';
 ashesLogo = assetRoot + 'gltfsamples/ashes_bg.glb';
@@ -85,6 +87,12 @@ async function main() {
     // Skybox
 
     // let hdrEnv2 = await Asset.loadTexture('res/envmap/lebombo_4k.hdr');
+    // let hdrEnv2 = await Asset.loadTexture('res/envmap/spruit_sunrise_4k.hdr');
+    // let hdrEnv2 = await Asset.loadTexture('res/envmap/aerodynamics_workshop_4k.hdr');
+
+    let hdrEnv2 = await Asset.loadTexture('res/envmap/venice_sunset_8k.hdr');
+    hdrEnv2.flipY = true;
+
     // let hdrEnv = await Asset.loadTexture('res/envmap/helipad/negz.hdr');
     let ground = await Asset.loadTexture('res/textures/grid.jpg');
     let uvck = await Asset.loadTexture('res/textures/checker.png');
@@ -113,25 +121,34 @@ async function main() {
 
     document.querySelector('body').appendChild(scene);
 
-    FlightHelmet = await Asset.loadGLTF(FlightHelmet, screen, skybox, diffenv);
+    // FlightHelmet = await Asset.loadGLTF(FlightHelmet, screen, skybox, diffenv);
     DamagedHelmet = await Asset.loadGLTF(DamagedHelmet, screen, skybox, diffenv);
+    BoomBox = await  Asset.loadGLTF(BoomBox, screen, skybox, diffenv);
     // gltf3 = await Asset.loadGLTF(gltf3, screen, skybox, diffenv);
     ashesLogo = await Asset.loadGLTF(ashesLogo, screen, skybox, diffenv);
     // NOTE: gltf
     // scene.appendChild(FlightHelmet);
     scene.appendChild(DamagedHelmet);
+    scene.appendChild(BoomBox);
     scene.appendChild(ashesLogo);
 
     // scene.appendChild(gltfroot3);
 
-    FlightHelmet.components.Transform.translate[0] = 0;
+    // FlightHelmet.components.Transform.translate[0] = 0;
     vec3.scale(DamagedHelmet.components.Transform.scale, DamagedHelmet.components.Transform.scale, 2);
     // vec3.scale(gltfroot3.components.Transform.scale, gltfroot3.components.Transform.scale, .015);
 
     // FlightHelmet.components.Transform.translate[0] = -4 - 0;
+    BoomBox.components.Transform.translate[0] = 2.;
+    BoomBox.components.Transform.translate[1] = -1.4;
+    BoomBox.components.Transform.translate[2] = -1.;
+    // vec3.scale(BoomBox.components.Transform.scale, BoomBox.components.Transform.scale, 1);
+    quat.fromEuler(BoomBox.components.Transform.quaternion, 90, 0, 0);
 
-    DamagedHelmet.components.Transform.translate[0] = -4.;
+    DamagedHelmet.components.Transform.translate[0] = -3.;
     DamagedHelmet.components.Transform.translate[1] = -0.1;
+    quat.fromEuler(DamagedHelmet.components.Transform.quaternion, 0, 30, 0);
+
     // FlightHelmet.components.Transform.translate[1] = -1.6;
     ashesLogo.components.Transform.translate[0] = -0;
     ashesLogo.components.Transform.translate[1] = -2.;
@@ -159,6 +176,7 @@ async function main() {
     // NOTE: remove gltf model
     // scene.removeChild(FlightHelmet);
     scene.removeChild(DamagedHelmet);
+    scene.removeChild(BoomBox);
     // scene.removeChild(gltfroot3);
     scene.removeChild(ashesLogo);
     EntityMgr.hasNewMember = true;
@@ -270,7 +288,8 @@ async function main() {
     Material.setTexture(rt.material, 'triangleTex', triangleTexture.tex);
     Material.setTexture(rt.material, 'LBVHTex', LBVH.tex);
     // Material.setTexture(rt.material, 'skybox', skybox2);
-    Material.setTexture(rt.material, 'hdrSky', skybox);
+    // Material.setTexture(rt.material, 'hdrSky', skybox);
+    Material.setTexture(rt.material, 'hdrSky', hdrEnv2);
     // Material.setTexture(rt.material, 'hdr', hdrEnv);
     Material.setTexture(rt.material, 'ground', ground);
     Material.setTexture(rt.material, 'uvck', uvck);
@@ -314,11 +333,13 @@ void main(){
     }));
 
     rt_final.setInput(rt.output, 'test');
+    Material.setUniform(rt_final.material, 'EXPOSURE', 1.0);
 
 
     screen.attachFilter(rt_final);
 
     // Control
+    exp = 1;
     document.addEventListener('keypress', (e) => {
         switch(e.key) {
             case 'k':
@@ -331,6 +352,14 @@ void main(){
             case 'j':
                 rt.tar[1] -= 0.1;
                 rt.reset();
+                break;
+            case ']':
+                exp += 0.05;
+                Material.setUniform(rt_final.material, 'EXPOSURE', exp*exp);
+                break;
+            case '[':
+                exp -= 0.05;
+                Material.setUniform(rt_final.material, 'EXPOSURE', exp*exp);
                 break;
         }
     })

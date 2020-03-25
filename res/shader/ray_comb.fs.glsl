@@ -6,6 +6,7 @@ precision highp float;
 
 uniform sampler2D base;
 uniform sampler2D test;
+uniform float EXPOSURE;
 
 #include <macros>
 
@@ -27,7 +28,8 @@ vec3 toneMapACES(vec3 color) {
     return pow(clamp((color * (A * color + B)) / (color * (C * color + D) + E), 0.0, 1.0), vec3(1.0/GAMMA));
 }
 
-#define EXPOSURE 1.2
+// #define EXPOSURE 1.2
+
 
 void main() {
 
