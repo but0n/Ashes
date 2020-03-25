@@ -273,6 +273,7 @@ export class Asset {
 
         let ptr = 0;
         if(total * 4 != rgbeData.length) {
+            const rle_start = Date.now();
             console.error('RLE encoding!');
             // 4 channels
             for(let y = 0; y < scanline_num; y++) {
@@ -281,24 +282,34 @@ export class Asset {
                 if(flag[0] != 2 || flag[1] != 2) {
                     console.log('this file is not run length encoded');
                 } else {
-                    console.log('RLE!');
-                    const scanline_buf = [[], [], [], []];
+                    // const scanline_buf = [[], [], [], []];
+                    const scanline_buf = [
+                        new Uint8Array(scanline_width),
+                        new Uint8Array(scanline_width),
+                        new Uint8Array(scanline_width),
+                        new Uint8Array(scanline_width),
+                    ];
                     for(let ch = 0; ch < 4; ch++) {
+                        let line_p = 0;
 
                         const line = scanline_buf[ch];
-                        while(line.length < scanline_width) {
+                        while(line_p < scanline_width) {
+                        // while(line.length < scanline_width) {
                             let count = 0;
                             let data = rgbeData.subarray(ptr, ptr+2);
                             ptr += 2;
                             if(data[0] > 128) {
                                 count = data[0] - 128;
                                 while(count--)
-                                    line.push(data[1]);
+                                    line[line_p++] = data[1];
+                                    // line.push(data[1]);
                             } else {
                                 count = data[0] - 1;
-                                line.push(data[1]);
+                                line[line_p++] = data[1];
+                                // line.push(data[1]);
                                 while(count--)
-                                    line.push(rgbeData.subarray(ptr, ++ptr)[0])
+                                    line[line_p++] = rgbeData.subarray(ptr, ++ptr)[0];
+                                    // line.push(rgbeData.subarray(ptr, ++ptr)[0])
                             }
                         }
                     }
@@ -319,7 +330,7 @@ export class Asset {
 
                 }
             }
-
+            console.log(`RLE decoding cost ${Date.now() - rle_start}ms`);
         } else {
             for(let x = 0; x < total; x++) {
                 const [r, g, b, e] = rgbeData.subarray(x * 4, (x + 1) * 4);
