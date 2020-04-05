@@ -6,6 +6,7 @@
 [![](https://badgen.net/bundlephobia/minzip/ashes3d)](https://bundlephobia.com/result?p=ashes3d)
 [![](https://data.jsdelivr.com/v1/package/npm/ashes3d/badge)](https://www.jsdelivr.com/package/npm/ashes3d)
 
+![](https://user-images.githubusercontent.com/7625588/78468675-6f3aa680-775d-11ea-99e0-195d446d6798.png)
 ![](https://user-images.githubusercontent.com/7625588/75624993-d4a2f100-5c0d-11ea-95c0-f0c13f4d29d8.png)
 ![](https://user-images.githubusercontent.com/7625588/67295473-c0d9d680-f519-11e9-96b8-72422af0a547.png)
 
