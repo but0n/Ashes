@@ -1,3 +1,6 @@
 [submodule "static/gltfsamples"]
 	path = gltfsamples
 	url = https://github.com/but0n/gltfsamples
+[submodule "res/envmap/HDR_textures"]
+	path = res/envmap/HDR_textures
+	url = https://github.com/but0n/HDR_textures.git
