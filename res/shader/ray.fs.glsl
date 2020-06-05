@@ -24,7 +24,6 @@ uniform samplerCube hdrSky;
 #endif
 
 uniform sampler2D skybox;
-uniform sampler2D hdr;
 uniform sampler2D ground;
 uniform sampler2D uvck;
 #include <mat_params>
@@ -255,8 +254,6 @@ float hitTriangle(float i, vec3 ro, vec3 rd) {
 
 #endif
 
-
-
     vec4 v0 = texelFetch(triangleTex, puv0, 0);
     vec4 v1 = texelFetch(triangleTex, puv1, 0);
     vec4 v2 = texelFetch(triangleTex, puv2, 0);
@@ -317,7 +314,7 @@ void getTriangle(float i, vec3 p, inout vec3 N, inout vec2 iuv) {
 
 
 #ifndef SL
-#define SL 32
+#define SL 46
 #endif
 float hitLBVH2(float i, vec3 ro, vec3 rd, inout float mat, inout float tri) {
     vec3 ird = 1. / rd;
@@ -576,14 +573,14 @@ float hitWorld(in vec3 ro, in vec3 rd, in vec2 dist, out vec3 normal, out vec2 i
     return d.y;
 }
 
-#define PATH_LENGTH 12
+#define PATH_LENGTH 8
 
 // #define DEBUG_UV
 
 vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
     vec3 albedo, normal, col = vec3(1);
     vec2 iuv = vec2(0);
-    float roughness = .86;
+    float roughness = .0;
     float metal = .01;
     for (int i = 0; i < PATH_LENGTH; i++) {
 
@@ -611,18 +608,18 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
 
 #include <mat_route>
 
-            else if(mat < 11.) {
-                // float scale = .8;
-                // float fact = step(.0, sin(ro.x / scale)+cos(ro.z / scale));
-                // albedo = vec3(1) * clamp(fact, .1, 1.);
-                // metal = .1;
+            // else if(mat < 11.) {
+            //     // float scale = .8;
+            //     // float fact = step(.0, sin(ro.x / scale)+cos(ro.z / scale));
+            //     // albedo = vec3(1) * clamp(fact, .1, 1.);
+            //     // metal = .1;
 
-                vec2 uv = ro.xz * 0.3;
-                // ground
-                albedo = sRGBtoLINEAR(texture(ground, uv)).rgb;
-                roughness = .8;
-                metal = .1;
-            }
+            //     vec2 uv = ro.xz * 0.3;
+            //     // ground
+            //     albedo = sRGBtoLINEAR(texture(ground, uv)).rgb;
+            //     roughness = .8;
+            //     metal = .1;
+            // }
 
             // } else if(mat < 12.) {
             //     // albedo = pal((mat+4.)*.52996323, vec3(.4),vec3(.5),vec3(1),vec3(0.3,.6,.7));
@@ -651,11 +648,8 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
             #ifdef HDR_IBL
 
             col *= texture(hdrSky, getuv(rd) + vec2(0,0)).rgb;
-            // col *= sRGBtoLINEAR(texture(hdrSky, getuv(rd) + vec2(0,0))).rgb;
-            // col *= sRGBtoLINEAR(texture(skybox, getuv(rd) + vec2(0.6,0))).rgb * 1.2;
             #else
             col *= texture(hdrSky, rd).rgb;
-            // col *= texture(hdr, getuv(rd)).rgb * 1.;
             #endif
 
             return col;
@@ -665,8 +659,9 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
     return vec3(0);
 }
 
-#define DOF_FACTOR .025
-#define FOV 2.2
+#define DOF_FACTOR .028
+// #define FOV 2.2
+#define FOV 1.8
 void main() {
     vec2 uv = gl_FragCoord.xy * iResolution;
 
@@ -721,10 +716,7 @@ void main() {
             outColor = vec4(col, 1);
 
         } else {
-            // outColor = ( vec4(col, 1) * float(Frame) + texture(base, uv)) / float(Frame+1);
-            // outColor = vec4(( col * vec3(Frame) + texture(test, uv).rgb) / vec3(Frame+1), 1.);
             outColor = vec4(col, 1) + texelFetch(base, ivec2(gl_FragCoord), 0);
-
         }
     }
 
