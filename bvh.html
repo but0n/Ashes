@@ -33,7 +33,7 @@ ashesLogo = assetRoot + 'gltfsamples/ashes.glb';
 
     // Prepare textures:
     // 1.Download HDR environment texture
-    let hdrEnv = await Asset.loadTexture(assetRoot + 'res/envmap/HDR_textures/autumn_hockey_2k.hdr');
+    let hdrEnv = await Asset.loadTexture(assetRoot + 'res/envmap/HDR_textures/lebombo_2k.hdr');
     hdrEnv.flipY = true;
 
     // 2.Download grid texture
@@ -193,14 +193,14 @@ void main(){
         iTexel: `vec2(${1/4096})`,
     }));
 
+    exp = 1;
     rt_final.setInput(rt.output, 'test');
-    Material.setUniform(rt_final.material, 'EXPOSURE', 1.0);
+    Material.setUniform(rt_final.material, 'EXPOSURE', exp);
 
 
     screen.attachFilter(rt_final);
 
     // Control
-    exp = 1;
     document.addEventListener('keypress', (e) => {
         switch(e.key) {
             case 'k':
