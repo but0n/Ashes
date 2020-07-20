@@ -64,6 +64,8 @@ uniform samplerCube env;
 
 #ifdef HAS_DIFFENV_MAP
 uniform samplerCube diffenv;
+#else
+#define HAS_IRRSH
 #endif
 
 uniform vec3 u_Camera;
@@ -72,8 +74,25 @@ uniform vec3 u_Camera;
 #ifdef HAS_EXPUSRE
 uniform float u_Exposure;
 #else
-#define u_Exposure 2.5
+#define u_Exposure 2.
 #endif
+#endif
+
+#ifdef HAS_IRRSH
+uniform vec3 u_irrSH[9];
+// spherical harmonics
+vec3 diffuseSH(const in vec3 n) {
+    return max(vec3(0),
+        u_irrSH[0] +
+        u_irrSH[1] * n.y +
+        u_irrSH[2] * n.z +
+        u_irrSH[3] * n.x +
+        u_irrSH[4] * n.y * n.x +
+        u_irrSH[5] * n.y * n.z +
+        u_irrSH[6] * (3.0 * n.z * n.z - 1.0) +
+        u_irrSH[7] * (n.z * n.x) +
+        u_irrSH[8] * (n.x * n.x - n.y * n.y));
+}
 #endif
 
 // texture stuff
@@ -161,6 +180,20 @@ vec3 lightContrib(vec3 lightDir, coreData core) {
     return color;
 }
 
+// decode RGBE data after LOD due to RGB32F mipmap issue
+vec3 decoRGBE(vec4 r) {
+    r *= 255.;
+    if(r.a != 0.) {
+        float e = pow(2., r.a - 128. - 8.);
+        return vec3(
+            r.r * e,
+            r.g * e,
+            r.b * e
+        );
+    }
+    return vec3(0);
+}
+
 void main() {
 #ifdef HAS_EMISSIVE_MAP
     vec4 em = sRGBtoLINEAR(texture(emissiveTexture, emissiveTexture_uv));
@@ -246,18 +279,26 @@ void main() {
     float lod = clamp(roughness * 11., 0.0, 11.);
 #ifdef HAS_DIFFENV_MAP
     #ifdef USE_HDR
-    vec3 diffSample = texture(diffenv, R, lod).rgb;
+    vec3 diffSample = decoRGBE(texture(diffenv, R, lod));
     #else
     vec3 diffSample = sRGBtoLINEAR(texture(diffenv, R, lod)).rgb;
     #endif
     color += diffSample * diffuse;
 #endif
+#ifdef HAS_IRRSH
+    #ifdef USE_HDR
+    color += diffuse * diffuseSH(N) * .1;
+    #else
+    color += diffuse * diffuseSH(N);
+    #endif
+#endif
+
 
 #ifdef HAS_ENV_MAP
     vec3 brdf = sRGBtoLINEAR(texture(brdfLUT, vec2(NoV, 1.0 - alphaRoughness))).rgb;
     // vec3 IBLcolor = sRGBtoLINEAR(texture(env, R)).rgb;
     #ifdef USE_HDR
-    vec3 IBLcolor = texture(env, R, lod).rgb;
+    vec3 IBLcolor = decoRGBE(texture(env, R, lod)) * u_Exposure;
     #else
     vec3 IBLcolor = sRGBtoLINEAR(texture(env, R, lod)).rgb;
     #endif
@@ -303,4 +344,5 @@ void main() {
     // outColor = vec4(N, 1);
     // outColor = vec4(base.rgb, 1);
     // outColor = vec4(ao, 1);
+    // outColor = vec4(diffuseSH(N) * .1, 1);
 }

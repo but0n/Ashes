@@ -12,6 +12,7 @@ import ray_vs from "../res/shader/ray.vs.glsl"
 import ray_fs from "../res/shader/ray.fs.glsl"
 import ray_comb_vs from "../res/shader/ray_comb.vs.glsl"
 import ray_comb_fs from "../res/shader/ray_comb.fs.glsl"
+import background_fs from "../res/shader/background.fs.glsl"
 
 export let glsl = {
     basic: {
@@ -41,5 +42,8 @@ export let glsl = {
     ray_comb: {
         vs: ray_comb_vs,
         fs: ray_comb_fs,
+    },
+    background: {
+        fs: background_fs,
     },
 };

@@ -269,7 +269,8 @@ export class Asset {
         let scanline_num = size[1];
         let scanline_width = size[3];
 
-        let buffer = new Float32Array(total * 3);
+        // let buffer = new Float32Array(total * 3);
+        let buffer = new Uint8Array(total * 4);
 
         let ptr = 0;
         if(total * 4 != rgbeData.length) {
@@ -315,17 +316,11 @@ export class Asset {
                     }
                     for(let x = 0; x < scanline_width; x++) {
                         // const [r, g, b, e] = scanline_buf[0][1];
-                        const r = scanline_buf[0][x];
-                        const g = scanline_buf[1][x];
-                        const b = scanline_buf[2][x];
-                        const e = scanline_buf[3][x];
-                        const pixel = buffer.subarray((y * scanline_width + x) * 3, (y * scanline_width + (x + 1)) * 3);
-                        if(e != 0) {
-                            pixel[0] = r * Math.pow(2, e - 128 - 8);
-                            pixel[1] = g * Math.pow(2, e - 128 - 8);
-                            pixel[2] = b * Math.pow(2, e - 128 - 8);
-                        }
-
+                        const pixel = buffer.subarray((y * scanline_width + x) * 4, (y * scanline_width + (x + 1)) * 4);
+                        pixel[0] = scanline_buf[0][x];
+                        pixel[1] = scanline_buf[1][x];
+                        pixel[2] = scanline_buf[2][x];
+                        pixel[3] = scanline_buf[3][x];
                     }
 
                 }
@@ -334,15 +329,37 @@ export class Asset {
         } else {
             for(let x = 0; x < total; x++) {
                 const [r, g, b, e] = rgbeData.subarray(x * 4, (x + 1) * 4);
-                const pixel = buffer.subarray(x * 3, (x + 1) * 3);
-                if(e != 0) {
-                    pixel[0] = r * Math.pow(2, e - 128 - 8);
-                    pixel[1] = g * Math.pow(2, e - 128 - 8);
-                    pixel[2] = b * Math.pow(2, e - 128 - 8);
-                }
+                const pixel = buffer.subarray(x * 4, (x + 1) * 4);
+                pixel[0] = r;
+                pixel[1] = g;
+                pixel[2] = b;
+                pixel[3] = e;
+                // if(e != 0) {
+                //     pixel[0] = r * Math.pow(2, e - 128 - 8);
+                //     pixel[1] = g * Math.pow(2, e - 128 - 8);
+                //     pixel[2] = b * Math.pow(2, e - 128 - 8);
+                // }
             }
         }
-        return {size, buffer};
+        return {
+            size,
+            buffer,
+            decodeRGBE: () => {
+                debugger
+                const rgb = new Float32Array(total * 3);
+
+                for(let x = 0; x < total; x++) {
+                    const [r, g, b, e] = buffer.subarray(x * 4, (x + 1) * 4);
+                    const pixel = rgb.subarray(x * 3, (x + 1) * 3);
+                    if(e != 0) {
+                        pixel[0] = r * Math.pow(2, e - 128 - 8);
+                        pixel[1] = g * Math.pow(2, e - 128 - 8);
+                        pixel[2] = b * Math.pow(2, e - 128 - 8);
+                    }
+                }
+                return {size, buffer, rgb};
+            }
+        };
     }
 
     static cubemapOrder = [
@@ -366,7 +383,7 @@ export class Asset {
         }
         let tex = new Texture(rawImages, {
             magFilter: WebGL2RenderingContext.LINEAR,
-            minFilter: WebGL2RenderingContext.LINEAR,
+            minFilter: WebGL2RenderingContext.LINEAR_MIPMAP_LINEAR,
             wrapS: WebGL2RenderingContext.CLAMP_TO_EDGE,
             wrapT: WebGL2RenderingContext.CLAMP_TO_EDGE,
         });
@@ -381,11 +398,11 @@ export class Asset {
 
             tex.height = s[1];
             tex.width = s[3];
-            tex.format = WebGL2RenderingContext.RGB;
-            tex.internalformat = WebGL2RenderingContext.RGB32F;
-            tex.type = WebGL2RenderingContext.FLOAT;
-            // tex.internalformat = WebGL2RenderingContext.RGB16F;
-            // tex.type = WebGL2RenderingContext.HALF_FLOAT;
+            // tex.format = WebGL2RenderingContext.RGB;
+            // tex.internalformat = WebGL2RenderingContext.RGB32F;
+            // tex.type = WebGL2RenderingContext.FLOAT;
+            // // tex.internalformat = WebGL2RenderingContext.RGB16F;
+            // // tex.type = WebGL2RenderingContext.HALF_FLOAT;
             tex.glType = WebGL2RenderingContext.TEXTURE_CUBE_MAP;
 
             tex.image = null;
@@ -398,14 +415,14 @@ export class Asset {
         const format = url.split('.').pop();
         if(format == 'hdr') {
             let raw = await (await fetch(url)).arrayBuffer();
-            const {size, buffer} = this.HDRParse(raw);
+            const {size, rgb} = this.HDRParse(raw).decodeRGBE();
             const tex = new Texture(null, {
                 magFilter: WebGL2RenderingContext.LINEAR,
                 minFilter: WebGL2RenderingContext.LINEAR,
                 wrapS: WebGL2RenderingContext.CLAMP_TO_EDGE,
                 wrapT: WebGL2RenderingContext.CLAMP_TO_EDGE,
             });
-            tex.data = buffer;
+            tex.data = rgb;
             tex.height = size[1];
             tex.width = size[3];
             tex.format = WebGL2RenderingContext.RGB;

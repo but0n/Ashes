@@ -11,6 +11,7 @@ export { glsl } from "./glsl";
 export { Texture } from "./texture";
 export { Mesh, Accessor, bufferView } from "./mesh/mesh";
 export { QuadMesh } from "./mesh/quadMesh";
+export { BoxMesh } from "./mesh/boxMesh";
 export { Filter } from "./filter";
 export { Shader, UniformInfo } from "./shader";
 export { Bloom } from "./filter/bloom";
