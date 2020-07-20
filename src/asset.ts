@@ -275,7 +275,7 @@ export class Asset {
         let ptr = 0;
         if(total * 4 != rgbeData.length) {
             const rle_start = Date.now();
-            console.error('RLE encoding!');
+            // console.error('RLE encoding!');
             // 4 channels
             for(let y = 0; y < scanline_num; y++) {
                 let flag = rgbeData.subarray(ptr, ptr+4);
