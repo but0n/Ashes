@@ -74,8 +74,7 @@ vec3 diffuseSH(const in vec3 n) {
 // decode RGBE data after LOD due to RGB32F mipmap issue
 vec3 decoRGBE(vec4 r) {
     if(r.a != 0.) {
-        r *= 255.;
-        float e = pow(2., r.a - 128. - 8.);
+        float e = exp2(2., r.a * 255. - 128. - 8.);
         return vec3(
             r.r * e,
             r.g * e,
@@ -84,7 +83,6 @@ vec3 decoRGBE(vec4 r) {
     }
     return vec3(0);
 }
-
 
 void main() {
     vec3 sh = diffuseSH(normalize(pos)) * .05;

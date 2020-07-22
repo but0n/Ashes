@@ -345,16 +345,15 @@ export class Asset {
             size,
             buffer,
             decodeRGBE: () => {
-                debugger
                 const rgb = new Float32Array(total * 3);
 
                 for(let x = 0; x < total; x++) {
                     const [r, g, b, e] = buffer.subarray(x * 4, (x + 1) * 4);
                     const pixel = rgb.subarray(x * 3, (x + 1) * 3);
                     if(e != 0) {
-                        pixel[0] = r * Math.pow(2, e - 128 - 8);
-                        pixel[1] = g * Math.pow(2, e - 128 - 8);
-                        pixel[2] = b * Math.pow(2, e - 128 - 8);
+                        pixel[0] = r * Math.pow(2, e - 128);
+                        pixel[1] = g * Math.pow(2, e - 128);
+                        pixel[2] = b * Math.pow(2, e - 128);
                     }
                 }
                 return {size, buffer, rgb};
