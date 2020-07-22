@@ -1,5 +1,5 @@
 #version 300 es
-#define USE_HDR
+// #define USE_HDR
 #ifdef USE_HDR
 #extension GL_OES_texture_float : enable
 #extension GL_OES_texture_float_linear : enable
@@ -270,8 +270,8 @@ void main() {
 
 
     vec3 color;
-    color += lightContrib(vec3(2, 5, 2), core) * vec3(1);
-    // color += lightContrib(vec3(1, 1, 5), core) * vec3(1.0, 0.8902, 0.6902) * 4.0;
+    // color += lightContrib(vec3(2, 5, 2), core) * vec3(1);
+    color += lightContrib(vec3(1, 5, 5), core) * vec3(1.0, 0.8902, 0.6902) * 2.0;
     // color += lightContrib(vec3(-5, 3, -5), core) * vec3(0.6431, 0.9176, 1.0);
 
     // IBL
@@ -339,6 +339,7 @@ void main() {
     // outColor = vec4(vec3(G), 1);
     // outColor = vec4(vec3(D), 1);
     // outColor = vec4(IBLspecular, 1);
+    // outColor = vec4(IBLcolor, 1);
     // outColor = vec4(brdf, 1);
     // outColor = vec4(N, 1);
     // outColor = vec4(base.rgb, 1);

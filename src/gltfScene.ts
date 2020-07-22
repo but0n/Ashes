@@ -15,6 +15,9 @@ export class gltfScene {
     constructor(gltf) {
         this.gltf = gltf;
 
+        // TODO:
+        gltf.useHDR = gltf.hasEnvmap && gltf.envmap.data != null
+
         // Materials
         // set default material if materials does not exist
         if(!gltf.materials) {
@@ -28,6 +31,9 @@ export class gltfScene {
             Material.setTexture(mat, 'brdfLUT', gltf.brdfLUT);
             if(gltf.hasEnvmap) {
                 mat.shader.macros['HAS_ENV_MAP'] = '';
+                if(gltf.useHDR) {
+                    mat.shader.macros['USE_HDR'] = '';
+                }
                 Material.setTexture(mat, 'env', gltf.envmap);
                 if (gltf.diffmap) {
                     mat.shader.macros['HAS_DIFFENV_MAP'] = '';
