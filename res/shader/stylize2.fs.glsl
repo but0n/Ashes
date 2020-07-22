@@ -183,7 +183,7 @@ vec3 lightContrib(vec3 lightDir, coreData core) {
 // decode RGBE data after LOD due to RGB32F mipmap issue
 vec3 decoRGBE(vec4 r) {
     if(r.a != 0.) {
-        float e = exp2(2., r.a * 255. - 128. - 8.);
+        float e = exp2(r.a * 255. - 128.);
         return vec3(
             r.r * e,
             r.g * e,
