@@ -13,7 +13,7 @@
 ![](https://user-images.githubusercontent.com/7625588/87917315-231b3400-cab8-11ea-9742-afe57859490d.png)
 
 
-![](https://user-images.githubusercontent.com/7625588/75624993-d4a2f100-5c0d-11ea-95c0-f0c13f4d29d8.png)
+![](https://user-images.githubusercontent.com/7625588/78468675-6f3aa680-775d-11ea-99e0-195d446d6798.png)
 ![](https://user-images.githubusercontent.com/7625588/67295473-c0d9d680-f519-11e9-96b8-72422af0a547.png)
 
 # Examples
