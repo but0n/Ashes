@@ -286,7 +286,7 @@ void main() {
 #endif
 #ifdef HAS_IRRSH
     #ifdef USE_HDR
-    color += diffuse * diffuseSH(N) * .1;
+    color += diffuse * diffuseSH(N) / PI; // NOTE: irradiance
     #else
     color += diffuse * diffuseSH(N);
     #endif
