@@ -10,10 +10,8 @@ import { Screen } from "../webgl2/screen";
 import { Transform } from "../transform";
 
 export class AABB {
-    max: Float32Array = vec3.create();
-    min: Float32Array = vec3.create();
-
-    isDefault = true;
+    max: Float32Array = vec3.fromValues(-Infinity, -Infinity, -Infinity);
+    min: Float32Array = vec3.fromValues(Infinity, Infinity, Infinity);
 
     private _center: Float32Array = vec3.create();
     get center() {
@@ -25,8 +23,6 @@ export class AABB {
     private isDirty = false;
 
     private updateCenter() {
-        if(this.isDefault)
-            return console.error('AABB is incorrect!');
         this._center[0] = this.min[0] + (this.max[0] - this.min[0]) * 0.5;
         this._center[1] = this.min[1] + (this.max[1] - this.min[1]) * 0.5;
         this._center[2] = this.min[2] + (this.max[2] - this.min[2]) * 0.5;
@@ -35,16 +31,6 @@ export class AABB {
     update(p: Float32Array) {
         this.isDirty = true;
 
-        if(this.isDefault) {
-            this.max[0] = p[0];
-            this.max[1] = p[1];
-            this.max[2] = p[2];
-            this.min[0] = p[0];
-            this.min[1] = p[1];
-            this.min[2] = p[2];
-            this.isDefault = false;
-            return;
-        }
         this.max[0] = Math.max(this.max[0], p[0]);
         this.max[1] = Math.max(this.max[1], p[1]);
         this.max[2] = Math.max(this.max[2], p[2]);
