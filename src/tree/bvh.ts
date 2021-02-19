@@ -222,29 +222,37 @@ export class BVHManager {
             box.bounds.update(triangles[i++]);
             boxList.push(box);
         }
-        console.log("Materials: " + this.matMap);
         return boxList;
     }
 
+    // TODO: Texture packer
     materialsHandler(mats: Map<string, [number, Material]>) {
         let params = '';
         let route = `
         if(mat < -.5) {
             continue;
         }`;
+        const max = 16 - 5;
         let tasks = [];
         for(const [name, [i,mt]] of mats) {
             // Textures
             const tex = mt.textures;
 
             // baseColorTexture
+            let abledo = 'sRGBtoLINEAR(texture(ground, iuv * 40.)).rgb';
+            if (name == 'Logo1') {
+                abledo = 'vec3(.3, .5, 1)'
+            } else if (name == 'Logo2') {
+                abledo = 'vec3(.9, .7, .12)'
+            }
             let base = `
-            float scale = 100.;
-            float fact = step(.0, sin(iuv.x * scale)*sin(iuv.y * scale));
-            albedo = vec3(1) * clamp(fact, .2, 1.);
-            // albedo = sRGBtoLINEAR(texture(ground, iuv * 15.)).rgb;
+            // float scale = 100.;
+            // float fact = step(.0, sin(iuv.x * scale)*sin(iuv.y * scale));
+            // albedo = vec3(1) * clamp(fact, .2, 1.);
+            // albedo = sRGBtoLINEAR(texture(ground, iuv * .3)).rgb;
+            albedo = ${abledo};
 `;
-            if(tex.has('baseColorTexture')) {
+            if(tex.has('baseColorTexture') && tasks.length < max) {
                 params += `
 uniform sampler2D baseColorTexture_${i};
 `;
@@ -256,11 +264,11 @@ uniform sampler2D baseColorTexture_${i};
 
             // metallicRoughnessTexture
             let rm = `
-            vec3 rm = vec3(0, .2, .5);
+            vec3 rm = vec3(0, .01, .12);
             metal = clamp(rm.b, 0.0, 1.0);
-            roughness = clamp(rm.g, 0.04, 1.0);
+            roughness = clamp(1. - rm.g, 0.04, 1.0);
             `;
-            if(tex.has('metallicRoughnessTexture')) {
+            if(tex.has('metallicRoughnessTexture') && tasks.length < max) {
                 params += `
 uniform sampler2D metallicRoughnessTexture_${i};
 `;
@@ -276,7 +284,7 @@ uniform sampler2D metallicRoughnessTexture_${i};
 
             // emissiveTexture
             let em = '';
-            if(tex.has('emissiveTexture')) {
+            if(tex.has('emissiveTexture') && tasks.length < max) {
                 params += `
 uniform sampler2D emissiveTexture_${i};
 `;
@@ -305,7 +313,7 @@ uniform sampler2D emissiveTexture_${i};
     }
 
     buildBVH(meshes: Mesh[]) {
-        const d = Date.now();
+        console.time('Build BVH');
         let materialList = [];
         // ? x-y-z-x y-z-x-y z-x
         const triangleTexture = new DataTexture(2048, 2);
@@ -363,7 +371,7 @@ uniform sampler2D emissiveTexture_${i};
         const root = this.root = this.splitBVH(primitives);
         const LBVH = this.fillLBVH(root, this.LBVHTexture);
         const matHandler = this.materialsHandler(this.matMap);
-        console.log(`Build BVH cost ${Date.now() - d}ms`);
+        console.timeEnd('Build BVH');
         return {LBVH, triangleTexture, primitives, matHandler};
     }
 
