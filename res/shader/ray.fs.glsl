@@ -25,7 +25,8 @@ uniform samplerCube hdrSky;
 
 uniform sampler2D skybox;
 uniform sampler2D ground;
-uniform sampler2D uvck;
+#define uvck ground
+// uniform sampler2D uvck;
 #include <mat_params>
 
 
@@ -598,10 +599,10 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
 #ifdef DEBUG_UV
                 // float scale = .01;
                 // return vec3(clamp(step(.0, sin(iuv.x / scale)+cos(iuv.y / scale)), .1, 1.));
-                return sRGBtoLINEAR(texture(uvck, iuv)).rgb;
+                return sRGBtoLINEAR(texture(uvck, iuv * 40.)).rgb;
                 // return abs(vec3(iuv, 0));
 #else
-                return max(vec3(0), normal) * sRGBtoLINEAR(texture(uvck, iuv)).rgb;
+                return max(0.1, dot(normal, vec3(0, 1, 0))) * sRGBtoLINEAR(texture(uvck, iuv * 40.)).rgb;
 #endif
             }
 
