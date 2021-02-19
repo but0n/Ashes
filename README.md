@@ -10,7 +10,8 @@
 [![](https://data.jsdelivr.com/v1/package/npm/ashes3d/badge)](https://www.jsdelivr.com/package/npm/ashes3d)
 
 [Ray Tracing demo](https://but0n.github.io/Ashes/bvh.html)
-![](https://user-images.githubusercontent.com/7625588/83883263-9c6bfb00-a786-11ea-89a6-bcd7b2d4001a.png)
+![](https://user-images.githubusercontent.com/7625588/108536599-bf4c3880-7330-11eb-9422-bacd871b7428.png)
+> *"Ferrari 330 P4" (https://skfb.ly/6TZTq) by Sunny is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).*
 
 [glTF Example](https://but0n.github.io/Ashes/demo.html)
 ![](https://user-images.githubusercontent.com/7625588/87917315-231b3400-cab8-11ea-9742-afe57859490d.png)
