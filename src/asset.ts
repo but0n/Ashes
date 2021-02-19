@@ -274,7 +274,7 @@ export class Asset {
 
         let ptr = 0;
         if(total * 4 != rgbeData.length) {
-            const rle_start = Date.now();
+            console.time('RLE decoding');
             // console.error('RLE encoding!');
             // 4 channels
             for(let y = 0; y < scanline_num; y++) {
@@ -325,7 +325,7 @@ export class Asset {
 
                 }
             }
-            console.log(`RLE decoding cost ${Date.now() - rle_start}ms`);
+            console.timeEnd('RLE decoding');
         } else {
             for(let x = 0; x < total; x++) {
                 const [r, g, b, e] = rgbeData.subarray(x * 4, (x + 1) * 4);
@@ -351,9 +351,9 @@ export class Asset {
                     const [r, g, b, e] = buffer.subarray(x * 4, (x + 1) * 4);
                     const pixel = rgb.subarray(x * 3, (x + 1) * 3);
                     if(e != 0) {
-                        pixel[0] = r * Math.pow(2, e - 128);
-                        pixel[1] = g * Math.pow(2, e - 128);
-                        pixel[2] = b * Math.pow(2, e - 128);
+                        pixel[0] = r * Math.pow(2, e - 128 - 8);
+                        pixel[1] = g * Math.pow(2, e - 128 - 8);
+                        pixel[2] = b * Math.pow(2, e - 128 - 8);
                     }
                 }
                 return {size, buffer, rgb};
