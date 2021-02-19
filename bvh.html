@@ -7,7 +7,7 @@
 <body>
     <canvas id="screen"></canvas>
 </body>
-    <script src="https://cdn.jsdelivr.net/npm/ashes3d@0.3.0/build/ashes.main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ashes3d@0.3.3/build/ashes.main.js"></script>
     <!-- <script src="build/ashes.main.js"></script> -->
     <script>
 let { Asset, EntityMgr, Camera, vec2, vec3, mat3, mat4, quat, Screen, OrbitControl, Filter, Shader, Material, QuadMesh, MeshRenderer, Texture, glsl } = Ashes;
@@ -23,7 +23,7 @@ Material.SHADER_PATH = assetRoot + Material.SHADER_PATH;
 
 DamagedHelmet = assetRoot + 'gltfsamples/DamagedHelmet.glb';
 
-ashesLogo = assetRoot + 'gltfsamples/ashes.glb';
+ashesLogo = assetRoot + 'gltfsamples/ashes3.glb';
 
 (async () => {
 
@@ -37,10 +37,10 @@ ashesLogo = assetRoot + 'gltfsamples/ashes.glb';
     hdrEnv.flipY = true;
 
     // 2.Download grid texture
-    // let grid = await Asset.loadTexture('res/textures/grid.jpg');
+    let grid = await Asset.loadTexture('res/textures/grid.jpg');
 
     // 3.Download UV checher texture
-    let uvck = await Asset.loadTexture(assetRoot + 'res/textures/checker.png');
+    // let uvck = await Asset.loadTexture(assetRoot + 'res/textures/checker.png');
 
     // 4.Download hdr cube texture which is required in PBR forward renderer
     // (Unnecessary!)
@@ -71,20 +71,13 @@ ashesLogo = assetRoot + 'gltfsamples/ashes.glb';
     let disposer = [
         {
             url: ashesLogo,
-            t: [0, -2, -6],
+            t: [0, -2, -4],
             s: 1.,
-        },
-        // Kunai
-        {
-            url: assetRoot + 'gltfsamples/exposive_kunai/scene.gltf',
-            t: [-.7, .8, 1.2],
-            s: 2.,
-            // r: [180, 0, 0],
         },
         {
             url: DamagedHelmet,
             // t: [3., -0.1, 0],
-            t: [0, -0.1, -2.],
+            t: [0, -0.1, 0],
             // r: [0, -30, 0],
             s: 2,
         },
@@ -124,7 +117,6 @@ ashesLogo = assetRoot + 'gltfsamples/ashes.glb';
     // const {LBVH, triangleTexture, primitives} = bvhMgr.buildBVH([ meshes[0], meshes[1], meshes[14+2], meshes[38+2], meshes[37+2], meshes[41+2], meshes[81+2]]);
     const {LBVH, triangleTexture, primitives, matHandler} = bvhMgr.buildBVH(meshes);
     console.log(LBVH);
-    console.log(matHandler.params);
 
     // Detect platform
     let commonShader = Screen.platform == 'iOS'
@@ -151,9 +143,9 @@ ashesLogo = assetRoot + 'gltfsamples/ashes.glb';
     // HDR environment texture
     Material.setTexture(rt.material, 'hdrSky', hdrEnv);
     // Grid texture
-    // Material.setTexture(rt.material, 'ground', grid);
+    Material.setTexture(rt.material, 'ground', grid);
     // UV checker
-    Material.setTexture(rt.material, 'uvck', uvck);
+    // Material.setTexture(rt.material, 'uvck', uvck);
 
     matHandler.init(rt.material);
 
@@ -206,14 +198,6 @@ void main(){
             case 'k':
                 rt.toggleMode();
                 break;
-            case 'u':
-                rt.tar[1] += 0.1;
-                rt.reset();
-                break;
-            case 'j':
-                rt.tar[1] -= 0.1;
-                rt.reset();
-                break;
             case ']':
                 exp += 0.05;
                 Material.setUniform(rt_final.material, 'EXPOSURE', exp*exp);
@@ -241,7 +225,7 @@ class rayTracing extends Filter {
 
         this.cameraTrans = cam.entity.components.Transform;
         this.cam = cam;
-        cam.lookAt = this.tar;
+        this.tar = cam.lookAt;
 
         let update = (e, focus = false) => {
             if(e && focus) {
@@ -253,8 +237,6 @@ class rayTracing extends Filter {
             this.reset();
         }
         screen.canvas.addEventListener('mousedown', e => {
-            if(e.button == 2) // right click
-                return;
             update(e, true);
             screen.canvas.addEventListener('mousemove', update)
         })
@@ -271,7 +253,7 @@ class rayTracing extends Filter {
 
         this.onRender = (dt) => {
             // this.updateTBN();
-            document.title = 'F ' + this.frame;
+            document.title = `[F ${this.frame}] - Ashes3d`;
             Material.setUniform(this.material, 'iFrame', this.frame);
             Material.setUniform(this.material, 'iTime', this.timer);
             // Material.setUniform(this.material, 'vp', this.cameraTrans.translate);
