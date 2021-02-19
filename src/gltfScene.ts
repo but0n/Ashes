@@ -25,7 +25,6 @@ export class gltfScene {
         }
         gltf.materials = gltf.materials.map(config => {
             let mat = new Material(gltf.commonShader, config.name, config.doubleSided);
-            console.log(config);
             this.detectConfig(mat, config);
 
             Material.setTexture(mat, 'brdfLUT', gltf.brdfLUT);
