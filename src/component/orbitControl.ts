@@ -2,7 +2,7 @@ import { Screen } from "../webgl2/screen";
 import { Entity, EntityMgr } from "../ECS/entityMgr";
 import { Camera, CameraSystem } from "../camera";
 import { Transform, TransformSystem } from "../transform";
-import { vec3, mat4 } from "../math";
+import { vec3, mat4, mat3 } from "../math";
 import { ComponentSystem } from "../ECS/component";
 import { System } from "../ECS/system";
 
@@ -25,7 +25,7 @@ export class OrbitControl {
     vyaw = 0;
     vpitch = 0;
     vscale = 0;
-    threshold = 0.001;
+    threshold = 0.01;
     damping: number;
 
     lastalpha;
@@ -34,7 +34,7 @@ export class OrbitControl {
 
     camera: Camera;
     trans: Transform;
-    constructor(screen: Screen, target: Entity, pitch = 90, yaw = 90, speed = 0.01, damping = 0.92) {
+    constructor(screen: Screen, target: Entity, pitch = 90, yaw = 90, speed = 0.06, damping = 0.88) {
         this.pitch = pitch;
         this.yaw = yaw;
         this.speed = speed;
@@ -52,32 +52,57 @@ export class OrbitControl {
         OrbitControl.bindEvents(screen.canvas, this);
         OrbitControlSystem.updatePosition(this);
     }
-    moveHandler = (e) => {
-        let {movementX, movementY, buttons} = e;
-        if(buttons == 2) {  // Drag
-            // // this.vx += dx * speed;
-            // // this.vy += dy * speed;
+    moveHandler = (() => {
+        const dir = vec3.create();
+        const tbn = mat3.create();
+        const t = tbn.subarray(0, 3);
+        const b = tbn.subarray(3, 6);
+        const n = tbn.subarray(6, 9);
+
+        return (e) => {
+            let {movementX, movementY, buttons} = e;
+            if(buttons == 2) {  // Pan
+
+                vec3.set(dir, -movementX, movementY, 0);
+                vec3.scale(dir, dir, this.distance * 0.001);
+
+                const vp = this.trans.translate;
+                const tar = this.camera.lookAt;
+
+                vec3.sub(n, tar, vp);
+                vec3.normalize(n, n);
+
+                vec3.cross(t, n, this.camera.up);
+                vec3.normalize(t, t);
+
+                vec3.cross(b, t, n);
+
+                vec3.transformMat3(dir, dir, tbn);
+
+                vec3.add(this.camera.lookAt, this.camera.lookAt, dir);
+                vec3.add(this.trans.translate, this.trans.translate, dir);
 
 
-            // this.movement[0] = (movementX / window.innerWidth) * 2 - 1;
-            // this.movement[1] = -(movementY / window.innerHeight) * 2 + 1;
-            // this.movement[2] = 0.5;
-            // mat4.invert(this.unprojectMatrix, this.camera.projection);
-            // mat4.mul(this.unprojectMatrix, this.unprojectMatrix, this.camera.view);
+                // this.movement[0] = (movementX / window.innerWidth) * 2 - 1;
+                // this.movement[1] = -(movementY / window.innerHeight) * 2 + 1;
+                // this.movement[2] = 0.5;
+                // mat4.invert(this.unprojectMatrix, this.camera.projection);
+                // mat4.mul(this.unprojectMatrix, this.unprojectMatrix, this.camera.view);
 
-            // vec3.transformMat4(this.movement, this.movement, this.unprojectMatrix);
+                // vec3.transformMat4(this.movement, this.movement, this.unprojectMatrix);
 
-            // vec3.add(this.camera.lookAt, this.camera.lookAt, this.movement);
+                // vec3.add(this.camera.lookAt, this.camera.lookAt, this.movement);
 
 
-        } else {    // Rotate
-            let deltaX = movementX * this.speed;
-            let deltaY = -movementY * this.speed;
-            this.vpitch += deltaY;
-            this.vyaw += deltaX;
+            } else {    // Rotate
+                let deltaX = movementX * this.speed;
+                let deltaY = -movementY * this.speed;
+                this.vpitch += deltaY;
+                this.vyaw += deltaX;
+            }
+            // OrbitControlSystem.updatePosition(this);
         }
-        // OrbitControlSystem.updatePosition(this);
-    }
+    })();
     touchHandler = (() => {
         let lastX, lastY;
         return (e)=>{
@@ -144,6 +169,8 @@ export class OrbitControl {
             })
         })
         screen.addEventListener('wheel', controler.scrollHandler);
+
+        document.oncontextmenu = () => false;
 
         // try {
         //     window.addEventListener("deviceorientation", controler.orientationHandler, false);
