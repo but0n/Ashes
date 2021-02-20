@@ -7,7 +7,7 @@
 <body>
     <canvas id="screen"></canvas>
 </body>
-    <script src="https://cdn.jsdelivr.net/npm/ashes3d@0.4.0/build/ashes.main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ashes3d@0.4.1/build/ashes.main.js"></script>
     <!-- <script src="build/ashes.main.js"></script> -->
     <script>
 let { Asset, EntityMgr, Camera, vec2, vec3, mat3, mat4, quat, Screen, OrbitControl, Filter, Shader, Material, QuadMesh, MeshRenderer, Texture, glsl } = Ashes;
@@ -206,6 +206,22 @@ void main(){
                 exp -= 0.05;
                 Material.setUniform(rt_final.material, 'EXPOSURE', exp*exp);
                 break;
+            case 'q':
+                --rt.aperture;
+                rt.updateAperture();
+                break;
+            case 'e':
+                ++rt.aperture;
+                rt.updateAperture();
+                break;
+            case 'a':
+                rt.focalLength -= 5;
+                rt.updateFocalLength();
+                break;
+            case 'd':
+                rt.focalLength += 5;
+                rt.updateFocalLength();
+                break;
         }
     })
 
@@ -220,6 +236,8 @@ class rayTracing extends Filter {
     cam;
     fastMode = true;
     mousePos = vec2.create();
+    aperture = 4;
+    focalLength = 50;
     constructor(screen, cam, shader) {
         super(screen, shader);
 
@@ -262,7 +280,21 @@ class rayTracing extends Filter {
             this.frame += 1;
         }
 
+        this.updateAperture();
+        this.updateFocalLength();
+
     }
+
+    updateAperture() {
+        Material.setUniform(this.material, 'aperture', Math.pow(1 / Math.max(0, this.aperture) * 1.414, 2));
+        this.reset();
+    }
+
+    updateFocalLength() {
+        Material.setUniform(this.material, 'focalLength', this.focalLength/23);
+        this.reset();
+    }
+
     toggleMode() {
         this.fastMode = !this.fastMode;
         // Material.setUniform(this.material, 'PATH_LENGTH', 12);

@@ -33,6 +33,8 @@ uniform sampler2D ground;
 uniform mat3 TBN;
 uniform vec3 vp;
 uniform vec2 mousePos;
+uniform float aperture;
+uniform float focalLength;
 
 #include <macros>
 
@@ -660,9 +662,8 @@ vec3 render(in vec3 ro, in vec3 rd, inout float seed) {
     return vec3(0);
 }
 
-#define DOF_FACTOR .028
-// #define FOV 2.2
-#define FOV 1.8
+#define DOF_FACTOR aperture
+
 void main() {
     vec2 uv = gl_FragCoord.xy * iResolution;
 
@@ -687,7 +688,7 @@ void main() {
             vec2 tmp2;
             // float nfpd = hitWorld(ro, normalize(vec3(0)-ro), vec2(0, MAX_DIST), tmp3, tmp);
             // float nfpd = hitWorld(ro, TBN * vec3(0,0,1), vec2(0, MAX_DIST), tmp3, tmp);
-            float nfpd = hitWorld(ro, TBN * normalize(vec3(mousePos,FOV)), vec2(0, MAX_DIST), tmp3, tmp2, tmp);
+            float nfpd = hitWorld(ro, TBN * normalize(vec3(mousePos, focalLength)), vec2(0, MAX_DIST), tmp3, tmp2, tmp);
             outColor = vec4(nfpd);
         } else {
             outColor = vec4(fpd);
@@ -703,7 +704,7 @@ void main() {
         p += 2.*hash2(seed) * iResolution.y;
 
         // Ray Direction
-        vec3 rd = normalize(vec3(p,FOV));
+        vec3 rd = normalize(vec3(p, focalLength));
         rd = TBN * rd;
 
         // DOF
