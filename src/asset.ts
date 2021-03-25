@@ -190,7 +190,7 @@ export class Asset {
 
         // Load brdfLUT
         if(this.brdfLUT === undefined) {
-            const brdfurl = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Viewer/master/assets/images/brdfLUT.png'
+            const brdfurl = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Viewer/a30e03a164ad04df03018046a187f9e797118567/assets/images/lut_ggx.png'
             this.brdfLUT = await this.loadTexture(brdfurl, { minFilter: WebGL2RenderingContext.LINEAR });
         }
 
