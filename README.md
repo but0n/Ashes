@@ -10,11 +10,15 @@
 [![](https://data.jsdelivr.com/v1/package/npm/ashes3d/badge)](https://www.jsdelivr.com/package/npm/ashes3d)
 
 [Ray Tracing demo](https://but0n.github.io/Ashes/bvh.html)
-![](https://user-images.githubusercontent.com/7625588/108536599-bf4c3880-7330-11eb-9422-bacd871b7428.png)
+![](https://user-images.githubusercontent.com/7625588/112940799-649ccc80-9179-11eb-8be3-0761bbb79f02.png)
+
  - Press `k` to toggle render mode
  - Press `q` and `e` to adjust aperture (depth of field)
  - Press `a` and `d` to focal length
-> *"Ferrari 330 P4" (https://skfb.ly/6TZTq) by Sunny is licensed under Creative Commons Attribution (http://creativecommons.org/licenses/by/4.0/).*
+ - Press `[` andd `]` to adjust exposure
+
+###### *"Awesome Mix Guardians of the Galaxy" (https://skfb.ly/66EI7) by rommalart is licensed under CC Attribution-NonCommercial-NoDerivs (http://creativecommons.org/licenses/by-nc-nd/4.0/).*
+
 
 [glTF Example](https://but0n.github.io/Ashes/demo.html)
 ![](https://user-images.githubusercontent.com/7625588/87917315-231b3400-cab8-11ea-9742-afe57859490d.png)
