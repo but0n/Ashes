@@ -51,6 +51,10 @@ async function main() {
 
     let screen = new Screen('#screen');
     screen.bgColor = [0.23,0.23,0.23, 1];
+
+    // FIXME: patch for v0.4.1
+    Asset.brdfLUT = await Asset.loadTexture('https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Viewer/a30e03a164ad04df03018046a187f9e797118567/assets/images/lut_ggx.png', { minFilter: WebGL2RenderingContext.LINEAR });
+
     // screen.bgColor = [0, 0, 0, 1];
     // screen.bgColor = [0.9,0.9,0.9,1];
     // Filters

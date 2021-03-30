@@ -30,6 +30,8 @@ ashesLogo = assetRoot + 'gltfsamples/ashes3.glb';
     let screen = new Screen('#screen');
     screen.bgColor = [0.23,0.23,0.23, 1];
 
+    // FIXME: patch for v0.4.1
+    Asset.brdfLUT = await Asset.loadTexture('https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Viewer/a30e03a164ad04df03018046a187f9e797118567/assets/images/lut_ggx.png', { minFilter: WebGL2RenderingContext.LINEAR });
 
     // Prepare textures:
     // 1.Download HDR environment texture
@@ -122,10 +124,6 @@ ashesLogo = assetRoot + 'gltfsamples/ashes3.glb';
     let commonShader = Screen.platform == 'iOS'
             ? new Shader(glsl.stylize.vs, glsl.stylize.fs)
             : new Shader(glsl.stylize2.vs, glsl.stylize2.fs);
-
-    // // The original size of quad is 2x2
-    const brdfurl = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Viewer/master/assets/images/brdfLUT.png';
-    let brdfLUT = await Asset.loadTexture(brdfurl, { minFilter: WebGL2RenderingContext.LINEAR });
 
     // Initial ray-tracer
     const rtShader = new Shader(glsl.ray.vs, glsl.ray.fs, {
