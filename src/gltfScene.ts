@@ -73,12 +73,19 @@ export class gltfScene {
 
                 if (attributes.TANGENT == null && attributes.TEXCOORD_0 != null) {
                     console.warn('Using computed tagent!');
-                    Mesh.preComputeTangent(mf);
+                    try {
+                        Mesh.preComputeTangent(mf);
+                    } catch (error) {
+                    }
                 }
 
                 if(attributes.NORMAL == null) {
-                    console.warn('Using computed normal!');
-                    Mesh.preComputeNormal(mf);
+                    console.warn('Try to calculate normal!');
+                    try {
+                        Mesh.preComputeNormal(mf);
+                    } catch (error) {
+                        console.log(error);
+                    }
                 }
 
                 let mat = gltf.materials[meshData.material || 0];
