@@ -10,14 +10,12 @@
 [![](https://data.jsdelivr.com/v1/package/npm/ashes3d/badge)](https://www.jsdelivr.com/package/npm/ashes3d)
 
 [Ray Tracing demo](https://but0n.github.io/Ashes/bvh.html)
-![](https://user-images.githubusercontent.com/7625588/112940799-649ccc80-9179-11eb-8be3-0761bbb79f02.png)
+![](https://user-images.githubusercontent.com/7625588/121191833-b0719d80-c8af-11eb-97c4-9eac6f8e3e8e.png)
 
  - Press `k` to toggle render mode
  - Press `q` and `e` to adjust aperture (depth of field)
  - Press `a` and `d` to focal length
  - Press `[` andd `]` to adjust exposure
-
-###### *"Awesome Mix Guardians of the Galaxy" (https://skfb.ly/66EI7) by rommalart is licensed under CC Attribution-NonCommercial-NoDerivs (http://creativecommons.org/licenses/by-nc-nd/4.0/).*
 
 
 [glTF Example](https://but0n.github.io/Ashes/demo.html)
