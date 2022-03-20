@@ -21,8 +21,6 @@ in vec4 vColor;
 in mat3 TBN;
 
 
-uniform sampler2D brdfLUT;
-
 #ifdef HAS_EMISSIVE_MAP
 #ifndef emissiveTexture_uv
 #define emissiveTexture_uv uv
@@ -74,7 +72,7 @@ uniform vec3 u_Camera;
 #ifdef HAS_EXPUSRE
 uniform float u_Exposure;
 #else
-#define u_Exposure 2.
+#define u_Exposure 1.
 #endif
 #endif
 
@@ -101,6 +99,15 @@ vec4 sRGBtoLINEAR(vec4 color) {
 }
 vec4 LINEARtoSRGB(vec4 color) {
     return vec4(pow(color.rgb, vec3(1.0/GAMMA)), color.a);
+}
+
+vec2 DFGApprox(float NoV, float roughness) {
+    float dotNV = clamp(NoV, 0., 1.);
+    vec4 c0 = vec4(-1, -0.0275, -0.572, 0.022);
+    vec4 c1 = vec4(1, 0.0425, 1.04, -0.04);
+    vec4 r = roughness * c0 + c1;
+    float a004 = min(r.x * r.x, exp2(-9.28 * dotNV)) * r.x + r.y;
+    return vec2(-1.04, 1.04) * a004 + r.zw;
 }
 
 // Tone map
@@ -250,11 +257,11 @@ void main() {
     // float roughness = clamp((1.0-rm.g) * roughnessFactor, 0.0, 1.0);
     // float metallic = clamp(rm.b * metallicFactor, 0.0, 1.0);
     vec3 f0 = vec3(0.04);
+    f0 = mix(f0, base.xyz, metallic);
 
     vec3 diffuse = base.rgb * (vec3(1) - f0) * (1.0 - metallic);
     // diffuse /= PI;
 
-    f0 = mix(f0, base.xyz, metallic);
 
     coreData core = coreData(
         diffuse,
@@ -294,7 +301,7 @@ void main() {
 
 
 #ifdef HAS_ENV_MAP
-    vec3 brdf = sRGBtoLINEAR(texture(brdfLUT, vec2(NoV, 1.0 - alphaRoughness))).rgb;
+    vec2 brdf = DFGApprox(NoV, roughness);
     // vec3 IBLcolor = sRGBtoLINEAR(texture(env, R)).rgb;
     #ifdef USE_HDR
     vec3 IBLcolor = decoRGBE(texture(env, R, lod)) * u_Exposure;

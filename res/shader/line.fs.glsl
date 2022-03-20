@@ -13,8 +13,6 @@ varying vec4 vColor;
 varying mat3 TBN;
 
 
-uniform sampler2D brdfLUT;
-
 #ifdef HAS_EMISSIVE_MAP
 #ifndef emissiveTexture_uv
 #define emissiveTexture_uv uv

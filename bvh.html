@@ -7,7 +7,7 @@
 <body>
     <canvas id="screen"></canvas>
 </body>
-    <script src="https://cdn.jsdelivr.net/npm/ashes3d@0.4.1/build/ashes.main.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ashes3d@0.5.0/build/ashes.main.js"></script>
     <!-- <script src="build/ashes.main.js"></script> -->
     <script>
 let { Asset, EntityMgr, Camera, vec2, vec3, mat3, mat4, quat, Screen, OrbitControl, Filter, Shader, Material, QuadMesh, MeshRenderer, Texture, glsl } = Ashes;
@@ -29,9 +29,6 @@ ashesLogo = assetRoot + 'gltfsamples/ashes3.glb';
 
     let screen = new Screen('#screen');
     screen.bgColor = [0.23,0.23,0.23, 1];
-
-    // FIXME: patch for v0.4.1
-    Asset.brdfLUT = await Asset.loadTexture('https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Viewer/a30e03a164ad04df03018046a187f9e797118567/assets/images/lut_ggx.png', { minFilter: WebGL2RenderingContext.LINEAR });
 
     // Prepare textures:
     // 1.Download HDR environment texture

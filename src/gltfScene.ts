@@ -27,7 +27,6 @@ export class gltfScene {
             let mat = new Material(gltf.commonShader, config.name, config.doubleSided);
             this.detectConfig(mat, config);
 
-            Material.setTexture(mat, 'brdfLUT', gltf.brdfLUT);
             if(gltf.hasEnvmap) {
                 mat.shader.macros['HAS_ENV_MAP'] = '';
                 if(gltf.useHDR) {

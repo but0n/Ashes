@@ -114,8 +114,6 @@ export class Asset {
         }
     }
 
-    static brdfLUT: Texture;
-
     static async loadGLTF(path: string, screen: Screen, envmap?: Texture, diffmap?: Texture, shader?) {
         let gltf;
         // parse current path
@@ -187,14 +185,6 @@ export class Asset {
         gltf.commonShader = shader || Screen.platform == 'iOS'
             ? new Shader(glsl.stylize.vs, glsl.stylize.fs)
             : new Shader(glsl.stylize2.vs, glsl.stylize2.fs);
-
-        // Load brdfLUT
-        if(this.brdfLUT === undefined) {
-            const brdfurl = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Viewer/a30e03a164ad04df03018046a187f9e797118567/assets/images/lut_ggx.png'
-            this.brdfLUT = await this.loadTexture(brdfurl, { minFilter: WebGL2RenderingContext.LINEAR });
-        }
-
-        gltf.brdfLUT = this.brdfLUT;
 
         if(envmap != null) {
             gltf.hasEnvmap = true;
